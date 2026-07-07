@@ -92,16 +92,20 @@
             <div class="navbar-separator"></div>
           </div>
           <!-- User info -->
-          <div class="navbar-item">
-            <div class="drs-user-avatar">
-              <span>{{initial .CurrentUser.DisplayName}}</span>
+          <a href="/profile" class="navbar-item" title="Profile">
+            <div class="drs-user-avatar" style="overflow:hidden">
+              <img src="{{avatarURL .CurrentUser 40}}"
+                   alt="{{.CurrentUser.DisplayedName}}"
+                   style="width:100%;height:100%;object-fit:cover"
+                   onerror="this.style.display='none';this.nextElementSibling.style.display=''">
+              <span style="display:none">{{.CurrentUser.Initial}}</span>
             </div>
-          </div>
+          </a>
           <div class="navbar-item is-hidden-touch">
-            <div style="line-height:1.3">
-              <p class="is-size-7 has-text-weight-medium">{{.CurrentUser.Username}}</p>
+            <a href="/profile" style="line-height:1.3;text-decoration:none;color:inherit">
+              <p class="is-size-7 has-text-weight-medium">{{.CurrentUser.DisplayedName}}</p>
               <p class="is-size-7 has-text-grey is-capitalized">{{.CurrentUser.Role}}</p>
-            </div>
+            </a>
           </div>
           <!-- Logout -->
           <div class="navbar-item">

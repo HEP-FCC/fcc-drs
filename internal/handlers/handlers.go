@@ -54,6 +54,12 @@ func New(db *sql.DB, driver string, oidcClient *auth.Client, devMode bool, versi
 		"formatSize":     formatSize,
 		"add":            func(a, b int) int { return a + b },
 		"currentYear":    func() int { return time.Now().Year() },
+		"avatarURL": func(u *models.User, size int) string {
+			if u == nil {
+				return ""
+			}
+			return u.AvatarURL(size)
+		},
 		"initial": func(s string) string {
 			runes := []rune(s)
 			if len(runes) == 0 {

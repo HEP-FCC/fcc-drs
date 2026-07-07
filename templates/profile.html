@@ -1,0 +1,105 @@
+{{define "content"}}
+
+  <div class="columns is-centered">
+    <div class="column is-two-thirds-tablet is-half-desktop">
+
+      <div class="mb-5">
+        <h1 class="is-size-4 has-text-weight-semibold">Profile</h1>
+        <p class="is-size-7 has-text-grey mt-1">Manage your display name and avatar</p>
+      </div>
+
+      {{if .Error}}
+      <div class="notification is-danger is-light mb-4 py-3 px-4" style="border-radius:.75rem">
+        <p class="is-size-7">{{.Error}}</p>
+      </div>
+      {{end}}
+
+      <form action="/profile" method="POST" enctype="multipart/form-data">
+
+        <!-- Avatar -->
+        <div class="box mb-4">
+          <p class="is-size-7 has-text-weight-semibold is-uppercase has-text-grey mb-4" style="letter-spacing:.05em">Avatar</p>
+          <div class="is-flex is-align-items-center" style="gap:1.5rem">
+            <div class="drs-avatar" style="width:5rem;height:5rem;flex-shrink:0;overflow:hidden">
+              <img src="{{avatarURL .CurrentUser 80}}"
+                   alt="{{.CurrentUser.DisplayedName}}"
+                   style="width:100%;height:100%;object-fit:cover"
+                   onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+              <span style="display:none;font-size:1.5rem">{{.CurrentUser.Initial}}</span>
+            </div>
+            <div>
+              <p class="is-size-7 has-text-grey mb-2">
+                {{if .CurrentUser.HasAvatar}}Custom avatar active.{{else}}Showing Gravatar (based on your email). Upload an image to override it.{{end}}
+              </p>
+              <div class="file is-small is-link is-light">
+                <label class="file-label">
+                  <input class="file-input" type="file" name="avatar" accept="image/*"
+                         onchange="document.getElementById('avatar-name').textContent = this.files[0]?.name || ''">
+                  <span class="file-cta" style="border-radius:.5rem">
+                    <span class="file-icon">
+                      <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                      </svg>
+                    </span>
+                    <span class="file-label">Choose image…</span>
+                  </span>
+                </label>
+              </div>
+              <p class="is-size-7 has-text-grey mt-1" id="avatar-name"></p>
+              <p class="is-size-7 has-text-grey-light mt-1">JPEG, PNG, GIF or WebP · max 2 MB</p>
+            </div>
+          </div>
+          {{if .CurrentUser.HasAvatar}}
+          <div class="mt-4 pt-4" style="border-top:1px solid #e7e5e4">
+            <form action="/profile/avatar/delete" method="POST" style="display:inline">
+              <button type="submit" class="button is-small is-danger is-light"
+                      onclick="return confirm('Remove your custom avatar?')">
+                Remove custom avatar
+              </button>
+            </form>
+          </div>
+          {{end}}
+        </div>
+
+        <!-- Display name -->
+        <div class="box mb-4">
+          <p class="is-size-7 has-text-weight-semibold is-uppercase has-text-grey mb-4" style="letter-spacing:.05em">Display Name</p>
+          <div class="field">
+            <label class="form-label">Preferred name <span class="has-text-grey-light">(leave blank to use your SSO name)</span></label>
+            <input class="form-input" type="text" name="preferred_name"
+                   value="{{.CurrentUser.PreferredName}}"
+                   placeholder="{{.CurrentUser.DisplayName}}">
+          </div>
+        </div>
+
+        <!-- Account info (read-only) -->
+        <div class="box mb-5">
+          <p class="is-size-7 has-text-weight-semibold is-uppercase has-text-grey mb-4" style="letter-spacing:.05em">Account</p>
+          <div class="columns is-multiline is-mobile">
+            <div class="column is-half">
+              <p class="is-size-7 has-text-grey">Username</p>
+              <p class="is-size-7 has-text-weight-medium">{{.CurrentUser.Username}}</p>
+            </div>
+            <div class="column is-half">
+              <p class="is-size-7 has-text-grey">Email</p>
+              <p class="is-size-7 has-text-weight-medium">{{.CurrentUser.Email}}</p>
+            </div>
+            <div class="column is-half">
+              <p class="is-size-7 has-text-grey">Role</p>
+              <p class="is-size-7 has-text-weight-medium is-capitalized">{{.CurrentUser.Role}}</p>
+            </div>
+            <div class="column is-half">
+              <p class="is-size-7 has-text-grey">Member since</p>
+              <p class="is-size-7 has-text-weight-medium">{{formatDate .CurrentUser.CreatedAt}}</p>
+            </div>
+          </div>
+        </div>
+
+        <button type="submit" class="button is-link">Save changes</button>
+
+      </form>
+
+    </div>
+  </div>
+
+{{end}}

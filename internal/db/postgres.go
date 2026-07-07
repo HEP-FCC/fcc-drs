@@ -122,6 +122,9 @@ func migrate(db *DB) error {
 			BEFORE UPDATE ON dataset_requests
 			FOR EACH ROW EXECUTE FUNCTION update_updated_at()`,
 		`UPDATE users SET role = 'coordinator' WHERE role = 'manager'`,
+		`ALTER TABLE users ADD COLUMN IF NOT EXISTS preferred_name TEXT NOT NULL DEFAULT ''`,
+		`ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar BYTEA`,
+		`ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_mime TEXT NOT NULL DEFAULT ''`,
 	}
 
 	for _, stmt := range stmts {

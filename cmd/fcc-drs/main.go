@@ -64,8 +64,14 @@ func main() {
 	mux.HandleFunc("POST /auth/dev-login", h.DevLogin) // only active when DEV_MODE=true
 	mux.HandleFunc("GET /logout", h.Logout)
 
+	// Avatar — public (served by username, cached)
+	mux.HandleFunc("GET /users/{username}/avatar", h.ServeAvatar)
+
 	// Protected routes — require authenticated session
 	mux.HandleFunc("GET /", middleware.RequireAuth(h.Dashboard))
+	mux.HandleFunc("GET /profile", middleware.RequireAuth(h.ShowProfile))
+	mux.HandleFunc("POST /profile", middleware.RequireAuth(h.UpdateProfile))
+	mux.HandleFunc("POST /profile/avatar/delete", middleware.RequireAuth(h.DeleteAvatar))
 	mux.HandleFunc("GET /requests/new", middleware.RequireAuth(h.NewRequestForm))
 	mux.HandleFunc("GET /requests", middleware.RequireAuth(h.ListRequests))
 	mux.HandleFunc("POST /requests", middleware.RequireAuth(h.CreateRequest))

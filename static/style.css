@@ -102,8 +102,10 @@ a.navbar-item.is-active {
   flex-shrink: 0;
 }
 .drs-user-avatar span { color: #4338ca; font-weight: 700; font-size: 0.7rem; }
+.drs-user-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block; }
 [data-theme=dark] .drs-user-avatar { background-color: #312e81; }
 [data-theme=dark] .drs-user-avatar span { color: #a5b4fc; }
+.drs-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block; }
 
 /* ── Theme toggle ────────────────────────────────────────────────────────── */
 .theme-toggle {

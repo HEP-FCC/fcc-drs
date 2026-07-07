@@ -1,27 +1,31 @@
 package models
 
 import (
+	"crypto/md5"
 	"database/sql"
 	"fmt"
+	"strings"
 	"time"
 )
 
 type Role string
 
 const (
-	RoleRequester Role = "requester"
+	RoleRequester   Role = "requester"
 	RoleCoordinator Role = "coordinator"
-	RoleAdmin     Role = "admin"
+	RoleAdmin       Role = "admin"
 )
 
 type User struct {
-	ID          int
-	Username    string // preferred_username from OIDC
-	DisplayName string
-	Email       string
-	Role        Role
-	CreatedAt   time.Time
-	LastLogin   time.Time
+	ID            int
+	Username      string // preferred_username from OIDC
+	DisplayName   string
+	PreferredName string
+	Email         string
+	Role          Role
+	HasAvatar     bool
+	CreatedAt     time.Time
+	LastLogin     time.Time
 }
 
 func (u *User) IsAdmin() bool {
@@ -46,12 +50,39 @@ func (u *User) IsRequester() bool {
 	return u.Role == RoleRequester
 }
 
-// Initial returns the first character of the display name, safe for nil.
+// DisplayedName returns PreferredName if set, otherwise DisplayName.
+func (u *User) DisplayedName() string {
+	if u == nil {
+		return ""
+	}
+	if u.PreferredName != "" {
+		return u.PreferredName
+	}
+	return u.DisplayName
+}
+
+// Initial returns the first character of the displayed name, safe for nil.
 func (u *User) Initial() string {
-	if u == nil || len(u.DisplayName) == 0 {
+	n := u.DisplayedName()
+	if n == "" {
 		return "?"
 	}
-	return string([]rune(u.DisplayName)[0])
+	return string([]rune(n)[0])
+}
+
+// AvatarURL returns the URL for the user's avatar at the given pixel size.
+// If the user has uploaded a custom avatar it points to the serve endpoint;
+// otherwise it falls back to Gravatar with the mystery-person default.
+func (u *User) AvatarURL(size int) string {
+	if u == nil {
+		return ""
+	}
+	if u.HasAvatar {
+		return "/users/" + u.Username + "/avatar"
+	}
+	email := strings.ToLower(strings.TrimSpace(u.Email))
+	hash := md5.Sum([]byte(email))
+	return fmt.Sprintf("https://www.gravatar.com/avatar/%x?s=%d&d=mp", hash, size)
 }
 
 type UserStore struct {
@@ -81,14 +112,16 @@ func (r *UserStore) Upsert(username, displayName, email string, role Role) (*Use
 
 func (r *UserStore) GetByUsername(username string) (*User, error) {
 	row := r.db.QueryRow(r.rebind(`
-		SELECT id, username, display_name, email, role, created_at, last_login
+		SELECT id, username, display_name, preferred_name, email, role,
+		       avatar IS NOT NULL as has_avatar, created_at, last_login
 		FROM users WHERE username = ?`), username)
 	return scanUser(row)
 }
 
 func (r *UserStore) GetByID(id int) (*User, error) {
 	row := r.db.QueryRow(r.rebind(`
-		SELECT id, username, display_name, email, role, created_at, last_login
+		SELECT id, username, display_name, preferred_name, email, role,
+		       avatar IS NOT NULL as has_avatar, created_at, last_login
 		FROM users WHERE id = ?`), id)
 	return scanUser(row)
 }
@@ -105,7 +138,8 @@ func (r *UserStore) CreateSession(userID int, token string, expiresAt time.Time)
 
 func (r *UserStore) GetSession(token string) (*User, error) {
 	row := r.db.QueryRow(r.rebind(`
-		SELECT u.id, u.username, u.display_name, u.email, u.role, u.created_at, u.last_login
+		SELECT u.id, u.username, u.display_name, u.preferred_name, u.email, u.role,
+		       u.avatar IS NOT NULL as has_avatar, u.created_at, u.last_login
 		FROM sessions s
 		JOIN users u ON u.id = s.user_id
 		WHERE s.id = ? AND s.expires_at > CURRENT_TIMESTAMP
@@ -120,7 +154,8 @@ func (r *UserStore) DeleteSession(token string) error {
 
 func (r *UserStore) GetCoordinators() ([]*User, error) {
 	rows, err := r.db.Query(`
-		SELECT id, username, display_name, email, role, created_at, last_login
+		SELECT id, username, display_name, preferred_name, email, role,
+		       avatar IS NOT NULL as has_avatar, created_at, last_login
 		FROM users WHERE role IN ('coordinator', 'admin') ORDER BY display_name`)
 	if err != nil {
 		return nil, err
@@ -139,7 +174,8 @@ func (r *UserStore) GetCoordinators() ([]*User, error) {
 
 func (r *UserStore) GetAll() ([]*User, error) {
 	rows, err := r.db.Query(`
-		SELECT id, username, display_name, email, role, created_at, last_login
+		SELECT id, username, display_name, preferred_name, email, role,
+		       avatar IS NOT NULL as has_avatar, created_at, last_login
 		FROM users ORDER BY display_name`)
 	if err != nil {
 		return nil, err
@@ -161,6 +197,29 @@ func (r *UserStore) UpdateRole(userID int, role Role) error {
 	return err
 }
 
+func (r *UserStore) UpdatePreferredName(userID int, name string) error {
+	_, err := r.db.Exec(r.rebind(`UPDATE users SET preferred_name = ? WHERE id = ?`), name, userID)
+	return err
+}
+
+func (r *UserStore) UpdateAvatar(userID int, data []byte, mime string) error {
+	_, err := r.db.Exec(r.rebind(`UPDATE users SET avatar = ?, avatar_mime = ? WHERE id = ?`), data, mime, userID)
+	return err
+}
+
+func (r *UserStore) DeleteAvatar(userID int) error {
+	_, err := r.db.Exec(r.rebind(`UPDATE users SET avatar = NULL, avatar_mime = '' WHERE id = ?`), userID)
+	return err
+}
+
+func (r *UserStore) GetAvatar(username string) ([]byte, string, error) {
+	row := r.db.QueryRow(r.rebind(`SELECT avatar, avatar_mime FROM users WHERE username = ?`), username)
+	var data []byte
+	var mime string
+	err := row.Scan(&data, &mime)
+	return data, mime, err
+}
+
 func (r *UserStore) PurgeExpiredSessions() error {
 	_, err := r.db.Exec(`DELETE FROM sessions WHERE expires_at <= CURRENT_TIMESTAMP`)
 	return err
@@ -169,8 +228,11 @@ func (r *UserStore) PurgeExpiredSessions() error {
 func scanUser(row scannable) (*User, error) {
 	var u User
 	err := row.Scan(
-		&u.ID, &u.Username, &u.DisplayName, &u.Email, &u.Role,
-		timeVal{&u.CreatedAt}, timeVal{&u.LastLogin},
+		&u.ID, &u.Username, &u.DisplayName, &u.PreferredName, &u.Email, &u.Role,
+		&u.HasAvatar, timeVal{&u.CreatedAt}, timeVal{&u.LastLogin},
 	)
+	if u.PreferredName != "" {
+		u.DisplayName = u.PreferredName
+	}
 	return &u, err
 }
