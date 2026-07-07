@@ -113,9 +113,13 @@ Authentication uses **CERN SSO** (Keycloak / OpenID Connect). Requester identity
 | **Admin**       | Everything above + manage user roles via the admin UI |
 
 Role assignment:
-- Roles are stored in the database and managed via the admin UI at `/admin/users`
-- CERN usernames listed in `ADMIN_USERNAMES` receive the **admin** role on first login (bootstrap only)
-- All other authenticated users receive the **requester** role by default
+- All new users receive the **requester** role on first login
+- Roles are managed via the admin UI at `/admin/users`
+- **Dev mode**: select any role from the login form — no bootstrap needed
+- **Staging/Production**: to bootstrap the first admin, update the database directly after first login:
+  ```sql
+  UPDATE users SET role = 'admin' WHERE username = '<cern-username>';
+  ```
 
 ---
 
@@ -134,7 +138,7 @@ Manifests are managed with [Kustomize](https://kustomize.io) (built into `oc`/`k
 
 ```
 openshift/
-  base/              ← shared deployment, service, configmap
+  base/              ← shared deployment, service
   overlays/
     staging/         ← staging namespace, hostname, image tag
     prod/            ← prod namespace, hostname, image tag, 2 replicas
@@ -174,13 +178,6 @@ stringData:
   oidc-redirect-url: "https://<hostname>/auth/callback"
 ```
 
-To bootstrap the first admin, edit `admin-usernames` in `openshift/base/configmap.yaml`:
-
-```yaml
-data:
-  admin-usernames: "jsmith,adoe"
-```
-
 ### 3. Deploy
 
 ```bash
@@ -216,7 +213,6 @@ The database schema is created automatically on first startup. No manual migrati
 | `OIDC_CLIENT_ID`    | Yes (prod) | CERN Application Portal client ID |
 | `OIDC_CLIENT_SECRET`| Yes (prod) | CERN Application Portal client secret |
 | `OIDC_REDIRECT_URL` | Yes (prod) | Must be `https://<hostname>/auth/callback` |
-| `ADMIN_USERNAMES`   | No  | Comma-separated CERN usernames granted admin role on first login |
 | `PORT`              | No  | HTTP listen port (default `5050`) |
 | `DEV_MODE`          | No  | Set to `TRUE` to bypass CERN SSO (local dev only) |
 | `SQLITE_PATH`       | No  | Override SQLite file path (dev only, default `./data/requests.db`) |

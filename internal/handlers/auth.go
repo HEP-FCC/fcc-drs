@@ -6,7 +6,6 @@ import (
 	"encoding/hex"
 	"log/slog"
 	"net/http"
-	"os"
 	"strings"
 	"time"
 
@@ -19,19 +18,6 @@ const stateCookie = "oidc_state"
 const sessionTTL = 24 * time.Hour
 const stateTTL = 10 * time.Minute
 
-// adminUsernames returns the set of CERN usernames seeded as admins on first login,
-// read from the ADMIN_USERNAMES env var (comma-separated). This is a bootstrap
-// fallback only — roles are managed via the admin UI once users exist in the database.
-func adminUsernames() map[string]bool {
-	raw := os.Getenv("ADMIN_USERNAMES")
-	m := map[string]bool{}
-	for _, u := range strings.Split(raw, ",") {
-		if u = strings.TrimSpace(u); u != "" {
-			m[u] = true
-		}
-	}
-	return m
-}
 
 func (h *Handler) ShowLogin(w http.ResponseWriter, r *http.Request) {
 	if middleware.GetUser(r) != nil {
@@ -160,15 +146,11 @@ func (h *Handler) Callback(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Determine role for first-time users only; existing users keep their DB role.
-	// ADMIN_USERNAMES is a bootstrap fallback — use the admin UI to manage roles.
-	role := models.RoleRequester
-	if adminUsernames()[claims.PreferredUsername] {
-		role = models.RoleAdmin
-	}
+	// New users are created as requesters. To grant admin or coordinator access,
+	// update the role directly in the database or via the admin UI at /admin/users.
 
 	// Upsert user (role only set on first creation; subsequent logins keep existing role)
-	user, err := h.users.Upsert(claims.PreferredUsername, claims.Name, claims.Email, role)
+	user, err := h.users.Upsert(claims.PreferredUsername, claims.Name, claims.Email, models.RoleRequester)
 	if err != nil {
 		slog.Error("upsert user", "error", err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)

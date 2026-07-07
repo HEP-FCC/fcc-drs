@@ -42,11 +42,6 @@ spec:
                 secretKeyRef:
                   name: fcc-drs-secrets
                   key: oidc-redirect-url
-            - name: ADMIN_USERNAMES
-              valueFrom:
-                configMapKeyRef:
-                  name: fcc-drs-config
-                  key: admin-usernames
           readinessProbe:
             httpGet:
               path: /login
