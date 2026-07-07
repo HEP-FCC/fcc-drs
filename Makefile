@@ -10,7 +10,7 @@ BULMA_VERSION := 1.0.4
 VENDOR := static/vendor
 DB     := data/requests.db
 
-.PHONY: build build-dev run reseed assets clean
+.PHONY: build build-dev run reseed deploy-staging deploy-prod assets clean
 
 build:
 	go build -tags prod -ldflags "-X main.version=$(VERSION)" -o $(BINARY) $(CMD)
@@ -30,6 +30,14 @@ reseed:
 	  sqlite3 $(DB) < scripts/seed.sql; \
 	  kill $$APP_PID 2>/dev/null; \
 	  echo "✓ DB reseeded — run 'make run' to start."
+
+deploy-staging:
+	oc apply -f openshift/overlays/staging/secret.yaml
+	oc apply -k openshift/overlays/staging
+
+deploy-prod:
+	oc apply -f openshift/overlays/prod/secret.yaml
+	oc apply -k openshift/overlays/prod
 
 assets:
 	mkdir -p $(VENDOR)/katex/fonts $(VENDOR)/fonts

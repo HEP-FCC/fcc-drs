@@ -3,7 +3,8 @@ WORKDIR /app
 COPY go.mod go.sum ./
 RUN go mod download
 COPY . .
-RUN CGO_ENABLED=0 GOOS=linux go build -tags prod -ldflags="-s -w" -o fcc-drs ./cmd/fcc-drs
+ARG VERSION=dev
+RUN CGO_ENABLED=0 GOOS=linux go build -tags prod -ldflags="-s -w -X main.version=${VERSION}" -o fcc-drs ./cmd/fcc-drs
 
 FROM alpine:3.21
 RUN apk add --no-cache ca-certificates tzdata

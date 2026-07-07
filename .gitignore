@@ -17,6 +17,9 @@ data/
 .DS_Store
 Thumbs.db
 
+# OpenShift secrets (use secret.example.yaml as a template)
+openshift/overlays/*/secret.yaml
+
 # Editor
 .vscode/
 .idea/

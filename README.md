@@ -123,52 +123,79 @@ Role assignment:
 
 FCC-DRS runs on [CERN PaaS](https://paas.cern.ch) (OpenShift) with a PostgreSQL database provided by the [CERN DBOD](https://dbod.web.cern.ch) service.
 
+There are two deployed environments:
+
+| Environment | URL | Namespace |
+|-------------|-----|-----------|
+| Staging | `fcc-drs-test.web.cern.ch` | `fcc-drs-test` |
+| Production | `fcc-drs.web.cern.ch` | `fcc-drs` |
+
+Manifests are managed with [Kustomize](https://kustomize.io) (built into `oc`/`kubectl`):
+
+```
+openshift/
+  base/              ← shared deployment, service, configmap
+  overlays/
+    staging/         ← staging namespace, hostname, image tag
+    prod/            ← prod namespace, hostname, image tag, 2 replicas
+```
+
 ### Prerequisites
 
-- A CERN OpenShift project (`oc login` access)
-- A PostgreSQL instance provisioned via CERN DBOD
-- Application registered at the [CERN Application Portal](https://application-portal.web.cern.ch) to obtain an OIDC client ID and secret
+- `oc login` access to both OpenShift projects (`fcc-drs-test`, `fcc-drs`)
+- A PostgreSQL instance provisioned via CERN DBOD for each environment
+- Two applications registered at the [CERN Application Portal](https://application-portal.web.cern.ch) (one per environment) to obtain OIDC client credentials
 
 ### 1. Build and push the container image
 
 The production build uses the `prod` build tag, which enables PostgreSQL and disables SQLite.
 
 ```bash
-docker build -t gitlab-registry.cern.ch/<your-group>/fcc-drs:latest .
-docker push gitlab-registry.cern.ch/<your-group>/fcc-drs:latest
+docker build -t gitlab-registry.cern.ch/<your-group>/fcc-drs:<tag> .
+docker push gitlab-registry.cern.ch/<your-group>/fcc-drs:<tag>
 ```
 
-Update `openshift/deployment.yaml` with your image path.
+Update the `images.newName` and `images.newTag` fields in the relevant overlay's `kustomization.yaml` before deploying.
 
 ### 2. Fill in secrets
 
-Edit `openshift/secret.yaml` with your actual credentials (do **not** commit this file with real values):
+Copy the example secret for each environment, fill in real credentials, and apply it. The `secret.yaml` files are gitignored and must never be committed with actual values.
+
+```bash
+cp openshift/overlays/staging/secret.example.yaml openshift/overlays/staging/secret.yaml
+cp openshift/overlays/prod/secret.example.yaml    openshift/overlays/prod/secret.yaml
+```
 
 ```yaml
 stringData:
   database-url: "postgresql://user:password@dbod-host.cern.ch:5432/database?sslmode=require"
   oidc-client-id: "your-client-id"
   oidc-client-secret: "your-client-secret"
-  oidc-redirect-url: "https://fcc-drs.web.cern.ch/auth/callback"
+  oidc-redirect-url: "https://<hostname>/auth/callback"
 ```
 
-Edit `openshift/configmap.yaml` with the CERN usernames that should bootstrap as admins on first login:
+To bootstrap the first admin, edit `admin-usernames` in `openshift/base/configmap.yaml`:
 
 ```yaml
 data:
   admin-usernames: "jsmith,adoe"
 ```
 
-Edit `openshift/route.yaml` and replace `REPLACE_WITH_HOSTNAME` with your actual hostname (e.g. `fcc-drs.web.cern.ch`).
-
-### 3. Apply the manifests
+### 3. Deploy
 
 ```bash
-oc apply -f openshift/secret.yaml
-oc apply -f openshift/configmap.yaml
-oc apply -f openshift/deployment.yaml
-oc apply -f openshift/service.yaml
-oc apply -f openshift/route.yaml
+# Staging
+make deploy-staging
+
+# Production
+make deploy-prod
+```
+
+These apply the secret first, then the full Kustomize overlay. Equivalent to:
+
+```bash
+oc apply -f openshift/overlays/<env>/secret.yaml
+oc apply -k openshift/overlays/<env>
 ```
 
 ### 4. Verify

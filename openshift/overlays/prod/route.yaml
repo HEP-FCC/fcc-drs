@@ -5,8 +5,7 @@ metadata:
   labels:
     app: fcc-drs
 spec:
-  # Replace with your actual hostname, e.g. fcc-drs.web.cern.ch
-  host: REPLACE_WITH_HOSTNAME
+  host: fcc-drs.web.cern.ch
   to:
     kind: Service
     name: fcc-drs
