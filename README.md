@@ -7,25 +7,19 @@ the [Future Circular Collider (FCC)](https://fcc.web.cern.ch/).
 FCC-DRS keeps an eye on the dataset needs of the community around the FCC and makes
 sure nothing falls through the cracks.
 
+**Production**: [fcc-drs.web.cern.ch](https://fcc-drs.web.cern.ch) | **Staging**: [fcc-drs-test.web.cern.ch](https://fcc-drs-test.web.cern.ch)
+
 <p align="center"><img src="static/logo.png" alt="FCC Dataset Request System logo" width="160"/></p>
 
 ---
 
 ## Features
 
-- **Submit requests** for FCC datasets with HEP-specific fields (dataset stage, use case, format, tags)
-- **Track status** through the full pipeline: Draft → Pending Review → Approved → In Progress → Completed
-- **Priority levels** — Low, Medium, High, Critical — with dashboard alerts for critical requests
-- **Pipeline view** for coordinators: assignment, batch actions, inline status and priority overrides
-- **Activity log** per request: comments, internal coordinator notes, system events with timestamps
-- **Assignment** of requests to coordinators with dropdown selector
-- **Batch actions** — approve, reject, complete, or move to in-progress across multiple requests at once
-- **Filter & search** by status, priority, or free text
-- **Bento-style dashboard** with live stats (total, pending, in-progress, completed)
-- **Markdown + LaTeX math** rendering in titles and descriptions (KaTeX + marked.js)
+- **Submit and track requests** through the full pipeline: Draft → Pending Review → Approved → In Progress → Completed
+- **Role-based access** — requesters, coordinators, and admins with appropriate permissions at each stage
+- **Activity log** per request: comments, internal notes, and system events with timestamps
+- **Filter & search** by status, priority, or free text; Markdown + LaTeX math in titles and descriptions
 - **Email notifications** on status changes (optional, via SMTP)
-- **Dark / light / system** theme with persistent preference
-- **Responsive design** — works on desktop and mobile
 
 ---
 
@@ -45,15 +39,9 @@ Single binary, no CGO required. No external CDN dependencies at runtime.
 
 ---
 
-## Getting Started
+## Local Development
 
-### Prerequisites
-
-- Go 1.22 or later
-
-### Local development (dev mode)
-
-CERN SSO is bypassed in dev mode. A simple form lets you pick any username and role — no credentials required.
+Go 1.22 or later required. CERN SSO is bypassed in dev mode — a simple form lets you pick any username and role.
 
 ```bash
 git clone https://github.com/HEP-FCC/fcc-drs
@@ -82,23 +70,6 @@ All JS/CSS dependencies (HTMX, Bulma CSS, KaTeX, marked, Inter font) are self-ho
 make assets
 ```
 
-No build step is required — Bulma is a pre-built CSS file.
-
-The server starts on **http://localhost:5050**. The SQLite database is created automatically at `./data/requests.db` on first run (dev mode only).
-
-### Email notifications (optional)
-
-Set the following environment variables to enable email notifications on status changes:
-
-```bash
-export SMTP_HOST=smtp.cern.ch
-export SMTP_PORT=587
-export SMTP_USER=your-username
-export SMTP_PASS=your-password
-export SMTP_FROM=fcc-drs@cern.ch
-```
-
-If not set, email is silently disabled.
 
 ---
 
@@ -150,18 +121,7 @@ openshift/
 - A PostgreSQL instance provisioned via CERN DBOD for each environment
 - Two applications registered at the [CERN Application Portal](https://application-portal.web.cern.ch) (one per environment) to obtain OIDC client credentials
 
-### 1. Build and push the container image
-
-The production build uses the `prod` build tag, which enables PostgreSQL and disables SQLite.
-
-```bash
-docker build -t gitlab-registry.cern.ch/<your-group>/fcc-drs:<tag> .
-docker push gitlab-registry.cern.ch/<your-group>/fcc-drs:<tag>
-```
-
-Update the `images.newName` and `images.newTag` fields in the relevant overlay's `kustomization.yaml` before deploying.
-
-### 2. Fill in secrets
+### 1. Fill in secrets
 
 Copy the example secret for each environment, fill in real credentials, and apply it. The `secret.yaml` files are gitignored and must never be committed with actual values.
 
@@ -178,7 +138,7 @@ stringData:
   oidc-redirect-url: "https://<hostname>/auth/callback"
 ```
 
-### 3. Deploy
+### 2. Deploy
 
 ```bash
 # Staging
@@ -195,7 +155,7 @@ oc apply -f openshift/overlays/<env>/secret.yaml
 oc apply -k openshift/overlays/<env>
 ```
 
-### 4. Verify
+### 3. Verify
 
 ```bash
 oc get pods        # pod should reach Running state
@@ -221,26 +181,6 @@ The database schema is created automatically on first startup. No manual migrati
 | `SMTP_USER`         | No  | SMTP username |
 | `SMTP_PASS`         | No  | SMTP password |
 | `SMTP_FROM`         | No  | From address for notification emails |
-
----
-
-## Dataset Request Fields
-
-| Field                      | Required | Description |
-|----------------------------|----------|-------------|
-| Title                      | Yes | Short description; supports Markdown + LaTeX math |
-| Description                | No  | Physics process, energy range, detector concept, selection criteria |
-| Use Case                   | No  | Physics Analysis, Reconstruction Development, Detector Simulation, ML Training, ML Evaluation, Benchmarking, Calibration, Other |
-| Dataset Stage              | No  | Generation, Simulation, Delphes, Reconstruction, Other |
-| Working Group / Team       | No  | e.g. Tracker WG, Calorimetry WG |
-| Format Needed              | Yes | EDM4hep, HepMC3, ROOT, … |
-| Statistics / Estimated Size| Yes | Number of events or file size |
-| Due Date                   | No  | When the data is needed |
-| Priority                   | No  | Low / Medium / High / Critical |
-| Tags                       | No  | e.g. `fcc-hh`, `fcc-ee`, `higgs`, `top`, `bsm`, `llp` |
-| Notes                      | No  | Generator settings, beam conditions, special requirements |
-
-Requester identity (name, username, email) is populated automatically from CERN SSO and is not editable.
 
 ---
 
