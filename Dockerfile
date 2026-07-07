@@ -13,5 +13,4 @@ COPY --from=builder /app/fcc-drs ./
 COPY --from=builder /app/static ./static
 COPY --from=builder /app/templates ./templates
 EXPOSE 5050
-USER 1001
 CMD ["./fcc-drs"]
