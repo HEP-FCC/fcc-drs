@@ -190,7 +190,7 @@ func (h *Handler) DeleteGeneratorCard(w http.ResponseWriter, r *http.Request) {
 	}
 	user := middleware.GetUser(r)
 	ownerCanDelete := user != nil && card.UploadedBy == user.ID && canEdit(user, req)
-	if !user.IsManager() && !ownerCanDelete {
+	if !user.IsCoordinator() && !ownerCanDelete {
 		http.Error(w, "Forbidden", http.StatusForbidden)
 		return
 	}

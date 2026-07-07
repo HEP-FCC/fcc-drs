@@ -1,0 +1,55 @@
+{{define "user_table"}}
+<div class="box p-0" style="overflow:hidden">
+  <table class="table is-fullwidth is-hoverable mb-0">
+    <thead>
+      <tr>
+        <th class="is-size-7 has-text-grey is-uppercase" style="letter-spacing:.05em">User</th>
+        <th class="is-size-7 has-text-grey is-uppercase" style="letter-spacing:.05em">Username</th>
+        <th class="is-size-7 has-text-grey is-uppercase" style="letter-spacing:.05em">Email</th>
+        <th class="is-size-7 has-text-grey is-uppercase" style="letter-spacing:.05em">Last Login</th>
+        <th class="is-size-7 has-text-grey is-uppercase" style="letter-spacing:.05em">Role</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{range .Users}}
+      <tr>
+        <td>
+          <div class="is-flex is-align-items-center" style="gap:.5rem">
+            <div class="drs-user-avatar is-small">
+              <span>{{initial .DisplayName}}</span>
+            </div>
+            <span class="is-size-7 has-text-weight-medium">{{.DisplayName}}</span>
+          </div>
+        </td>
+        <td class="is-size-7 has-text-grey">{{.Username}}</td>
+        <td class="is-size-7 has-text-grey">{{.Email}}</td>
+        <td class="is-size-7 has-text-grey">{{formatDate .LastLogin}}</td>
+        <td>
+          {{if eq .ID $.CurrentUser.ID}}
+          <span class="tag is-capitalized {{if eq .Role "admin"}}is-danger is-light{{else if eq .Role "coordinator"}}is-link is-light{{else}}is-light{{end}}">{{.Role}}</span>
+          {{else}}
+          <div class="select is-small">
+            <select
+              name="role"
+              hx-post="/admin/users/{{.ID}}/role"
+              hx-target="#user-table-area"
+              hx-swap="innerHTML"
+              hx-trigger="change"
+              hx-include="this">
+              <option value="requester" {{if eq .Role "requester"}}selected{{end}}>Requester</option>
+              <option value="coordinator"   {{if eq .Role "coordinator"}}selected{{end}}>Coordinator</option>
+              <option value="admin"     {{if eq .Role "admin"}}selected{{end}}>Admin</option>
+            </select>
+          </div>
+          {{end}}
+        </td>
+      </tr>
+      {{else}}
+      <tr>
+        <td colspan="5" class="has-text-grey has-text-centered is-size-7 py-5">No users found.</td>
+      </tr>
+      {{end}}
+    </tbody>
+  </table>
+</div>
+{{end}}

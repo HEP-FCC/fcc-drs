@@ -14,7 +14,7 @@
          data-md-inline>#{{.RelatedID}} {{.RelatedTitle}}</a>
       <span class="status-badge {{statusClass .RelatedStatus}} is-shrink-0">{{.RelatedStatusLabel}}</span>
     </div>
-    {{if or $d.CurrentUser.IsManager (and (eq $d.Request.CreatedBy $d.CurrentUser.ID) (or (eq $d.Request.Status "draft") (eq $d.Request.Status "pending")))}}
+    {{if or $d.CurrentUser.IsCoordinator (and (eq $d.Request.CreatedBy $d.CurrentUser.ID) (or (eq $d.Request.Status "draft") (eq $d.Request.Status "pending")))}}
     <button
       hx-delete="/requests/{{$d.Request.ID}}/relations/{{.ID}}"
       hx-target="#relations-area"

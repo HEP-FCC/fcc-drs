@@ -76,16 +76,20 @@ func main() {
 	mux.HandleFunc("GET /api/stats", middleware.RequireAuth(h.GetStats))
 	mux.HandleFunc("GET /api/recent", middleware.RequireAuth(h.GetRecent))
 
-	// Manager-only routes
-	mux.HandleFunc("GET /manager", middleware.RequireManager(h.ManagerView))
-	mux.HandleFunc("POST /requests/batch", middleware.RequireManager(h.BatchAction))
+	// Admin-only routes
+	mux.HandleFunc("GET /admin/users", middleware.RequireAdmin(h.AdminUsers))
+	mux.HandleFunc("POST /admin/users/{id}/role", middleware.RequireAdmin(h.AdminUpdateUserRole))
+
+	// Coordinator-only routes
+	mux.HandleFunc("GET /coordinator", middleware.RequireCoordinator(h.CoordinatorView))
+	mux.HandleFunc("POST /requests/batch", middleware.RequireCoordinator(h.BatchAction))
 	mux.HandleFunc("GET /requests/{id}/section/{section}", middleware.RequireAuth(h.ViewSection))
 	mux.HandleFunc("GET /requests/{id}/section/{section}/edit", middleware.RequireAuth(h.EditSection))
 	mux.HandleFunc("PATCH /requests/{id}", middleware.RequireAuth(h.PatchRequest))
 	mux.HandleFunc("POST /requests/{id}/status", middleware.RequireAuth(h.UpdateStatus))
-	mux.HandleFunc("POST /requests/{id}/approval", middleware.RequireManager(h.ApprovalDecision))
-	mux.HandleFunc("POST /requests/{id}/priority", middleware.RequireManager(h.UpdatePriority))
-	mux.HandleFunc("POST /requests/{id}/assign", middleware.RequireManager(h.AssignRequest))
+	mux.HandleFunc("POST /requests/{id}/approval", middleware.RequireCoordinator(h.ApprovalDecision))
+	mux.HandleFunc("POST /requests/{id}/priority", middleware.RequireCoordinator(h.UpdatePriority))
+	mux.HandleFunc("POST /requests/{id}/assign", middleware.RequireCoordinator(h.AssignRequest))
 	mux.HandleFunc("POST /requests/{id}/comments", middleware.RequireAuth(h.AddComment))
 	mux.HandleFunc("GET /requests/{id}/comments/{comment_id}", middleware.RequireAuth(h.GetComment))
 	mux.HandleFunc("GET /requests/{id}/comments/{comment_id}/edit", middleware.RequireAuth(h.EditCommentForm))

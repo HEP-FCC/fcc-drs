@@ -8,8 +8,9 @@ MARKED_VERSION := 14
 BULMA_VERSION := 1.0.4
 
 VENDOR := static/vendor
+DB     := data/requests.db
 
-.PHONY: build build-dev run assets clean
+.PHONY: build build-dev run reseed assets clean
 
 build:
 	go build -tags prod -ldflags "-X main.version=$(VERSION)" -o $(BINARY) $(CMD)
@@ -19,6 +20,16 @@ build-dev:
 
 run:
 	DEV_MODE=TRUE go run $(CMD)
+
+reseed:
+	rm -f $(DB)
+	@DEV_MODE=TRUE go run $(CMD) >/dev/null 2>&1 & \
+	  APP_PID=$$!; \
+	  until sqlite3 $(DB) "SELECT 1 FROM sqlite_master WHERE type='table' AND name='users'" 2>/dev/null | grep -q 1; \
+	  do sleep 0.1; done; \
+	  sqlite3 $(DB) < scripts/seed.sql; \
+	  kill $$APP_PID 2>/dev/null; \
+	  echo "✓ DB reseeded — run 'make run' to start."
 
 assets:
 	mkdir -p $(VENDOR)/katex/fonts $(VENDOR)/fonts

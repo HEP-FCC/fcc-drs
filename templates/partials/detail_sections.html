@@ -1,6 +1,6 @@
 {{/* ────── Title ────────────────────────────────────────────────────────── */}}
 {{define "detail_section_title"}}
-{{$canEdit := or .CurrentUser.IsManager (and (eq .Request.CreatedBy .CurrentUser.ID) (or (eq .Request.Status "draft") (eq .Request.Status "pending")))}}
+{{$canEdit := or .CurrentUser.IsCoordinator (and (eq .Request.CreatedBy .CurrentUser.ID) (or (eq .Request.Status "draft") (eq .Request.Status "pending")))}}
 <div class="is-flex is-align-items-flex-start gap-2">
   <h2 class="is-size-5 has-text-weight-semibold" data-md-inline style="line-height:1.35">{{.Request.Title}}</h2>
   {{if $canEdit}}
@@ -31,7 +31,7 @@
 
 {{/* ────── Description ──────────────────────────────────────────────────── */}}
 {{define "detail_section_description"}}
-{{$canEdit := or .CurrentUser.IsManager (and (eq .Request.CreatedBy .CurrentUser.ID) (or (eq .Request.Status "draft") (eq .Request.Status "pending")))}}
+{{$canEdit := or .CurrentUser.IsCoordinator (and (eq .Request.CreatedBy .CurrentUser.ID) (or (eq .Request.Status "draft") (eq .Request.Status "pending")))}}
 {{$isDraft := eq .Request.Status "draft"}}
 {{if .Request.Description}}
 <div class="mb-5">
@@ -98,7 +98,7 @@
 
 {{/* ────── Tags ──────────────────────────────────────────────────────────── */}}
 {{define "detail_section_tags"}}
-{{$canEdit := or .CurrentUser.IsManager (and (eq .Request.CreatedBy .CurrentUser.ID) (or (eq .Request.Status "draft") (eq .Request.Status "pending")))}}
+{{$canEdit := or .CurrentUser.IsCoordinator (and (eq .Request.CreatedBy .CurrentUser.ID) (or (eq .Request.Status "draft") (eq .Request.Status "pending")))}}
 {{if or .Request.TagList $canEdit}}
 <div class="mb-5">
   <div class="is-flex is-align-items-center gap-2 mb-1">
@@ -141,7 +141,7 @@
 
 {{/* ────── Details grid ────────────────────────────────────────────────── */}}
 {{define "detail_section_details"}}
-{{$canEdit := or .CurrentUser.IsManager (and (eq .Request.CreatedBy .CurrentUser.ID) (or (eq .Request.Status "draft") (eq .Request.Status "pending")))}}
+{{$canEdit := or .CurrentUser.IsCoordinator (and (eq .Request.CreatedBy .CurrentUser.ID) (or (eq .Request.Status "draft") (eq .Request.Status "pending")))}}
 {{$isDraft := eq .Request.Status "draft"}}
 <div class="mb-5">
   <div class="is-flex is-align-items-center gap-2 mb-2">
@@ -358,7 +358,7 @@
 
 {{/* ────── Notes ────────────────────────────────────────────────────────── */}}
 {{define "detail_section_notes"}}
-{{$canEdit := or .CurrentUser.IsManager (and (eq .Request.CreatedBy .CurrentUser.ID) (or (eq .Request.Status "draft") (eq .Request.Status "pending")))}}
+{{$canEdit := or .CurrentUser.IsCoordinator (and (eq .Request.CreatedBy .CurrentUser.ID) (or (eq .Request.Status "draft") (eq .Request.Status "pending")))}}
 {{if or .Request.Notes $canEdit}}
 <div class="mb-5">
   <div class="is-flex is-align-items-center gap-2 mb-1">

@@ -16,9 +16,9 @@ sure nothing falls through the cracks.
 - **Submit requests** for FCC datasets with HEP-specific fields (dataset stage, use case, format, tags)
 - **Track status** through the full pipeline: Draft → Pending Review → Approved → In Progress → Completed
 - **Priority levels** — Low, Medium, High, Critical — with dashboard alerts for critical requests
-- **Pipeline view** for managers: assignment, batch actions, inline status and priority overrides
-- **Activity log** per request: comments, internal manager notes, system events with timestamps
-- **Assignment** of requests to managers with dropdown selector
+- **Pipeline view** for coordinators: assignment, batch actions, inline status and priority overrides
+- **Activity log** per request: comments, internal coordinator notes, system events with timestamps
+- **Assignment** of requests to coordinators with dropdown selector
 - **Batch actions** — approve, reject, complete, or move to in-progress across multiple requests at once
 - **Filter & search** by status, priority, or free text
 - **Bento-style dashboard** with live stats (total, pending, in-progress, completed)
@@ -61,13 +61,15 @@ cd fcc-drs
 DEV_MODE=TRUE go run ./cmd/fcc-drs
 ```
 
-Open **http://localhost:5050**, enter a username, choose a role (requester or manager), and log in.
+Open **http://localhost:5050**, enter a username, choose a role (requester, coordinator, or admin), and log in.
 
 ### Build
 
 ```bash
 make build      # production build (PostgreSQL, version from git tag)
 make build-dev  # development build (SQLite, version = "dev")
+make reseed     # drop and recreate the dev DB, apply scripts/seed.sql, then exit
+make run        # start in dev mode (DEV_MODE=TRUE, SQLite)
 ```
 
 The production build injects the current git tag as the version string shown in the footer via `-ldflags`. Omitting it (or building with `go build` directly) defaults to `dev`.
@@ -107,12 +109,13 @@ Authentication uses **CERN SSO** (Keycloak / OpenID Connect). Requester identity
 | Role          | Permissions |
 |---------------|-------------|
 | **Requester** | Submit requests, view all requests, edit own requests while draft or pending, add comments |
-| **Manager**   | Everything above + change status/priority on any request, assign requests, delete requests, batch actions, internal notes |
+| **Coordinator** | Everything above + change status/priority on any request, assign requests, delete requests, batch actions, internal notes |
+| **Admin**       | Everything above + manage user roles via the admin UI |
 
 Role assignment:
-- CERN usernames listed in `MANAGER_USERNAMES` receive the **manager** role on first login
-- All other authenticated users receive the **requester** role
-- Roles are stored in the local database and persist across logins
+- Roles are stored in the database and managed via the admin UI at `/admin/users`
+- CERN usernames listed in `ADMIN_USERNAMES` receive the **admin** role on first login (bootstrap only)
+- All other authenticated users receive the **requester** role by default
 
 ---
 
@@ -149,11 +152,11 @@ stringData:
   oidc-redirect-url: "https://fcc-drs.web.cern.ch/auth/callback"
 ```
 
-Edit `openshift/configmap.yaml` with the CERN usernames that should have the manager role:
+Edit `openshift/configmap.yaml` with the CERN usernames that should bootstrap as admins on first login:
 
 ```yaml
 data:
-  manager-usernames: "jsmith,adoe"
+  admin-usernames: "jsmith,adoe"
 ```
 
 Edit `openshift/route.yaml` and replace `REPLACE_WITH_HOSTNAME` with your actual hostname (e.g. `fcc-drs.web.cern.ch`).
@@ -186,7 +189,7 @@ The database schema is created automatically on first startup. No manual migrati
 | `OIDC_CLIENT_ID`    | Yes (prod) | CERN Application Portal client ID |
 | `OIDC_CLIENT_SECRET`| Yes (prod) | CERN Application Portal client secret |
 | `OIDC_REDIRECT_URL` | Yes (prod) | Must be `https://<hostname>/auth/callback` |
-| `MANAGER_USERNAMES` | No  | Comma-separated CERN usernames granted manager role |
+| `ADMIN_USERNAMES`   | No  | Comma-separated CERN usernames granted admin role on first login |
 | `PORT`              | No  | HTTP listen port (default `5050`) |
 | `DEV_MODE`          | No  | Set to `TRUE` to bypass CERN SSO (local dev only) |
 | `SQLITE_PATH`       | No  | Override SQLite file path (dev only, default `./data/requests.db`) |
@@ -204,8 +207,8 @@ The database schema is created automatically on first startup. No manual migrati
 |----------------------------|----------|-------------|
 | Title                      | Yes | Short description; supports Markdown + LaTeX math |
 | Description                | No  | Physics process, energy range, detector concept, selection criteria |
-| Use Case                   | No  | Physics Analysis, Reconstruction Development, Detector Simulation, ML Training/Evaluation, Benchmarking, Calibration |
-| Dataset Stage              | No  | Generation, Simulation, Reconstruction, Other |
+| Use Case                   | No  | Physics Analysis, Reconstruction Development, Detector Simulation, ML Training, ML Evaluation, Benchmarking, Calibration, Other |
+| Dataset Stage              | No  | Generation, Simulation, Delphes, Reconstruction, Other |
 | Working Group / Team       | No  | e.g. Tracker WG, Calorimetry WG |
 | Format Needed              | Yes | EDM4hep, HepMC3, ROOT, … |
 | Statistics / Estimated Size| Yes | Number of events or file size |
@@ -215,8 +218,6 @@ The database schema is created automatically on first startup. No manual migrati
 | Notes                      | No  | Generator settings, beam conditions, special requirements |
 
 Requester identity (name, username, email) is populated automatically from CERN SSO and is not editable.
-
----
 
 ---
 

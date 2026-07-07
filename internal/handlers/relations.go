@@ -24,7 +24,7 @@ func (h *Handler) AddRelation(w http.ResponseWriter, r *http.Request) {
 
 	cu := middleware.GetUser(r)
 
-	if !cu.IsManager() {
+	if !cu.IsCoordinator() {
 		canEdit := req.CreatedBy == cu.ID && (req.Status == "draft" || req.Status == "pending")
 		if !canEdit {
 			http.Error(w, "Forbidden", 403)
@@ -75,7 +75,7 @@ func (h *Handler) RemoveRelation(w http.ResponseWriter, r *http.Request) {
 
 	cu := middleware.GetUser(r)
 
-	if !cu.IsManager() {
+	if !cu.IsCoordinator() {
 		canEdit := req.CreatedBy == cu.ID && (req.Status == "draft" || req.Status == "pending")
 		if !canEdit {
 			http.Error(w, "Forbidden", 403)

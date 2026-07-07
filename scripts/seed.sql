@@ -8,8 +8,8 @@ INSERT OR IGNORE INTO users (username, display_name, email, role) VALUES
   ('hmueller',   'Hans Mueller',     'hmueller@cern.ch',   'requester'),
   ('sfernandez', 'Sofia Fernandez',  'sfernandez@cern.ch', 'requester'),
   ('tdupont',    'Thomas Dupont',    'tdupont@cern.ch',    'requester'),
-  ('epatel',     'Elena Patel',      'epatel@cern.ch',     'manager'),
-  ('rkim',       'Robert Kim',       'rkim@cern.ch',       'manager');
+  ('epatel',     'Elena Patel',      'epatel@cern.ch',     'coordinator'),
+  ('rkim',       'Robert Kim',       'rkim@cern.ch',       'coordinator');
 
 INSERT INTO dataset_requests
   (title, description, requester_name, requester_username, requester_email,
@@ -165,14 +165,14 @@ VALUES
  '2026-01-05 10:00:00', '2026-02-14 11:00:00'),
 
 -- 13
-('Muon collider: $\mu^+\mu^- \to H$ at 125 GeV',
- 'Signal-only Higgs production at a muon collider for sensitivity studies in the FCC feasibility study appendix.',
+('Single-top associated production at FCC-ee 365 GeV',
+ 'Simulation of $e^+e^- \to tW^-\bar{b} + \text{c.c.}$ near the top threshold for anomalous $Wtb$ coupling studies. Complementary to the inclusive $t\bar{t}$ sample.',
  'Anna Kowalski', 'akowalski', 'akowalski@cern.ch',
- 'Higgs physics', 'generation', 'physics_analysis', 'pending', 'low',
- '~500 GB', '10M events', '', '',
- 'HepMC3', '2027-01-01',
- 'Whizard. No detector simulation needed — parton-level only.',
- 'fcc,muon-collider,higgs',
+ 'Top-quark physics', 'simulation', 'physics_analysis', 'draft', 'low',
+ '~300 GB', '2M events', '', '',
+ 'EDM4hep', '2026-12-01',
+ 'Whizard with ISR. Both semileptonic and hadronic W decay modes needed.',
+ 'fcc-ee,top,single-top,wtb',
  '', '',
  '2026-04-02 09:00:00', '2026-04-02 09:00:00'),
 

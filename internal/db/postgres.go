@@ -121,6 +121,7 @@ func migrate(db *DB) error {
 		`CREATE TRIGGER update_timestamp
 			BEFORE UPDATE ON dataset_requests
 			FOR EACH ROW EXECUTE FUNCTION update_updated_at()`,
+		`UPDATE users SET role = 'coordinator' WHERE role = 'manager'`,
 	}
 
 	for _, stmt := range stmts {

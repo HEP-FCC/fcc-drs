@@ -1,0 +1,13 @@
+{{define "content"}}
+
+  <!-- Header -->
+  <div class="mb-5">
+    <h1 class="is-size-4 has-text-weight-semibold">User Management</h1>
+    <p class="is-size-7 has-text-grey mt-1">Manage user roles across the system</p>
+  </div>
+
+  <div id="user-table-area">
+    {{template "user_table" .}}
+  </div>
+
+{{end}}

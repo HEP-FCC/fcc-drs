@@ -6,7 +6,7 @@
   <div class="is-flex is-align-items-flex-start is-justify-content-space-between mb-5">
     <div class="is-grow-1 min-w-0 mr-4">
       <div class="is-flex is-align-items-center gap-2 mb-3">
-        {{if $d.CurrentUser.IsManager}}
+        {{if $d.CurrentUser.IsCoordinator}}
         <select name="status"
                 hx-post="/requests/{{.ID}}/status"
                 hx-target="closest [data-request-detail-root]"
@@ -28,7 +28,7 @@
         {{else}}
         <span class="status-badge {{statusClass .Status}}">{{.StatusLabel}}</span>
         {{end}}
-        {{if $d.CurrentUser.IsManager}}
+        {{if $d.CurrentUser.IsCoordinator}}
         <select name="priority"
                 hx-post="/requests/{{.ID}}/priority"
                 hx-target="closest [data-request-detail-root]"
@@ -64,7 +64,7 @@
   <div id="ds-tags">{{template "detail_section_tags" $d}}</div>
 
   <!-- Approval tracks -->
-  {{if and (ne .Status "draft") (or $d.CurrentUser.IsManager (ne .PhysicsApproval "") (ne .ResourcesApproval ""))}}
+  {{if and (ne .Status "draft") (or $d.CurrentUser.IsCoordinator (ne .PhysicsApproval "") (ne .ResourcesApproval ""))}}
   <div class="mb-5">
     <span class="detail-label block mb-2">Approvals</span>
 
@@ -80,7 +80,7 @@
         <span class="tag is-warning is-light is-rounded">Pending</span>
         {{end}}
       </div>
-      {{if $d.CurrentUser.IsManager}}
+      {{if $d.CurrentUser.IsCoordinator}}
       <div class="is-flex is-align-items-center gap-2">
         {{if eq .PhysicsApproval ""}}
         <button hx-post="/requests/{{.ID}}/approval" hx-vals='{"track":"physics","decision":"approved"}' hx-target="closest [data-request-detail-root]" hx-swap="innerHTML"
@@ -112,7 +112,7 @@
         <span class="tag is-warning is-light is-rounded">Pending</span>
         {{end}}
       </div>
-      {{if $d.CurrentUser.IsManager}}
+      {{if $d.CurrentUser.IsCoordinator}}
       <div class="is-flex is-align-items-center gap-2">
         {{if eq .ResourcesApproval ""}}
         <button hx-post="/requests/{{.ID}}/approval" hx-vals='{"track":"resources","decision":"approved"}' hx-target="closest [data-request-detail-root]" hx-swap="innerHTML"
@@ -148,7 +148,7 @@
   <div class="mb-5">
     <span class="detail-label block mb-2">Related Requests</span>
     <div id="relations-area" class="mb-2">{{template "relations" $d}}</div>
-    {{if or $d.CurrentUser.IsManager (and (eq .CreatedBy $d.CurrentUser.ID) (or (eq .Status "draft") (eq .Status "pending")))}}
+    {{if or $d.CurrentUser.IsCoordinator (and (eq .CreatedBy $d.CurrentUser.ID) (or (eq .Status "draft") (eq .Status "pending")))}}
     <form hx-post="/requests/{{.ID}}/relations"
           hx-target="#relations-area"
           hx-swap="innerHTML"
@@ -187,7 +187,7 @@
   <!-- Actions -->
   <div class="is-flex is-align-items-center is-justify-content-space-between pt-4">
     <div class="is-flex is-align-items-center gap-2">
-      {{if or $d.CurrentUser.IsManager (and (eq .CreatedBy $d.CurrentUser.ID) (eq .Status "draft"))}}
+      {{if or $d.CurrentUser.IsCoordinator (and (eq .CreatedBy $d.CurrentUser.ID) (eq .Status "draft"))}}
       <button
         hx-delete="/requests/{{.ID}}"
         hx-trigger="action-confirmed"

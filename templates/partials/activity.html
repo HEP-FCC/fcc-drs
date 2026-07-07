@@ -5,9 +5,9 @@
 
   <div class="mb-3">
     {{range .Updates}}
-    {{if or (not .IsInternal) $cu.IsManager}}
+    {{if or (not .IsInternal) $cu.IsCoordinator}}
     {{if .IsComment}}
-    {{$canEditComment := or $cu.IsManager (eq .UserID $cu.ID)}}
+    {{$canEditComment := or $cu.IsCoordinator (eq .UserID $cu.ID)}}
     <div id="comment-{{.ID}}" class="{{if .IsInternal}}event-internal{{else}}event-comment{{end}} mb-2 p-3" style="border-radius:.75rem">
       <div class="is-flex is-align-items-center is-justify-content-space-between mb-2">
         <div class="is-flex is-align-items-center gap-2">
@@ -64,10 +64,10 @@
               placeholder="Add a comment…"
               class="form-input mb-2" style="resize:none"></textarea>
     <div class="is-flex is-align-items-center is-justify-content-space-between gap-3">
-      {{if $cu.IsManager}}
+      {{if $cu.IsCoordinator}}
       <label class="is-flex is-align-items-center gap-2 is-size-7 has-text-grey" style="cursor:pointer">
         <input type="checkbox" name="internal" value="1" class="batch-cb">
-        Internal note (managers only)
+        Internal note (coordinators only)
       </label>
       {{else}}
       <div></div>
@@ -81,7 +81,7 @@
 {{define "comment_view"}}
 {{$cu := .CurrentUser}}
 {{$c := .Comment}}
-{{$canEdit := or $cu.IsManager (eq $c.UserID $cu.ID)}}
+{{$canEdit := or $cu.IsCoordinator (eq $c.UserID $cu.ID)}}
 <div id="comment-{{$c.ID}}" class="{{if $c.IsInternal}}event-internal{{else}}event-comment{{end}} mb-2 p-3" style="border-radius:.75rem">
   <div class="is-flex is-align-items-center is-justify-content-space-between mb-2">
     <div class="is-flex is-align-items-center gap-2">

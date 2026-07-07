@@ -46,11 +46,22 @@ func RequireAuth(next http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
-// RequireManager wraps a HandlerFunc and returns 403 for non-managers.
-func RequireManager(next http.HandlerFunc) http.HandlerFunc {
+// RequireCoordinator wraps a HandlerFunc and returns 403 for non-coordinators.
+func RequireCoordinator(next http.HandlerFunc) http.HandlerFunc {
 	return RequireAuth(func(w http.ResponseWriter, r *http.Request) {
-		if !GetUser(r).IsManager() {
-			http.Error(w, "Forbidden — manager access required", http.StatusForbidden)
+		if !GetUser(r).IsCoordinator() {
+			http.Error(w, "Forbidden — coordinator access required", http.StatusForbidden)
+			return
+		}
+		next(w, r)
+	})
+}
+
+// RequireAdmin wraps a HandlerFunc and returns 403 for non-admins.
+func RequireAdmin(next http.HandlerFunc) http.HandlerFunc {
+	return RequireAuth(func(w http.ResponseWriter, r *http.Request) {
+		if !GetUser(r).IsAdmin() {
+			http.Error(w, "Forbidden — admin access required", http.StatusForbidden)
 			return
 		}
 		next(w, r)

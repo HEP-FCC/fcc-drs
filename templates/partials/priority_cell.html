@@ -1,6 +1,6 @@
 {{define "priority_cell"}}
 {{with .Request}}
-{{if $.CurrentUser.IsManager}}
+{{if $.CurrentUser.IsCoordinator}}
 <select name="priority"
         hx-post="/requests/{{.ID}}/priority"
         hx-target="#priority-cell-{{.ID}}"

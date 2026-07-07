@@ -10,7 +10,8 @@ type Role string
 
 const (
 	RoleRequester Role = "requester"
-	RoleManager   Role = "manager"
+	RoleCoordinator Role = "coordinator"
+	RoleAdmin     Role = "admin"
 )
 
 type User struct {
@@ -23,11 +24,19 @@ type User struct {
 	LastLogin   time.Time
 }
 
-func (u *User) IsManager() bool {
+func (u *User) IsAdmin() bool {
 	if u == nil {
 		return false
 	}
-	return u.Role == RoleManager
+	return u.Role == RoleAdmin
+}
+
+// IsCoordinator returns true for both coordinators and admins (admins have all coordinator privileges).
+func (u *User) IsCoordinator() bool {
+	if u == nil {
+		return false
+	}
+	return u.Role == RoleCoordinator || u.Role == RoleAdmin
 }
 
 func (u *User) IsRequester() bool {
@@ -109,23 +118,47 @@ func (r *UserStore) DeleteSession(token string) error {
 	return err
 }
 
-func (r *UserStore) GetManagers() ([]*User, error) {
+func (r *UserStore) GetCoordinators() ([]*User, error) {
 	rows, err := r.db.Query(`
 		SELECT id, username, display_name, email, role, created_at, last_login
-		FROM users WHERE role = 'manager' ORDER BY display_name`)
+		FROM users WHERE role IN ('coordinator', 'admin') ORDER BY display_name`)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var managers []*User
+	var coordinators []*User
 	for rows.Next() {
 		u, err := scanUser(rows)
 		if err != nil {
 			return nil, err
 		}
-		managers = append(managers, u)
+		coordinators = append(coordinators, u)
 	}
-	return managers, rows.Err()
+	return coordinators, rows.Err()
+}
+
+func (r *UserStore) GetAll() ([]*User, error) {
+	rows, err := r.db.Query(`
+		SELECT id, username, display_name, email, role, created_at, last_login
+		FROM users ORDER BY display_name`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var users []*User
+	for rows.Next() {
+		u, err := scanUser(rows)
+		if err != nil {
+			return nil, err
+		}
+		users = append(users, u)
+	}
+	return users, rows.Err()
+}
+
+func (r *UserStore) UpdateRole(userID int, role Role) error {
+	_, err := r.db.Exec(r.rebind(`UPDATE users SET role = ? WHERE id = ?`), role, userID)
+	return err
 }
 
 func (r *UserStore) PurgeExpiredSessions() error {

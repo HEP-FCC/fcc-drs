@@ -35,6 +35,7 @@ func Init() (*DB, error) {
 
 func migrate(db *DB) error {
 	// Additive migrations — errors swallowed (column/table already exists).
+	db.Exec(`UPDATE users SET role = 'coordinator' WHERE role = 'manager'`)
 	db.Exec(`ALTER TABLE dataset_requests ADD COLUMN created_by INTEGER REFERENCES users(id)`)
 	db.Exec(`ALTER TABLE dataset_requests ADD COLUMN requester_username TEXT NOT NULL DEFAULT ''`)
 	db.Exec(`ALTER TABLE dataset_requests ADD COLUMN assigned_to INTEGER REFERENCES users(id)`)

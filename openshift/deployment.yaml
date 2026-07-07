@@ -42,11 +42,11 @@ spec:
                 secretKeyRef:
                   name: fcc-drs-secrets
                   key: oidc-redirect-url
-            - name: MANAGER_USERNAMES
+            - name: ADMIN_USERNAMES
               valueFrom:
                 configMapKeyRef:
                   name: fcc-drs-config
-                  key: manager-usernames
+                  key: admin-usernames
           readinessProbe:
             httpGet:
               path: /login

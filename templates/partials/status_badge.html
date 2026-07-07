@@ -1,6 +1,6 @@
 {{define "status_badge"}}
 {{with .Request}}
-{{if $.CurrentUser.IsManager}}
+{{if $.CurrentUser.IsCoordinator}}
 <select
   name="status"
   hx-post="/requests/{{.ID}}/status"

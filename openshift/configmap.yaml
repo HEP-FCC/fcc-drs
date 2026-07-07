@@ -3,5 +3,6 @@ kind: ConfigMap
 metadata:
   name: fcc-drs-config
 data:
-  # Comma-separated CERN usernames that receive the manager role on first login.
-  manager-usernames: ""
+  # Comma-separated CERN usernames that receive the admin role on first login (bootstrap only).
+  # After first login, manage roles via the admin UI at /admin/users.
+  admin-usernames: ""

@@ -1,7 +1,7 @@
 {{define "assignment"}}
 <div id="assignment-area">
   <span class="detail-label is-uppercase block mb-1" style="font-size:.65rem;letter-spacing:.05em">Assigned To</span>
-  {{if .CurrentUser.IsManager}}
+  {{if .CurrentUser.IsCoordinator}}
   <select name="assigned_to"
           hx-post="/requests/{{.Request.ID}}/assign"
           hx-target="#assignment-area"
@@ -9,7 +9,7 @@
           hx-trigger="change"
           class="assign-select">
     <option value="0" {{if eq .Request.AssignedTo 0}}selected{{end}}>— Unassigned —</option>
-    {{range .Managers}}
+    {{range .Coordinators}}
     <option value="{{.ID}}" {{if eq .ID $.Request.AssignedTo}}selected{{end}}>{{.DisplayName}}</option>
     {{end}}
   </select>

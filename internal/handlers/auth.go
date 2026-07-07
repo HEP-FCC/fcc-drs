@@ -19,10 +19,11 @@ const stateCookie = "oidc_state"
 const sessionTTL = 24 * time.Hour
 const stateTTL = 10 * time.Minute
 
-// managerUsernames returns the set of CERN usernames with manager role,
-// read from the MANAGER_USERNAMES env var (comma-separated).
-func managerUsernames() map[string]bool {
-	raw := os.Getenv("MANAGER_USERNAMES")
+// adminUsernames returns the set of CERN usernames seeded as admins on first login,
+// read from the ADMIN_USERNAMES env var (comma-separated). This is a bootstrap
+// fallback only — roles are managed via the admin UI once users exist in the database.
+func adminUsernames() map[string]bool {
+	raw := os.Getenv("ADMIN_USERNAMES")
 	m := map[string]bool{}
 	for _, u := range strings.Split(raw, ",") {
 		if u = strings.TrimSpace(u); u != "" {
@@ -57,7 +58,7 @@ func (h *Handler) DevLogin(w http.ResponseWriter, r *http.Request) {
 		username = "devuser"
 	}
 	role := models.Role(r.FormValue("role"))
-	if role != models.RoleManager && role != models.RoleRequester {
+	if role != models.RoleAdmin && role != models.RoleCoordinator && role != models.RoleRequester {
 		role = models.RoleRequester
 	}
 
@@ -159,10 +160,11 @@ func (h *Handler) Callback(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Determine role
+	// Determine role for first-time users only; existing users keep their DB role.
+	// ADMIN_USERNAMES is a bootstrap fallback — use the admin UI to manage roles.
 	role := models.RoleRequester
-	if managerUsernames()[claims.PreferredUsername] {
-		role = models.RoleManager
+	if adminUsernames()[claims.PreferredUsername] {
+		role = models.RoleAdmin
 	}
 
 	// Upsert user (role only set on first creation; subsequent logins keep existing role)

@@ -10,7 +10,7 @@ import (
 	"dataset-tracker/internal/models"
 )
 
-func (h *Handler) ManagerView(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) CoordinatorView(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/requests", http.StatusMovedPermanently)
 }
 
@@ -38,7 +38,7 @@ func (h *Handler) AddComment(w http.ResponseWriter, r *http.Request) {
 	}
 
 	evType := models.UpdateComment
-	if user.IsManager() && r.FormValue("internal") == "1" {
+	if user.IsCoordinator() && r.FormValue("internal") == "1" {
 		evType = models.UpdateInternalNote
 	}
 
@@ -80,7 +80,7 @@ func (h *Handler) EditCommentForm(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	user := middleware.GetUser(r)
-	if user == nil || (!user.IsManager() && comment.UserID != user.ID) {
+	if user == nil || (!user.IsCoordinator() && comment.UserID != user.ID) {
 		http.Error(w, "Forbidden", 403)
 		return
 	}
@@ -99,7 +99,7 @@ func (h *Handler) PatchComment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	user := middleware.GetUser(r)
-	if user == nil || (!user.IsManager() && comment.UserID != user.ID) {
+	if user == nil || (!user.IsCoordinator() && comment.UserID != user.ID) {
 		http.Error(w, "Forbidden", 403)
 		return
 	}
@@ -138,7 +138,7 @@ func (h *Handler) DeleteComment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	user := middleware.GetUser(r)
-	if user == nil || (!user.IsManager() && comment.UserID != user.ID) {
+	if user == nil || (!user.IsCoordinator() && comment.UserID != user.ID) {
 		http.Error(w, "Forbidden", 403)
 		return
 	}
@@ -194,8 +194,8 @@ func (h *Handler) AssignRequest(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Internal Server Error", 500)
 		return
 	}
-	managers, _ := h.users.GetManagers()
-	h.renderPartial(w, r, "assignment", PageData{Request: req, Managers: managers})
+	coordinators, _ := h.users.GetCoordinators()
+	h.renderPartial(w, r, "assignment", PageData{Request: req, Coordinators: coordinators})
 }
 
 func (h *Handler) UpdatePriority(w http.ResponseWriter, r *http.Request) {
@@ -242,13 +242,13 @@ func (h *Handler) UpdatePriority(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	updates, _ := h.updates.GetByRequestID(id)
-	managers, _ := h.users.GetManagers()
+	coordinators, _ := h.users.GetCoordinators()
 	relations, _ := h.relations.GetByRequestID(id)
 	cards, _ := h.generatorCards.GetByRequestID(id)
 	h.renderPartial(w, r, "request_detail", PageData{
 		Request:        req,
 		Updates:        updates,
-		Managers:       managers,
+		Coordinators:   coordinators,
 		Relations:      relations,
 		GeneratorCards: cards,
 	})

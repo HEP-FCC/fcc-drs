@@ -8,7 +8,7 @@
     <div class="px-4 py-4 has-divider-bottom" id="row-{{.ID}}">
 
       <div class="is-flex is-align-items-center gap-2 mb-2">
-        {{if $.CurrentUser.IsManager}}
+        {{if $.CurrentUser.IsCoordinator}}
         <input type="checkbox" name="ids" value="{{.ID}}" class="batch-cb mr-1">
         {{end}}
         <span class="status-badge {{statusClass .Status}}">{{.StatusLabel}}</span>
@@ -69,7 +69,7 @@
           </div>
           {{end}}
         </div>
-        {{if $.CurrentUser.IsManager}}
+        {{if $.CurrentUser.IsCoordinator}}
         <button
           hx-delete="/requests/{{.ID}}"
           hx-confirm="Delete this request? This cannot be undone."
@@ -91,7 +91,7 @@
   <table class="table is-fullwidth is-hidden-mobile" style="font-size:.875rem">
     <thead>
       <tr style="border-bottom:1px solid #f5f5f4">
-        {{if .CurrentUser.IsManager}}
+        {{if .CurrentUser.IsCoordinator}}
         <th style="width:2rem;padding:.875rem 1rem"></th>
         {{end}}
         <th style="padding:.875rem 1.25rem">
@@ -135,7 +135,7 @@
             Priority {{sortIcon "priority" .Filter.Sort .Filter.SortDir}}
           </button>
         </th>
-        {{if .CurrentUser.IsManager}}
+        {{if .CurrentUser.IsCoordinator}}
         <th class="has-text-weight-medium has-text-grey is-uppercase is-hidden-desktop-only" style="font-size:.75rem;letter-spacing:.05em;padding:.875rem 1.25rem">Assigned</th>
         {{end}}
         <th style="padding:.875rem 1.25rem" class="is-hidden-desktop-only">
@@ -154,7 +154,7 @@
     <tbody>
       {{range .Requests}}
       <tr id="row-{{.ID}}-desktop" style="border-bottom:1px solid #fafaf9">
-        {{if $.CurrentUser.IsManager}}
+        {{if $.CurrentUser.IsCoordinator}}
         <td style="padding:1rem">
           <input type="checkbox" name="ids" value="{{.ID}}" class="batch-cb">
         </td>
@@ -188,7 +188,7 @@
           <span class="is-size-7 has-text-grey is-capitalized">{{.DatasetType}}</span>
         </td>
         <td style="padding:1rem 1.25rem" id="status-cell-{{.ID}}">
-          {{if $.CurrentUser.IsManager}}
+          {{if $.CurrentUser.IsCoordinator}}
           <select name="status"
             hx-post="/requests/{{.ID}}/status"
             hx-target="#status-cell-{{.ID}}"
@@ -233,7 +233,7 @@
           {{end}}
         </td>
         <td style="padding:1rem 1.25rem" id="priority-cell-{{.ID}}" class="is-hidden-touch">
-          {{if $.CurrentUser.IsManager}}
+          {{if $.CurrentUser.IsCoordinator}}
           <select name="priority"
             hx-post="/requests/{{.ID}}/priority"
             hx-target="#priority-cell-{{.ID}}"
@@ -253,7 +253,7 @@
           </span>
           {{end}}
         </td>
-        {{if $.CurrentUser.IsManager}}
+        {{if $.CurrentUser.IsCoordinator}}
         <td style="padding:1rem 1.25rem" class="is-hidden-desktop-only">
           {{if .AssignedToName}}
           <span class="is-size-7 has-text-grey-dark">{{.AssignedToName}}</span>
@@ -266,7 +266,7 @@
           {{formatDateTime .UpdatedAt}}
         </td>
         <td style="padding:1rem 1.25rem">
-          {{if $.CurrentUser.IsManager}}
+          {{if $.CurrentUser.IsCoordinator}}
           <button
             hx-delete="/requests/{{.ID}}"
             hx-confirm="Delete this request? This cannot be undone."
