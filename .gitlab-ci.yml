@@ -1,6 +1,7 @@
 stages:
   - build
   - deploy
+  - maintenance
 
 variables:
   OC_SERVER: https://api.paas.okd.cern.ch
@@ -59,3 +60,42 @@ deploy-prod:
   rules:
     - if: $CI_COMMIT_TAG =~ /^v\d/
   when: manual
+
+# ── Maintenance ────────────────────────────────────────────────────────────────
+
+# Runs on a monthly schedule (configure in GitLab: Settings → CI/CD → Schedules).
+# Fails with a notification email if either OC token expires within 30 days.
+check-tokens:
+  stage: maintenance
+  image: python:3-alpine
+  script:
+    - |
+      python3 - <<'EOF'
+      import sys, base64, json, time, os
+
+      WARN_DAYS = 30
+
+      def check(name):
+          token = os.environ.get(name, '')
+          if not token:
+              print(f"ERROR: {name} is not set")
+              return False
+          payload = token.split('.')[1]
+          payload += '=' * (4 - len(payload) % 4)
+          data = json.loads(base64.urlsafe_b64decode(payload))
+          days_left = (data['exp'] - time.time()) / 86400
+          print(f"{name}: expires in {int(days_left)} days")
+          if days_left < WARN_DAYS:
+              print(f"ERROR: {name} expires in {int(days_left)} days — renew it:")
+              print(f"  oc create token gitlab-ci -n fcc-drs-test --duration=8760h  # staging")
+              print(f"  oc create token gitlab-ci -n fcc-drs      --duration=8760h  # prod")
+              print(f"Then update OC_TOKEN_STAGING / OC_TOKEN_PROD in:")
+              print(f"  GitLab → Settings → CI/CD → Variables")
+              return False
+          return True
+
+      ok = check('OC_TOKEN_STAGING') & check('OC_TOKEN_PROD')
+      sys.exit(0 if ok else 1)
+      EOF
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
