@@ -40,8 +40,9 @@ deploy-staging:
   variables:
     OC_TOKEN: $OC_TOKEN_STAGING
   script:
-    - oc apply -k openshift/overlays/staging
-    - oc set image deployment/fcc-drs fcc-drs=$CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA -n fcc-drs-test
+    - cd openshift/overlays/staging
+    - kustomize edit set image fcc-drs=$CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
+    - oc apply -k .
     - oc rollout status deployment/fcc-drs -n fcc-drs-test --timeout=120s
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
@@ -52,8 +53,9 @@ deploy-prod:
   variables:
     OC_TOKEN: $OC_TOKEN_PROD
   script:
-    - oc apply -k openshift/overlays/prod
-    - oc set image deployment/fcc-drs fcc-drs=$CI_REGISTRY_IMAGE:$CI_COMMIT_TAG -n fcc-drs
+    - cd openshift/overlays/prod
+    - kustomize edit set image fcc-drs=$CI_REGISTRY_IMAGE:$CI_COMMIT_TAG
+    - oc apply -k .
     - oc rollout status deployment/fcc-drs -n fcc-drs --timeout=120s
   rules:
     - if: $CI_COMMIT_TAG =~ /^v\d/

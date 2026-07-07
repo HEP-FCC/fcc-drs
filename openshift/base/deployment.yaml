@@ -18,6 +18,7 @@ spec:
         - name: fcc-drs
           # Image name is overridden by each overlay via the `images` field.
           image: fcc-drs
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 5050
           env:
