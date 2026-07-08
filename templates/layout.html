@@ -205,7 +205,7 @@
                     class="form-input" style="resize:vertical;width:100%"></textarea>
         </form>
       </section>
-      <footer class="modal-card-foot is-justify-content-flex-end" id="modal-footer" style="gap:0.5rem;display:none">
+      <footer class="modal-card-foot is-justify-content-flex-end" id="modal-footer" style="display:none">
         <button class="button" onclick="closeModal()">Cancel</button>
         <button type="submit" form="modal-edit-form" class="button is-link">Save</button>
       </footer>
@@ -216,6 +216,10 @@
   <div class="modal" id="alert-overlay">
     <div class="modal-background" onclick="closeAlert()"></div>
     <div class="modal-card">
+      <header class="modal-card-head">
+        <p class="modal-card-title is-size-6">Alert</p>
+        <button class="delete" aria-label="close" onclick="closeAlert()"></button>
+      </header>
       <section class="modal-card-body">
         <p id="alert-message" class="is-size-6"></p>
       </section>
@@ -229,10 +233,14 @@
   <div class="modal" id="confirm-overlay">
     <div class="modal-background" onclick="closeConfirm()"></div>
     <div class="modal-card">
+      <header class="modal-card-head">
+        <p class="modal-card-title is-size-6">Confirm</p>
+        <button class="delete" aria-label="close" onclick="closeConfirm()"></button>
+      </header>
       <section class="modal-card-body">
         <p id="confirm-message" class="is-size-6"></p>
       </section>
-      <footer class="modal-card-foot is-justify-content-flex-end" style="gap:0.5rem">
+      <footer class="modal-card-foot is-justify-content-flex-end">
         <button class="button" onclick="closeConfirm()">Cancel</button>
         <button class="button is-link" id="confirm-ok">Confirm</button>
       </footer>

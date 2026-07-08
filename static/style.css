@@ -722,6 +722,11 @@ select.form-input { cursor: pointer; }
 /* Table row borders inside the request list box */
 [data-theme=dark] .request-list-box tr { border-bottom: 1px solid #3d3830 !important; }
 
+/* ── Modal ───────────────────────────────────────────────────────────────── */
+.modal-card-head,
+.modal-card-foot { padding: .75rem 1.25rem; }
+.modal-card-foot { gap: .5rem; }
+
 /* ── Misc helpers ────────────────────────────────────────────────────────── */
 .is-capitalized { text-transform: capitalize; }
 .is-truncated   { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
