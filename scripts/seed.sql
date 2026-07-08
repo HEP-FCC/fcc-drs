@@ -13,7 +13,7 @@ INSERT OR IGNORE INTO users (username, display_name, email, role) VALUES
 
 INSERT INTO dataset_requests
   (title, description, requester_name, requester_username, requester_email,
-   department, dataset_type, use_case, status, priority,
+   working_group, dataset_type, use_case, status, priority,
    estimated_size, statistics, target_campaign, key4hep_stack,
    format, due_date, notes, tags,
    physics_approval, resources_approval,

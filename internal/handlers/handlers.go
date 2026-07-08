@@ -466,7 +466,7 @@ func (h *Handler) CreateRequest(w http.ResponseWriter, r *http.Request) {
 		RequesterName:     func() string { if user != nil { return user.DisplayName }; return "" }(),
 		RequesterUsername: func() string { if user != nil { return user.Username }; return "" }(),
 		RequesterEmail:    func() string { if user != nil { return user.Email }; return "" }(),
-		Department:        strings.TrimSpace(r.FormValue("department")),
+		WorkingGroup:        strings.TrimSpace(r.FormValue("working_group")),
 		DatasetType:       r.FormValue("dataset_type"),
 		UseCase:           r.FormValue("use_case"),
 		Status:            status,
@@ -486,8 +486,8 @@ func (h *Handler) CreateRequest(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "title is required", 400)
 		return
 	}
-	if req.Status != models.StatusDraft && (req.Description == "" || req.Department == "" || req.UseCase == "" || req.DatasetType == "" || req.Format == "" || req.Statistics == "") {
-		http.Error(w, "description, group/team, use case, processing stage, format, and event count are required", 400)
+	if req.Status != models.StatusDraft && (req.Description == "" || req.WorkingGroup == "" || req.UseCase == "" || req.DatasetType == "" || req.Format == "" || req.Statistics == "" || req.EstimatedSize == "") {
+		http.Error(w, "description, group/team, use case, processing stage, format, event count, and estimated size are required", 400)
 		return
 	}
 
@@ -650,7 +650,7 @@ func (h *Handler) PatchRequest(w http.ResponseWriter, r *http.Request) {
 	case "notes":
 		existing.Notes = strings.TrimSpace(r.FormValue("notes"))
 	case "details":
-		existing.Department = strings.TrimSpace(r.FormValue("department"))
+		existing.WorkingGroup = strings.TrimSpace(r.FormValue("working_group"))
 		existing.UseCase = r.FormValue("use_case")
 		existing.DatasetType = r.FormValue("dataset_type")
 		existing.Format = strings.TrimSpace(r.FormValue("format"))
@@ -716,7 +716,7 @@ func (h *Handler) UpdateRequest(w http.ResponseWriter, r *http.Request) {
 		RequesterName:     existing.RequesterName,
 		RequesterUsername: existing.RequesterUsername,
 		RequesterEmail:    existing.RequesterEmail,
-		Department:        strings.TrimSpace(r.FormValue("department")),
+		WorkingGroup:        strings.TrimSpace(r.FormValue("working_group")),
 		DatasetType:       r.FormValue("dataset_type"),
 		UseCase:           r.FormValue("use_case"),
 		Status:            existing.Status,
@@ -780,8 +780,8 @@ func (h *Handler) UpdateStatus(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		if status == models.StatusPending && existing.Status == models.StatusDraft {
-			if existing.Description == "" || existing.Department == "" || existing.UseCase == "" || existing.DatasetType == "" || existing.Format == "" || existing.Statistics == "" {
-				http.Error(w, "description, group/team, use case, processing stage, format, and event count are required before submitting", 400)
+			if existing.Description == "" || existing.WorkingGroup == "" || existing.UseCase == "" || existing.DatasetType == "" || existing.Format == "" || existing.Statistics == "" || existing.EstimatedSize == "" {
+				http.Error(w, "description, group/team, use case, processing stage, format, event count, and estimated size are required before submitting", 400)
 				return
 			}
 		}

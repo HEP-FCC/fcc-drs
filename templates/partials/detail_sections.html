@@ -157,11 +157,11 @@
     {{end}}
   </div>
   <div class="columns is-multiline is-variable is-3">
-    {{if or .Request.Department $isDraft}}
+    {{if or .Request.WorkingGroup $isDraft}}
     <div class="column is-half">
-      <div class="detail-item{{if not .Request.Department}} detail-item--required{{end}}">
+      <div class="detail-item{{if not .Request.WorkingGroup}} detail-item--required{{end}}">
         <span class="detail-label">Group / Team</span>
-        {{if .Request.Department}}<span class="detail-value">{{.Request.Department}}</span>{{end}}
+        {{if .Request.WorkingGroup}}<span class="detail-value">{{.Request.WorkingGroup}}</span>{{end}}
       </div>
     </div>
     {{end}}
@@ -249,8 +249,8 @@
     <div class="columns is-multiline is-variable is-3">
       <div class="column is-half">
         <label class="form-label">Group / Team</label>
-        {{$dept := $req.Department}}
-        <select name="department" class="form-input">
+        {{$dept := $req.WorkingGroup}}
+        <select name="working_group" class="form-input">
           <option value="" {{if eq $dept ""}}selected{{end}} disabled>— Select —</option>
           <optgroup label="Physics Groups">
             <option value="BSM physics"                   {{if eq $dept "BSM physics"}}selected{{end}}>BSM physics</option>
