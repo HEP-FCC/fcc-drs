@@ -42,6 +42,24 @@ spec:
                 secretKeyRef:
                   name: fcc-drs-secrets
                   key: oidc-redirect-url
+            - name: SMTP_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: fcc-drs-secrets
+                  key: smtp-host
+                  optional: true
+            - name: SMTP_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: fcc-drs-secrets
+                  key: smtp-port
+                  optional: true
+            - name: SMTP_FROM
+              valueFrom:
+                secretKeyRef:
+                  name: fcc-drs-secrets
+                  key: smtp-from
+                  optional: true
           readinessProbe:
             httpGet:
               path: /login

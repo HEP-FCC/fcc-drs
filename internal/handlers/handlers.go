@@ -296,6 +296,31 @@ func canEdit(user *models.User, req *models.DatasetRequest) bool {
 	return req.Status == models.StatusDraft || req.Status == models.StatusPending
 }
 
+// sendNewRequestEmail notifies all coordinators and admins when a request is submitted.
+func (h *Handler) sendNewRequestEmail(req *models.DatasetRequest) {
+	if !h.emailCfg.Enabled() {
+		return
+	}
+	coordinators, err := h.users.GetCoordinators()
+	if err != nil {
+		slog.Error("get coordinators for email", "error", err)
+		return
+	}
+	subject := fmt.Sprintf("[FCC-DRS] New request #%d: %s", req.ID, req.Title)
+	body := fmt.Sprintf(
+		"A new dataset request has been submitted.\n\nTitle: %s\nID: %d\nRequester: %s\n\nFCC Dataset Request System",
+		req.Title, req.ID, req.RequesterName,
+	)
+	for _, c := range coordinators {
+		if c.Email == "" {
+			continue
+		}
+		if err := h.emailCfg.Send(c.Email, subject, body); err != nil {
+			slog.Error("send new request email", "request_id", req.ID, "user", c.Username, "error", err)
+		}
+	}
+}
+
 // sendStatusEmail notifies the requester of a status change (no-op if email unconfigured).
 func (h *Handler) sendStatusEmail(req *models.DatasetRequest, newStatus models.Status) {
 	if !h.emailCfg.Enabled() || req.RequesterEmail == "" {
@@ -779,7 +804,11 @@ func (h *Handler) UpdateStatus(w http.ResponseWriter, r *http.Request) {
 		body += " (by " + userName + ")"
 	}
 	h.updates.Add(id, userID, models.UpdateStatusChanged, body)
-	h.sendStatusEmail(existing, status)
+	if status == models.StatusPending {
+		h.sendNewRequestEmail(existing)
+	} else {
+		h.sendStatusEmail(existing, status)
+	}
 
 	req, err := h.requests.GetByID(id)
 	if err != nil {
