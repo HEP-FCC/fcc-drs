@@ -317,6 +317,8 @@ func (h *Handler) sendNewRequestEmail(req *models.DatasetRequest) {
 		}
 		if err := h.emailCfg.Send(c.Email, subject, body); err != nil {
 			slog.Error("send new request email", "request_id", req.ID, "user", c.Username, "error", err)
+		} else {
+			slog.Info("sent new request email", "request_id", req.ID, "user", c.Username)
 		}
 	}
 }
@@ -333,6 +335,8 @@ func (h *Handler) sendStatusEmail(req *models.DatasetRequest, newStatus models.S
 	)
 	if err := h.emailCfg.Send(req.RequesterEmail, subject, body); err != nil {
 		slog.Error("send status email", "request_id", req.ID, "error", err)
+	} else {
+		slog.Info("sent status email", "request_id", req.ID, "to", req.RequesterEmail)
 	}
 }
 
@@ -505,6 +509,9 @@ func (h *Handler) CreateRequest(w http.ResponseWriter, r *http.Request) {
 		userName = user.DisplayName
 	}
 	h.updates.Add(int(id), createdBy, models.UpdateCreated, "Request submitted by "+userName)
+	if req.Status == models.StatusPending {
+		h.sendNewRequestEmail(req)
+	}
 	h.relations.CreateMentions(int(id), createdBy, req.Description, req.Notes)
 	h.saveGeneratorCardFromForm(r, int(id), createdBy)
 

@@ -14,7 +14,7 @@ build:
     name: gcr.io/kaniko-project/executor:v1.23.0-debug
     entrypoint: [""]
   script:
-    - VERSION=$(git describe --tags --always 2>/dev/null || echo "$CI_COMMIT_SHORT_SHA")
+    - VERSION=${CI_COMMIT_TAG:-${CI_COMMIT_BRANCH}-${CI_COMMIT_SHORT_SHA}}
     - mkdir -p /kaniko/.docker
     - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > /kaniko/.docker/config.json
     - /kaniko/executor
