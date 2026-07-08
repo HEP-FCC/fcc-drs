@@ -306,10 +306,14 @@ func (h *Handler) sendNewRequestEmail(req *models.DatasetRequest) {
 		slog.Error("get coordinators for email", "error", err)
 		return
 	}
+	desc := req.Description
+	if len(desc) > 500 {
+		desc = desc[:500] + "…"
+	}
 	subject := fmt.Sprintf("[FCC-DRS] New request #%d: %s", req.ID, req.Title)
 	body := fmt.Sprintf(
-		"A new dataset request has been submitted.\n\nTitle: %s\nID: %d\nRequester: %s\n\nFCC Dataset Request System",
-		req.Title, req.ID, req.RequesterName,
+		"A new dataset request has been submitted.\n\nTitle: %s\nID: %d\nRequester: %s\nGroup / Team: %s\n\nDescription:\n%s\n\nFCC Dataset Request System",
+		req.Title, req.ID, req.RequesterName, req.WorkingGroup, desc,
 	)
 	for _, c := range coordinators {
 		if c.Email == "" {
@@ -501,6 +505,7 @@ func (h *Handler) CreateRequest(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Internal Server Error", 500)
 		return
 	}
+	req.ID = int(id)
 	slog.Info("created request", "id", id)
 
 	// Log creation event
