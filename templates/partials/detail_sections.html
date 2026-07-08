@@ -38,8 +38,8 @@
   <div class="is-flex is-align-items-center gap-2 mb-1">
     <span class="detail-label">Description</span>
     {{if $canEdit}}
-    <button hx-get="/requests/{{.Request.ID}}/section/description/edit"
-            hx-target="#ds-description" hx-swap="innerHTML"
+    <button onclick="openEditModal(this,'Description','description','Physics process, energy range, detector concept, selection criteria…','/requests/{{.Request.ID}}','description','ds-description')"
+            data-edit-value="{{.Request.Description}}"
             class="btn-icon">
       <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
         <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
@@ -56,8 +56,8 @@
   <div class="is-flex is-align-items-center gap-2 mb-1">
     <span class="detail-label">Description</span>
     {{if $canEdit}}
-    <button hx-get="/requests/{{.Request.ID}}/section/description/edit"
-            hx-target="#ds-description" hx-swap="innerHTML"
+    <button onclick="openEditModal(this,'Description','description','Physics process, energy range, detector concept, selection criteria…','/requests/{{.Request.ID}}','description','ds-description')"
+            data-edit-value=""
             class="btn-icon">
       <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
         <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
@@ -69,8 +69,8 @@
 </div>
 {{else if $canEdit}}
 <div class="mb-5">
-  <button hx-get="/requests/{{.Request.ID}}/section/description/edit"
-          hx-target="#ds-description" hx-swap="innerHTML"
+  <button onclick="openEditModal(this,'Description','description','Physics process, energy range, detector concept, selection criteria…','/requests/{{.Request.ID}}','description','ds-description')"
+          data-edit-value=""
           class="is-size-7 has-text-grey" style="background:none;border:none;cursor:pointer;transition:color .15s" onmouseover="this.style.color='var(--bulma-link)'" onmouseout="this.style.color=''">
     + Add description
   </button>
@@ -364,8 +364,8 @@
   <div class="is-flex is-align-items-center gap-2 mb-1">
     <span class="detail-label">Additional Notes</span>
     {{if $canEdit}}
-    <button hx-get="/requests/{{.Request.ID}}/section/notes/edit"
-            hx-target="#ds-notes" hx-swap="innerHTML"
+    <button onclick="openEditModal(this,'Additional Notes','notes','Generator settings, beam energy, pile-up conditions, special requirements…','/requests/{{.Request.ID}}','notes','ds-notes')"
+            data-edit-value="{{.Request.Notes}}"
             class="btn-icon">
       <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
         <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>

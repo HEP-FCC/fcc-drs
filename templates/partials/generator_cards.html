@@ -12,9 +12,9 @@
       </svg>
       <button
         hx-get="/requests/{{$d.Request.ID}}/generator-cards/{{.ID}}/view"
-        hx-target="#file-viewer-content"
+        hx-target="#modal-view-content"
         hx-swap="innerHTML"
-        onclick="document.getElementById('file-viewer-title').textContent = '{{.Filename}}'"
+        onclick="prepareViewModal('{{.Filename}}')"
         class="is-size-7 has-text-weight-medium is-truncated min-w-0" style="text-align:left;background:none;border:none;cursor:pointer;padding:0;transition:color .15s;flex-shrink:1" onmouseover="this.style.color='var(--bulma-link)'" onmouseout="this.style.color=''">{{.Filename}}</button>
       <span class="is-size-7 has-text-grey is-shrink-0" style="white-space:nowrap">
         {{formatSize .Size}}{{if .UploaderName}} · {{.UploaderName}}{{end}} · {{timeAgo .CreatedAt}}
