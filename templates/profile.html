@@ -20,16 +20,12 @@
         <div class="box mb-4">
           <p class="is-size-7 has-text-weight-semibold is-uppercase has-text-grey mb-4" style="letter-spacing:.05em">Avatar</p>
           <div class="is-flex is-align-items-center" style="gap:1.5rem">
-            <div class="drs-avatar" style="width:5rem;height:5rem;flex-shrink:0;overflow:hidden">
-              <img src="{{avatarURL .CurrentUser 80}}"
-                   alt="{{.CurrentUser.DisplayedName}}"
-                   style="width:100%;height:100%;object-fit:cover"
-                   onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-              <span style="display:none;font-size:1.5rem">{{.CurrentUser.Initial}}</span>
+            <div class="drs-avatar drs-avatar--lg">
+              <img src="/users/{{.CurrentUser.Username}}/avatar" alt="{{.CurrentUser.DisplayedName}}">
             </div>
             <div>
               <p class="is-size-7 has-text-grey mb-2">
-                {{if .CurrentUser.HasAvatar}}Custom avatar active.{{else}}Showing Gravatar (based on your email). Upload an image to override it.{{end}}
+                {{if .CurrentUser.HasAvatar}}Custom avatar active.{{else}}Upload an image to set a custom avatar.{{end}}
               </p>
               <div class="file is-small is-link is-light">
                 <label class="file-label">

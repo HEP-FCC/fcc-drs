@@ -54,29 +54,6 @@ func New(db *sql.DB, driver string, oidcClient *auth.Client, devMode bool, versi
 		"formatSize":     formatSize,
 		"add":            func(a, b int) int { return a + b },
 		"currentYear":    func() int { return time.Now().Year() },
-		"avatarURL": func(u *models.User, size int) string {
-			if u == nil {
-				return ""
-			}
-			return u.AvatarURL(size)
-		},
-		"initial": func(s string) string {
-			runes := []rune(strings.TrimSpace(s))
-			if len(runes) == 0 {
-				return "?"
-			}
-			if len(runes) == 1 {
-				return string(runes[0])
-			}
-			return string(runes[0:2])
-		},
-		"avatarColor": func(name string) string {
-			var sum int
-			for _, r := range name {
-				sum += int(r)
-			}
-			return fmt.Sprintf("avatar-c%d", sum%8)
-		},
 		"nextSortDir": func(col, currentSort, currentDir string) string {
 			if col != currentSort {
 				switch col {

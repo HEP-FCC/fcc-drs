@@ -16,9 +16,9 @@
         <td>
           <div class="is-flex is-align-items-center" style="gap:.5rem">
             <div class="drs-user-avatar is-small">
-              <span>{{initial .DisplayName}}</span>
+              <img src="/users/{{.Username}}/avatar" alt="{{.DisplayedName}}">
             </div>
-            <span class="is-size-7 has-text-weight-medium">{{.DisplayName}}</span>
+            <span class="is-size-7 has-text-weight-medium">{{.DisplayedName}}</span>
           </div>
         </td>
         <td class="is-size-7 has-text-grey">{{.Username}}</td>

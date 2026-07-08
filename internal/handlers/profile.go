@@ -1,12 +1,56 @@
 package handlers
 
 import (
+	"fmt"
 	"log/slog"
 	"net/http"
 	"strings"
 
 	"dataset-tracker/internal/middleware"
 )
+
+// avatarPalette holds background and foreground hex colours for 8 hues.
+var avatarPalette = [8][2]string{
+	{"#e0e7ff", "#4338ca"}, // indigo
+	{"#ffe4e6", "#be123c"}, // rose
+	{"#fef3c7", "#b45309"}, // amber
+	{"#d1fae5", "#065f46"}, // emerald
+	{"#e0f2fe", "#0369a1"}, // sky
+	{"#ede9fe", "#6d28d9"}, // violet
+	{"#fce7f3", "#9d174d"}, // pink
+	{"#ccfbf1", "#0f766e"}, // teal
+}
+
+func avatarColorIndex(name string) int {
+	var sum int
+	for _, r := range name {
+		sum += int(r)
+	}
+	return sum % len(avatarPalette)
+}
+
+func initialsOf(name string) string {
+	runes := []rune(strings.TrimSpace(name))
+	if len(runes) == 0 {
+		return "?"
+	}
+	if len(runes) == 1 {
+		return string(runes[0])
+	}
+	return string(runes[0:2])
+}
+
+func initialsSVG(name string) []byte {
+	idx := avatarColorIndex(name)
+	bg, fg := avatarPalette[idx][0], avatarPalette[idx][1]
+	text := initialsOf(name)
+	svg := fmt.Sprintf(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40">`+
+		`<rect width="40" height="40" fill="%s"/>`+
+		`<text x="20" y="20" dy=".35em" text-anchor="middle"`+
+		` font-family="system-ui,sans-serif" font-size="14" font-weight="700" fill="%s">%s</text>`+
+		`</svg>`, bg, fg, text)
+	return []byte(svg)
+}
 
 const maxAvatarSize = 2 << 20 // 2 MB
 
@@ -86,11 +130,19 @@ func (h *Handler) DeleteAvatar(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) ServeAvatar(w http.ResponseWriter, r *http.Request) {
 	username := r.PathValue("username")
 	data, mime, err := h.users.GetAvatar(username)
-	if err != nil || len(data) == 0 {
-		http.NotFound(w, r)
+	if err == nil && len(data) > 0 {
+		w.Header().Set("Content-Type", mime)
+		w.Header().Set("Cache-Control", "public, max-age=86400")
+		w.Write(data)
 		return
 	}
-	w.Header().Set("Content-Type", mime)
+	user, err := h.users.GetByUsername(username)
+	name := username
+	if err == nil && user != nil {
+		name = user.DisplayedName()
+	}
+	svg := initialsSVG(name)
+	w.Header().Set("Content-Type", "image/svg+xml")
 	w.Header().Set("Cache-Control", "public, max-age=86400")
-	w.Write(data)
+	w.Write(svg)
 }

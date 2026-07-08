@@ -40,8 +40,9 @@
     <!-- Requester identity -->
     <div class="panel-row mb-4">
       <div class="is-flex is-align-items-center gap-3">
-        <div class="drs-avatar {{if .Request}}{{avatarColor .Request.RequesterName}}{{else if .CurrentUser}}{{avatarColor .CurrentUser.DisplayName}}{{else}}avatar-c0{{end}}" style="width:2rem;height:2rem">
-          <span style="font-size:.7rem">{{if .Request}}{{initial .Request.RequesterName}}{{else if .CurrentUser}}{{initial .CurrentUser.DisplayName}}{{else}}?{{end}}</span>
+        <div class="drs-avatar" style="width:2rem;height:2rem">
+          <img src="/users/{{if .Request}}{{.Request.RequesterUsername}}{{else if .CurrentUser}}{{.CurrentUser.Username}}{{end}}/avatar"
+               alt="{{if .Request}}{{.Request.RequesterName}}{{else if .CurrentUser}}{{.CurrentUser.DisplayedName}}{{end}}">
         </div>
         <div class="min-w-0">
           <p class="is-size-7 has-text-weight-medium is-truncated">

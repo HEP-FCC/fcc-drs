@@ -1,10 +1,8 @@
 package models
 
 import (
-	"crypto/md5"
 	"database/sql"
 	"fmt"
-	"strings"
 	"time"
 )
 
@@ -70,20 +68,6 @@ func (u *User) Initial() string {
 	return string([]rune(n)[0])
 }
 
-// AvatarURL returns the URL for the user's avatar at the given pixel size.
-// If the user has uploaded a custom avatar it points to the serve endpoint;
-// otherwise it falls back to Gravatar with the mystery-person default.
-func (u *User) AvatarURL(size int) string {
-	if u == nil {
-		return ""
-	}
-	if u.HasAvatar {
-		return "/users/" + u.Username + "/avatar"
-	}
-	email := strings.ToLower(strings.TrimSpace(u.Email))
-	hash := md5.Sum([]byte(email))
-	return fmt.Sprintf("https://www.gravatar.com/avatar/%x?s=%d&d=mp", hash, size)
-}
 
 type UserStore struct {
 	db *sql.DB

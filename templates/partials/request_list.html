@@ -29,8 +29,8 @@
 
       <div class="is-flex is-flex-wrap-wrap is-align-items-center gap-2 is-size-7 has-text-grey mb-3">
         <div class="is-flex is-align-items-center gap-1">
-          <div class="drs-avatar {{avatarColor .RequesterName}}" style="width:1rem;height:1rem">
-            <span style="font-size:.5rem">{{initial .RequesterName}}</span>
+          <div class="drs-avatar" style="width:1rem;height:1rem">
+            <img src="/users/{{.RequesterUsername}}/avatar" alt="{{.RequesterName}}">
           </div>
           <span>{{.RequesterName}}</span>
         </div>
@@ -175,8 +175,8 @@
         </td>
         <td style="padding:1rem 1.25rem" class="is-hidden-mobile">
           <div class="is-flex is-align-items-center gap-2">
-            <div class="drs-avatar {{avatarColor .RequesterName}}" style="width:1.75rem;height:1.75rem">
-              <span style="font-size:.6rem">{{initial .RequesterName}}</span>
+            <div class="drs-avatar" style="width:1.75rem;height:1.75rem">
+              <img src="/users/{{.RequesterUsername}}/avatar" alt="{{.RequesterName}}">
             </div>
             <div>
               <p class="is-size-7 has-text-grey-dark has-text-weight-medium">{{truncate .RequesterName 22}}</p>
