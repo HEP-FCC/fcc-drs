@@ -29,7 +29,7 @@
 
       <div class="is-flex is-flex-wrap-wrap is-align-items-center gap-2 is-size-7 has-text-grey mb-3">
         <div class="is-flex is-align-items-center gap-1">
-          <div class="drs-avatar" style="width:1rem;height:1rem">
+          <div class="drs-avatar {{avatarColor .RequesterName}}" style="width:1rem;height:1rem">
             <span style="font-size:.5rem">{{initial .RequesterName}}</span>
           </div>
           <span>{{.RequesterName}}</span>
@@ -175,7 +175,7 @@
         </td>
         <td style="padding:1rem 1.25rem" class="is-hidden-mobile">
           <div class="is-flex is-align-items-center gap-2">
-            <div class="drs-avatar" style="width:1.75rem;height:1.75rem">
+            <div class="drs-avatar {{avatarColor .RequesterName}}" style="width:1.75rem;height:1.75rem">
               <span style="font-size:.6rem">{{initial .RequesterName}}</span>
             </div>
             <div>

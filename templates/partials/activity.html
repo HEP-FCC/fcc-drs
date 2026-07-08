@@ -11,7 +11,7 @@
     <div id="comment-{{.ID}}" class="{{if .IsInternal}}event-internal{{else}}event-comment{{end}} mb-2 p-3" style="border-radius:.75rem">
       <div class="is-flex is-align-items-center is-justify-content-space-between mb-2">
         <div class="is-flex is-align-items-center gap-2">
-          <div class="drs-avatar" style="width:1.25rem;height:1.25rem">
+          <div class="drs-avatar {{avatarColor .DisplayName}}" style="width:1.25rem;height:1.25rem">
             <span style="font-size:.55rem">{{initial .DisplayName}}</span>
           </div>
           <span class="is-size-7 has-text-weight-medium has-text-grey-dark">{{.DisplayName}}</span>
@@ -85,7 +85,7 @@
 <div id="comment-{{$c.ID}}" class="{{if $c.IsInternal}}event-internal{{else}}event-comment{{end}} mb-2 p-3" style="border-radius:.75rem">
   <div class="is-flex is-align-items-center is-justify-content-space-between mb-2">
     <div class="is-flex is-align-items-center gap-2">
-      <div class="drs-avatar" style="width:1.25rem;height:1.25rem">
+      <div class="drs-avatar {{avatarColor $c.DisplayName}}" style="width:1.25rem;height:1.25rem">
         <span style="font-size:.55rem">{{initial $c.DisplayName}}</span>
       </div>
       <span class="is-size-7 has-text-weight-medium has-text-grey-dark">{{$c.DisplayName}}</span>

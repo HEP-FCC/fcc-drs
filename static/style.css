@@ -698,12 +698,28 @@ select.form-input { cursor: pointer; }
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: #e0e7ff;
   flex-shrink: 0;
 }
-.drs-avatar span { color: #4338ca; font-weight: 700; }
-[data-theme=dark] .drs-avatar { background: #312e81; }
-[data-theme=dark] .drs-avatar span { color: #a5b4fc; }
+.drs-avatar span { font-weight: 700; }
+
+/* Avatar colour palette — 8 hues, light + dark */
+.avatar-c0 { background: #e0e7ff; } .avatar-c0 span { color: #4338ca; }
+.avatar-c1 { background: #ffe4e6; } .avatar-c1 span { color: #be123c; }
+.avatar-c2 { background: #fef3c7; } .avatar-c2 span { color: #b45309; }
+.avatar-c3 { background: #d1fae5; } .avatar-c3 span { color: #065f46; }
+.avatar-c4 { background: #e0f2fe; } .avatar-c4 span { color: #0369a1; }
+.avatar-c5 { background: #ede9fe; } .avatar-c5 span { color: #6d28d9; }
+.avatar-c6 { background: #fce7f3; } .avatar-c6 span { color: #9d174d; }
+.avatar-c7 { background: #ccfbf1; } .avatar-c7 span { color: #0f766e; }
+
+[data-theme=dark] .avatar-c0 { background: #312e81; } [data-theme=dark] .avatar-c0 span { color: #a5b4fc; }
+[data-theme=dark] .avatar-c1 { background: #4c0519; } [data-theme=dark] .avatar-c1 span { color: #fda4af; }
+[data-theme=dark] .avatar-c2 { background: #451a03; } [data-theme=dark] .avatar-c2 span { color: #fcd34d; }
+[data-theme=dark] .avatar-c3 { background: #064e3b; } [data-theme=dark] .avatar-c3 span { color: #6ee7b7; }
+[data-theme=dark] .avatar-c4 { background: #082f49; } [data-theme=dark] .avatar-c4 span { color: #7dd3fc; }
+[data-theme=dark] .avatar-c5 { background: #2e1065; } [data-theme=dark] .avatar-c5 span { color: #c4b5fd; }
+[data-theme=dark] .avatar-c6 { background: #500724; } [data-theme=dark] .avatar-c6 span { color: #f9a8d4; }
+[data-theme=dark] .avatar-c7 { background: #042f2e; } [data-theme=dark] .avatar-c7 span { color: #5eead4; }
 
 /* ── Gap utilities (not in Bulma 1.0.4) ─────────────────────────────────── */
 .gap-1 { gap: 0.25rem !important; }

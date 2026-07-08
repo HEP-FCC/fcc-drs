@@ -42,7 +42,7 @@
 
     <div class="mt-auto pt-3 is-flex is-align-items-center is-justify-content-space-between bento-card-footer">
       <div class="is-flex is-align-items-center gap-2">
-        <div class="drs-avatar" style="width:1.5rem;height:1.5rem">
+        <div class="drs-avatar {{avatarColor .RequesterName}}" style="width:1.5rem;height:1.5rem">
           <span style="font-size:.6rem">{{initial .RequesterName}}</span>
         </div>
         <span class="is-size-7 has-text-grey">{{truncate .RequesterName 20}}</span>
