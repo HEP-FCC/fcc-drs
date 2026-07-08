@@ -58,7 +58,7 @@ type DatasetRequest struct {
 	RequesterName     string
 	RequesterUsername string
 	RequesterEmail    string
-	Department        string
+	WorkingGroup      string
 	DatasetType       string
 	UseCase           string
 	Status            Status
@@ -179,7 +179,7 @@ func NewRequestStore(db *sql.DB, driver string) *RequestStore {
 
 const selectCols = `
 	dr.id, dr.title, dr.description, dr.requester_name, dr.requester_username, dr.requester_email,
-	dr.department, dr.dataset_type, dr.use_case, dr.status, dr.priority, dr.estimated_size,
+	dr.working_group, dr.dataset_type, dr.use_case, dr.status, dr.priority, dr.estimated_size,
 	COALESCE(dr.statistics,''), COALESCE(dr.target_campaign,''), COALESCE(dr.key4hep_stack,''), dr.format, dr.due_date, dr.notes, dr.tags, COALESCE(dr.created_by,0),
 	COALESCE(dr.assigned_to,0), COALESCE(au.display_name,''),
 	COALESCE(dr.physics_approval,''), COALESCE(dr.resources_approval,''),
@@ -222,7 +222,7 @@ func (r *RequestStore) GetAll(status, priority, search, sortCol, sortDir string,
 	}
 	if search != "" {
 		like := r.like()
-		where += fmt.Sprintf(" AND (dr.title %s ? OR dr.description %s ? OR dr.requester_name %s ? OR dr.department %s ?)", like, like, like, like)
+		where += fmt.Sprintf(" AND (dr.title %s ? OR dr.description %s ? OR dr.requester_name %s ? OR dr.working_group %s ?)", like, like, like, like)
 		s := "%" + search + "%"
 		args = append(args, s, s, s, s)
 	}
@@ -304,12 +304,12 @@ func (r *RequestStore) Create(req *DatasetRequest) (int64, error) {
 	err := r.db.QueryRow(r.rebind(`
 		INSERT INTO dataset_requests
 			(title, description, requester_name, requester_username, requester_email,
-			 department, dataset_type, use_case, status, priority, estimated_size, statistics,
+			 working_group, dataset_type, use_case, status, priority, estimated_size, statistics,
 			 target_campaign, key4hep_stack, format, due_date, notes, tags, created_by)
 		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 		RETURNING id`),
 		req.Title, req.Description, req.RequesterName, req.RequesterUsername, req.RequesterEmail,
-		req.Department, req.DatasetType, req.UseCase, req.Status, req.Priority,
+		req.WorkingGroup, req.DatasetType, req.UseCase, req.Status, req.Priority,
 		req.EstimatedSize, req.Statistics, req.TargetCampaign, req.Key4hepStack, req.Format, req.DueDate, req.Notes, req.Tags, createdBy,
 	).Scan(&id)
 	return id, err
@@ -319,11 +319,11 @@ func (r *RequestStore) Update(req *DatasetRequest) error {
 	_, err := r.db.Exec(r.rebind(`
 		UPDATE dataset_requests SET
 			title=?, description=?, requester_name=?, requester_username=?, requester_email=?,
-			department=?, dataset_type=?, use_case=?, status=?, priority=?,
+			working_group=?, dataset_type=?, use_case=?, status=?, priority=?,
 			estimated_size=?, statistics=?, target_campaign=?, key4hep_stack=?, format=?, due_date=?, notes=?, tags=?
 		WHERE id=?`),
 		req.Title, req.Description, req.RequesterName, req.RequesterUsername, req.RequesterEmail,
-		req.Department, req.DatasetType, req.UseCase, req.Status, req.Priority,
+		req.WorkingGroup, req.DatasetType, req.UseCase, req.Status, req.Priority,
 		req.EstimatedSize, req.Statistics, req.TargetCampaign, req.Key4hepStack, req.Format, req.DueDate, req.Notes, req.Tags, req.ID,
 	)
 	return err
@@ -415,7 +415,7 @@ func scanRequest(row scannable) (*DatasetRequest, error) {
 	var req DatasetRequest
 	err := row.Scan(
 		&req.ID, &req.Title, &req.Description, &req.RequesterName, &req.RequesterUsername, &req.RequesterEmail,
-		&req.Department, &req.DatasetType, &req.UseCase, &req.Status, &req.Priority,
+		&req.WorkingGroup, &req.DatasetType, &req.UseCase, &req.Status, &req.Priority,
 		&req.EstimatedSize, &req.Statistics, &req.TargetCampaign, &req.Key4hepStack, &req.Format, &req.DueDate, &req.Notes, &req.Tags,
 		&req.CreatedBy, &req.AssignedTo, &req.AssignedToName,
 		&req.PhysicsApproval, &req.ResourcesApproval,

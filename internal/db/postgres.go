@@ -61,7 +61,7 @@ func migrate(db *DB) error {
 			requester_name     TEXT NOT NULL,
 			requester_username TEXT NOT NULL DEFAULT '',
 			requester_email    TEXT DEFAULT '',
-			department         TEXT DEFAULT '',
+			working_group      TEXT DEFAULT '',
 			dataset_type       TEXT DEFAULT 'simulation',
 			use_case           TEXT DEFAULT 'physics_analysis',
 			status             TEXT DEFAULT 'pending',
