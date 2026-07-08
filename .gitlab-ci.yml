@@ -40,7 +40,7 @@ deploy-staging:
   variables:
     OC_TOKEN: $OC_TOKEN_STAGING
   script:
-    - 'sed -i "s/newTag:.*/newTag: $CI_COMMIT_SHORT_SHA/" openshift/overlays/staging/kustomization.yaml'
+    - 'sed -i "s/newTag:.*/newTag: ${CI_COMMIT_BRANCH}-${CI_COMMIT_SHORT_SHA}/" openshift/overlays/staging/kustomization.yaml'
     - oc apply -k openshift/overlays/staging
     - oc rollout status deployment/fcc-drs -n fcc-drs-test --timeout=120s
   rules:
