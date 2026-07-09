@@ -34,7 +34,6 @@
           </div>
           <span>{{.RequesterName}}</span>
         </div>
-        {{if .WorkingGroup}}<span>·</span><span>{{.WorkingGroup}}</span>{{end}}
         {{if .DatasetType}}<span>·</span><span class="is-capitalized">{{.DatasetType}}</span>{{end}}
       </div>
 
@@ -180,7 +179,6 @@
             </div>
             <div>
               <p class="is-size-7 has-text-grey-dark has-text-weight-medium">{{truncate .RequesterName 22}}</p>
-              {{if .WorkingGroup}}<p class="is-size-7 has-text-grey-light">{{.WorkingGroup}}</p>{{end}}
             </div>
           </div>
         </td>

@@ -58,7 +58,6 @@ type DatasetRequest struct {
 	RequesterName     string
 	RequesterUsername string
 	RequesterEmail    string
-	WorkingGroup      string
 	DatasetType       string
 	UseCase           string
 	Status            Status
@@ -71,10 +70,12 @@ type DatasetRequest struct {
 	DueDate           string
 	Notes             string
 	Tags              string
-	CreatedBy         int
-	AssignedTo        int
-	AssignedToName    string
-	PhysicsApproval   string // "" | "approved" | "rejected"
+	CreatedBy          int
+	AssignedTo         int
+	AssignedToName     string
+	AssignedGroupID    int
+	AssignedGroupName  string
+	PhysicsApproval    string // "" | "approved" | "rejected"
 	ResourcesApproval string // "" | "approved" | "rejected"
 	CreatedAt         time.Time
 	UpdatedAt         time.Time
@@ -179,11 +180,16 @@ func NewRequestStore(db *sql.DB, driver string) *RequestStore {
 
 const selectCols = `
 	dr.id, dr.title, dr.description, dr.requester_name, dr.requester_username, dr.requester_email,
-	dr.working_group, dr.dataset_type, dr.use_case, dr.status, dr.priority, dr.estimated_size,
+	dr.dataset_type, dr.use_case, dr.status, dr.priority, dr.estimated_size,
 	COALESCE(dr.statistics,''), COALESCE(dr.target_campaign,''), COALESCE(dr.key4hep_stack,''), dr.format, dr.due_date, dr.notes, dr.tags, COALESCE(dr.created_by,0),
 	COALESCE(dr.assigned_to,0), COALESCE(au.display_name,''),
+	COALESCE(dr.assigned_group_id,0), COALESCE(cg.name,''),
 	COALESCE(dr.physics_approval,''), COALESCE(dr.resources_approval,''),
 	dr.created_at, dr.updated_at`
+
+const joinCols = `
+	LEFT JOIN users au ON au.id = dr.assigned_to
+	LEFT JOIN coordinator_groups cg ON cg.id = dr.assigned_group_id`
 
 func requestOrderBy(col, dir string) string {
 	d := "DESC"
@@ -222,9 +228,9 @@ func (r *RequestStore) GetAll(status, priority, search, sortCol, sortDir string,
 	}
 	if search != "" {
 		like := r.like()
-		where += fmt.Sprintf(" AND (dr.title %s ? OR dr.description %s ? OR dr.requester_name %s ? OR dr.working_group %s ?)", like, like, like, like)
+		where += fmt.Sprintf(" AND (dr.title %s ? OR dr.description %s ? OR dr.requester_name %s ?)", like, like, like)
 		s := "%" + search + "%"
-		args = append(args, s, s, s, s)
+		args = append(args, s, s, s)
 	}
 
 	var total int
@@ -241,7 +247,7 @@ func (r *RequestStore) GetAll(status, priority, search, sortCol, sortDir string,
 
 	query := r.rebind(`SELECT` + selectCols + `
 		FROM dataset_requests dr
-		LEFT JOIN users au ON au.id = dr.assigned_to
+		` + joinCols + `
 		` + where + ` ORDER BY ` + requestOrderBy(sortCol, sortDir) + ` LIMIT ? OFFSET ?`)
 	args = append(args, perPage, (page-1)*perPage)
 
@@ -266,7 +272,7 @@ func (r *RequestStore) GetAll(status, priority, search, sortCol, sortDir string,
 func (r *RequestStore) GetActive() ([]*DatasetRequest, error) {
 	rows, err := r.db.Query(r.rebind(`SELECT` + selectCols + `
 		FROM dataset_requests dr
-		LEFT JOIN users au ON au.id = dr.assigned_to
+		` + joinCols + `
 		WHERE dr.status IN ('pending', 'approved', 'in_progress')
 		ORDER BY
 			CASE dr.priority WHEN 'critical' THEN 0 WHEN 'high' THEN 1 WHEN 'medium' THEN 2 ELSE 3 END,
@@ -290,7 +296,7 @@ func (r *RequestStore) GetActive() ([]*DatasetRequest, error) {
 func (r *RequestStore) GetByID(id int) (*DatasetRequest, error) {
 	row := r.db.QueryRow(r.rebind(`SELECT`+selectCols+`
 		FROM dataset_requests dr
-		LEFT JOIN users au ON au.id = dr.assigned_to
+		` + joinCols + `
 		WHERE dr.id = ?`), id)
 	return scanRequest(row)
 }
@@ -304,12 +310,12 @@ func (r *RequestStore) Create(req *DatasetRequest) (int64, error) {
 	err := r.db.QueryRow(r.rebind(`
 		INSERT INTO dataset_requests
 			(title, description, requester_name, requester_username, requester_email,
-			 working_group, dataset_type, use_case, status, priority, estimated_size, statistics,
+			 dataset_type, use_case, status, priority, estimated_size, statistics,
 			 target_campaign, key4hep_stack, format, due_date, notes, tags, created_by)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 		RETURNING id`),
 		req.Title, req.Description, req.RequesterName, req.RequesterUsername, req.RequesterEmail,
-		req.WorkingGroup, req.DatasetType, req.UseCase, req.Status, req.Priority,
+		req.DatasetType, req.UseCase, req.Status, req.Priority,
 		req.EstimatedSize, req.Statistics, req.TargetCampaign, req.Key4hepStack, req.Format, req.DueDate, req.Notes, req.Tags, createdBy,
 	).Scan(&id)
 	return id, err
@@ -319,11 +325,11 @@ func (r *RequestStore) Update(req *DatasetRequest) error {
 	_, err := r.db.Exec(r.rebind(`
 		UPDATE dataset_requests SET
 			title=?, description=?, requester_name=?, requester_username=?, requester_email=?,
-			working_group=?, dataset_type=?, use_case=?, status=?, priority=?,
+			dataset_type=?, use_case=?, status=?, priority=?,
 			estimated_size=?, statistics=?, target_campaign=?, key4hep_stack=?, format=?, due_date=?, notes=?, tags=?
 		WHERE id=?`),
 		req.Title, req.Description, req.RequesterName, req.RequesterUsername, req.RequesterEmail,
-		req.WorkingGroup, req.DatasetType, req.UseCase, req.Status, req.Priority,
+		req.DatasetType, req.UseCase, req.Status, req.Priority,
 		req.EstimatedSize, req.Statistics, req.TargetCampaign, req.Key4hepStack, req.Format, req.DueDate, req.Notes, req.Tags, req.ID,
 	)
 	return err
@@ -362,6 +368,15 @@ func (r *RequestStore) Assign(id, assignedTo int) error {
 	return err
 }
 
+func (r *RequestStore) AssignGroup(id, groupID int) error {
+	var gid interface{}
+	if groupID != 0 {
+		gid = groupID
+	}
+	_, err := r.db.Exec(r.rebind("UPDATE dataset_requests SET assigned_group_id=? WHERE id=?"), gid, id)
+	return err
+}
+
 func (r *RequestStore) Delete(id int) error {
 	_, err := r.db.Exec(r.rebind("DELETE FROM dataset_requests WHERE id=?"), id)
 	return err
@@ -389,7 +404,7 @@ func (r *RequestStore) GetStats() (*Stats, error) {
 func (r *RequestStore) GetRecent(limit int) ([]*DatasetRequest, error) {
 	rows, err := r.db.Query(r.rebind(`SELECT`+selectCols+`
 		FROM dataset_requests dr
-		LEFT JOIN users au ON au.id = dr.assigned_to
+		` + joinCols + `
 		ORDER BY dr.created_at DESC LIMIT ?`), limit)
 	if err != nil {
 		return nil, err
@@ -415,9 +430,10 @@ func scanRequest(row scannable) (*DatasetRequest, error) {
 	var req DatasetRequest
 	err := row.Scan(
 		&req.ID, &req.Title, &req.Description, &req.RequesterName, &req.RequesterUsername, &req.RequesterEmail,
-		&req.WorkingGroup, &req.DatasetType, &req.UseCase, &req.Status, &req.Priority,
+		&req.DatasetType, &req.UseCase, &req.Status, &req.Priority,
 		&req.EstimatedSize, &req.Statistics, &req.TargetCampaign, &req.Key4hepStack, &req.Format, &req.DueDate, &req.Notes, &req.Tags,
 		&req.CreatedBy, &req.AssignedTo, &req.AssignedToName,
+		&req.AssignedGroupID, &req.AssignedGroupName,
 		&req.PhysicsApproval, &req.ResourcesApproval,
 		timeVal{&req.CreatedAt}, timeVal{&req.UpdatedAt},
 	)

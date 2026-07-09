@@ -22,6 +22,7 @@ type Handler struct {
 	updates        *models.UpdateStore
 	relations      *models.RelationStore
 	generatorCards *models.GeneratorCardStore
+	groups         *models.CoordinatorGroupStore
 	oidc           *auth.Client
 	funcMap        template.FuncMap
 	devMode        bool
@@ -36,6 +37,7 @@ func New(db *sql.DB, driver string, oidcClient *auth.Client, devMode bool, versi
 		updates:        models.NewUpdateStore(db, driver),
 		relations:      models.NewRelationStore(db, driver),
 		generatorCards: models.NewGeneratorCardStore(db, driver),
+		groups:         models.NewCoordinatorGroupStore(db, driver),
 		oidc:           oidcClient,
 		devMode:        devMode,
 		version:        version,
@@ -45,6 +47,9 @@ func New(db *sql.DB, driver string, oidcClient *auth.Client, devMode bool, versi
 		"useCaseLabels":        func() []models.Option { return models.UseCaseLabels },
 		"datasetTypeLabels":    func() []models.Option { return models.DatasetTypeLabels },
 		"relationTypeLabels":   func() []models.Option { return models.RelationTypeLabels },
+		"groupCardData": func(g *models.CoordinatorGroup, coordinators []*models.User) PageData {
+			return PageData{Group: g, Coordinators: coordinators}
+		},
 		"statusClass":    statusClass,
 		"priorityClass":  priorityClass,
 		"truncate":       truncate,
@@ -238,7 +243,10 @@ type PageData struct {
 	Version     string
 	Updates     []*models.Update
 	Users       []*models.User
-	Coordinators []*models.User
+	Coordinators   []*models.User
+	Groups         []*models.CoordinatorGroup
+	Group          *models.CoordinatorGroup
+	AssignedGroup  *models.CoordinatorGroup
 	Relations      []*models.Relation
 	GeneratorCards []*models.GeneratorCard
 	GeneratorCard  *models.GeneratorCard
@@ -267,6 +275,19 @@ type Pagination struct {
 	NextPage   int
 	From       int
 	To         int
+}
+
+// assignedGroupFrom finds the assigned coordinator group from an already-loaded list.
+func assignedGroupFrom(req *models.DatasetRequest, groups []*models.CoordinatorGroup) *models.CoordinatorGroup {
+	if req == nil || req.AssignedGroupID == 0 {
+		return nil
+	}
+	for _, g := range groups {
+		if g.ID == req.AssignedGroupID {
+			return g
+		}
+	}
+	return nil
 }
 
 // canEdit returns true when the current user may edit the given request.
@@ -299,8 +320,8 @@ func (h *Handler) sendNewRequestEmail(req *models.DatasetRequest) {
 	}
 	subject := fmt.Sprintf("[FCC-DRS] New request #%d: %s", req.ID, req.Title)
 	body := fmt.Sprintf(
-		"A new dataset request has been submitted.\n\nTitle: %s\nID: %d\nRequester: %s\nGroup / Team: %s\n\nDescription:\n%s\n\nFCC Dataset Request System",
-		req.Title, req.ID, req.RequesterName, req.WorkingGroup, desc,
+		"A new dataset request has been submitted.\n\nTitle: %s\nID: %d\nRequester: %s\n\nDescription:\n%s\n\nFCC Dataset Request System",
+		req.Title, req.ID, req.RequesterName, desc,
 	)
 	for _, c := range coordinators {
 		if c.Email == "" {
@@ -461,7 +482,6 @@ func (h *Handler) CreateRequest(w http.ResponseWriter, r *http.Request) {
 		RequesterName:     func() string { if user != nil { return user.DisplayName }; return "" }(),
 		RequesterUsername: func() string { if user != nil { return user.Username }; return "" }(),
 		RequesterEmail:    func() string { if user != nil { return user.Email }; return "" }(),
-		WorkingGroup:        strings.TrimSpace(r.FormValue("working_group")),
 		DatasetType:       r.FormValue("dataset_type"),
 		UseCase:           r.FormValue("use_case"),
 		Status:            status,
@@ -481,8 +501,8 @@ func (h *Handler) CreateRequest(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "title is required", 400)
 		return
 	}
-	if req.Status != models.StatusDraft && (req.Description == "" || req.WorkingGroup == "" || req.UseCase == "" || req.DatasetType == "" || req.Format == "" || req.Statistics == "" || req.EstimatedSize == "") {
-		http.Error(w, "description, group/team, use case, processing stage, format, event count, and estimated size are required", 400)
+	if req.Status != models.StatusDraft && (req.Description == "" || req.UseCase == "" || req.DatasetType == "" || req.Format == "" || req.Statistics == "" || req.EstimatedSize == "") {
+		http.Error(w, "description, use case, processing stage, format, event count, and estimated size are required", 400)
 		return
 	}
 
@@ -494,6 +514,13 @@ func (h *Handler) CreateRequest(w http.ResponseWriter, r *http.Request) {
 	}
 	req.ID = int(id)
 	slog.Info("created request", "id", id)
+
+	// Set initial group assignment from the form's group dropdown.
+	if groupName := strings.TrimSpace(r.FormValue("working_group")); groupName != "" {
+		if g, err := h.groups.GetByName(groupName); err == nil && g != nil {
+			h.requests.AssignGroup(int(id), g.ID) //nolint:errcheck
+		}
+	}
 
 	// Log creation event
 	userName := "unknown"
@@ -546,18 +573,19 @@ func (h *Handler) GetRequest(w http.ResponseWriter, r *http.Request) {
 	}
 
 	activity, _ := h.updates.GetByRequestID(id)
-	coordinators, _ := h.users.GetCoordinators()
+	groups, _ := h.groups.GetAll()
+	assignedGroup := assignedGroupFrom(req, groups)
 	relations, _ := h.relations.GetByRequestID(id)
 	cards, _ := h.generatorCards.GetByRequestID(id)
 
 	if r.Header.Get("HX-Request") == "true" {
 		h.renderPartial(w, r, "request_detail", PageData{
-			Request: req, Updates: activity, Coordinators: coordinators, Relations: relations, GeneratorCards: cards,
+			Request: req, Updates: activity, Groups: groups, AssignedGroup: assignedGroup, Relations: relations, GeneratorCards: cards,
 		})
 		return
 	}
 	h.renderPage(w, r, "request_detail_page", PageData{
-		Title: req.Title, Request: req, Updates: activity, Coordinators: coordinators, Relations: relations, GeneratorCards: cards,
+		Title: req.Title, Request: req, Updates: activity, Groups: groups, AssignedGroup: assignedGroup, Relations: relations, GeneratorCards: cards,
 	})
 }
 
@@ -649,7 +677,6 @@ func (h *Handler) PatchRequest(w http.ResponseWriter, r *http.Request) {
 	case "notes":
 		existing.Notes = strings.TrimSpace(r.FormValue("notes"))
 	case "details":
-		existing.WorkingGroup = strings.TrimSpace(r.FormValue("working_group"))
 		existing.UseCase = r.FormValue("use_case")
 		existing.DatasetType = r.FormValue("dataset_type")
 		existing.Format = strings.TrimSpace(r.FormValue("format"))
@@ -715,7 +742,6 @@ func (h *Handler) UpdateRequest(w http.ResponseWriter, r *http.Request) {
 		RequesterName:     existing.RequesterName,
 		RequesterUsername: existing.RequesterUsername,
 		RequesterEmail:    existing.RequesterEmail,
-		WorkingGroup:        strings.TrimSpace(r.FormValue("working_group")),
 		DatasetType:       r.FormValue("dataset_type"),
 		UseCase:           r.FormValue("use_case"),
 		Status:            existing.Status,
@@ -779,8 +805,8 @@ func (h *Handler) UpdateStatus(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		if status == models.StatusPending && existing.Status == models.StatusDraft {
-			if existing.Description == "" || existing.WorkingGroup == "" || existing.UseCase == "" || existing.DatasetType == "" || existing.Format == "" || existing.Statistics == "" || existing.EstimatedSize == "" {
-				http.Error(w, "description, group/team, use case, processing stage, format, event count, and estimated size are required before submitting", 400)
+			if existing.Description == "" || existing.UseCase == "" || existing.DatasetType == "" || existing.Format == "" || existing.Statistics == "" || existing.EstimatedSize == "" {
+				http.Error(w, "description, use case, processing stage, format, event count, and estimated size are required before submitting", 400)
 				return
 			}
 		}
@@ -820,13 +846,15 @@ func (h *Handler) UpdateStatus(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	updates, _ := h.updates.GetByRequestID(id)
-	coordinators, _ := h.users.GetCoordinators()
+	groups, _ := h.groups.GetAll()
+	assignedGroup := assignedGroupFrom(req, groups)
 	relations, _ := h.relations.GetByRequestID(id)
 	cards, _ := h.generatorCards.GetByRequestID(id)
 	h.renderPartial(w, r, "request_detail", PageData{
 		Request:        req,
 		Updates:        updates,
-		Coordinators:   coordinators,
+		Groups:         groups,
+		AssignedGroup:  assignedGroup,
 		Relations:      relations,
 		GeneratorCards: cards,
 	})
@@ -949,9 +977,10 @@ func (h *Handler) ApprovalDecision(w http.ResponseWriter, r *http.Request) {
 	// Reload again after potential status change.
 	req, _ = h.requests.GetByID(id)
 	updates, _ := h.updates.GetByRequestID(id)
-	coordinators, _ := h.users.GetCoordinators()
+	groups, _ := h.groups.GetAll()
+	assignedGroup := assignedGroupFrom(req, groups)
 	relations, _ := h.relations.GetByRequestID(id)
-	h.renderPartial(w, r, "request_detail", PageData{Request: req, Updates: updates, Coordinators: coordinators, Relations: relations})
+	h.renderPartial(w, r, "request_detail", PageData{Request: req, Updates: updates, Groups: groups, AssignedGroup: assignedGroup, Relations: relations})
 }
 
 func (h *Handler) GetStats(w http.ResponseWriter, r *http.Request) {

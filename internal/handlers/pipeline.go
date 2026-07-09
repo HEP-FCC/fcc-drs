@@ -152,6 +152,7 @@ func (h *Handler) DeleteComment(w http.ResponseWriter, r *http.Request) {
 	h.renderPartial(w, r, "activity", PageData{Request: req, Updates: stages})
 }
 
+
 func (h *Handler) AssignRequest(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(r.PathValue("id"))
 	if err != nil {
@@ -163,7 +164,7 @@ func (h *Handler) AssignRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	assignedTo, _ := strconv.Atoi(r.FormValue("assigned_to"))
+	groupID, _ := strconv.Atoi(r.FormValue("assigned_group_id"))
 
 	user := middleware.GetUser(r)
 	userID := 0
@@ -171,31 +172,29 @@ func (h *Handler) AssignRequest(w http.ResponseWriter, r *http.Request) {
 		userID = user.ID
 	}
 
-	if err := h.requests.Assign(id, assignedTo); err != nil {
-		slog.Error("assign request", "error", err)
+	if err := h.requests.AssignGroup(id, groupID); err != nil {
+		slog.Error("assign group", "error", err)
 		http.Error(w, "Internal Server Error", 500)
 		return
 	}
-
-	var eventBody string
-	if assignedTo == 0 {
-		eventBody = "Unassigned"
-	} else {
-		if assignee, err := h.users.GetByID(assignedTo); err == nil {
-			eventBody = "Assigned to " + assignee.DisplayName
-		} else {
-			eventBody = "Assigned"
-		}
-	}
-	h.updates.Add(id, userID, models.UpdateAssigned, eventBody)
 
 	req, err := h.requests.GetByID(id)
 	if err != nil {
 		http.Error(w, "Internal Server Error", 500)
 		return
 	}
-	coordinators, _ := h.users.GetCoordinators()
-	h.renderPartial(w, r, "assignment", PageData{Request: req, Coordinators: coordinators})
+
+	var eventBody string
+	if groupID == 0 {
+		eventBody = "Group unassigned"
+	} else {
+		eventBody = "Assigned to group: " + req.AssignedGroupName
+	}
+	h.updates.Add(id, userID, models.UpdateAssigned, eventBody)
+
+	groups, _ := h.groups.GetAll()
+	assignedGroup := assignedGroupFrom(req, groups)
+	h.renderPartial(w, r, "assignment", PageData{Request: req, Groups: groups, AssignedGroup: assignedGroup})
 }
 
 func (h *Handler) UpdatePriority(w http.ResponseWriter, r *http.Request) {
@@ -242,13 +241,15 @@ func (h *Handler) UpdatePriority(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	updates, _ := h.updates.GetByRequestID(id)
-	coordinators, _ := h.users.GetCoordinators()
+	groups, _ := h.groups.GetAll()
+	assignedGroup := assignedGroupFrom(req, groups)
 	relations, _ := h.relations.GetByRequestID(id)
 	cards, _ := h.generatorCards.GetByRequestID(id)
 	h.renderPartial(w, r, "request_detail", PageData{
 		Request:        req,
 		Updates:        updates,
-		Coordinators:   coordinators,
+		Groups:         groups,
+		AssignedGroup:  assignedGroup,
 		Relations:      relations,
 		GeneratorCards: cards,
 	})

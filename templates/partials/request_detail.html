@@ -237,7 +237,7 @@
       </button>
       {{end}}
       {{if and (eq .CreatedBy $d.CurrentUser.ID) (eq .Status "draft")}}
-      {{if and .Description .WorkingGroup .UseCase .DatasetType .Format .Statistics}}
+      {{if and .Description .UseCase .DatasetType .Format .Statistics}}
       <button
         hx-post="/requests/{{.ID}}/status"
         hx-vals='{"status":"pending"}'

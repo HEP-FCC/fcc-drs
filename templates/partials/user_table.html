@@ -8,6 +8,7 @@
         <th class="is-size-7 has-text-grey is-uppercase" style="letter-spacing:.05em">Email</th>
         <th class="is-size-7 has-text-grey is-uppercase" style="letter-spacing:.05em">Last Login</th>
         <th class="is-size-7 has-text-grey is-uppercase" style="letter-spacing:.05em">Role</th>
+        <th class="is-size-7 has-text-grey is-uppercase" style="letter-spacing:.05em">Coordinator Groups</th>
       </tr>
     </thead>
     <tbody>
@@ -36,17 +37,28 @@
               hx-swap="innerHTML"
               hx-trigger="change"
               hx-include="this">
-              <option value="requester" {{if eq .Role "requester"}}selected{{end}}>Requester</option>
-              <option value="coordinator"   {{if eq .Role "coordinator"}}selected{{end}}>Coordinator</option>
-              <option value="admin"     {{if eq .Role "admin"}}selected{{end}}>Admin</option>
+              <option value="requester"   {{if eq .Role "requester"}}selected{{end}}>Requester</option>
+              <option value="coordinator" {{if eq .Role "coordinator"}}selected{{end}}>Coordinator</option>
+              <option value="admin"       {{if eq .Role "admin"}}selected{{end}}>Admin</option>
             </select>
           </div>
+          {{end}}
+        </td>
+        <td>
+          {{if .GroupMemberships}}
+          <div style="display:flex;flex-wrap:wrap;gap:.25rem">
+            {{range .GroupMemberships}}
+            <span class="tag is-link is-light is-small">{{.Name}}</span>
+            {{end}}
+          </div>
+          {{else}}
+          <span class="is-size-7 has-text-grey-light">—</span>
           {{end}}
         </td>
       </tr>
       {{else}}
       <tr>
-        <td colspan="5" class="has-text-grey has-text-centered is-size-7 py-5">No users found.</td>
+        <td colspan="6" class="has-text-grey has-text-centered is-size-7 py-5">No users found.</td>
       </tr>
       {{end}}
     </tbody>

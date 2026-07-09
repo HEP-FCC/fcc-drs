@@ -49,6 +49,42 @@ func migrate(db *DB) error {
 	db.Exec(`ALTER TABLE dataset_requests ADD COLUMN statistics TEXT NOT NULL DEFAULT ''`)
 	db.Exec(`ALTER TABLE dataset_requests ADD COLUMN target_campaign TEXT NOT NULL DEFAULT ''`)
 	db.Exec(`ALTER TABLE dataset_requests ADD COLUMN key4hep_stack TEXT NOT NULL DEFAULT ''`)
+	db.Exec(`CREATE TABLE IF NOT EXISTS coordinator_groups (
+		id          INTEGER PRIMARY KEY AUTOINCREMENT,
+		name        TEXT NOT NULL UNIQUE,
+		description TEXT NOT NULL DEFAULT '',
+		created_at  DATETIME DEFAULT CURRENT_TIMESTAMP
+	)`)
+	db.Exec(`CREATE TABLE IF NOT EXISTS coordinator_group_members (
+		group_id INTEGER NOT NULL REFERENCES coordinator_groups(id) ON DELETE CASCADE,
+		user_id  INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+		PRIMARY KEY (group_id, user_id)
+	)`)
+	db.Exec(`INSERT OR IGNORE INTO coordinator_groups (name) VALUES
+		('BSM physics'),
+		('Electroweak physics'),
+		('FCC-hh physics'),
+		('Flavour physics'),
+		('Global fits & EFT'),
+		('Higgs physics'),
+		('Precision calculations'),
+		('QCD and photon-photon physics'),
+		('Top-quark physics'),
+		('Computing Resources'),
+		('Core SW/Key4hep, Releases'),
+		('Digitization and Reconstruction Software'),
+		('Documentation and Trainings'),
+		('Geometry, Simulation'),
+		('Interaction Region, Beam Backgrounds'),
+		('MC Productions, GRID Tools'),
+		('Analysis Tools'),
+		('High-level reconstruction'),
+		('Monte Carlo tools')`)
+	db.Exec(`ALTER TABLE dataset_requests ADD COLUMN assigned_group_id INTEGER REFERENCES coordinator_groups(id)`)
+	db.Exec(`UPDATE dataset_requests SET assigned_group_id = (
+		SELECT id FROM coordinator_groups WHERE name = working_group
+	) WHERE working_group != '' AND assigned_group_id IS NULL`)
+	db.Exec(`ALTER TABLE dataset_requests DROP COLUMN working_group`)
 
 	_, err := db.Exec(`
 		CREATE TABLE IF NOT EXISTS users (
@@ -75,7 +111,6 @@ func migrate(db *DB) error {
 			requester_name     TEXT NOT NULL,
 			requester_username TEXT NOT NULL DEFAULT '',
 			requester_email    TEXT DEFAULT '',
-			working_group      TEXT DEFAULT '',
 			dataset_type       TEXT DEFAULT 'simulation',
 			use_case           TEXT DEFAULT 'physics_analysis',
 			status             TEXT DEFAULT 'pending',

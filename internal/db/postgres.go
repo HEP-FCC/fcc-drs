@@ -61,7 +61,6 @@ func migrate(db *DB) error {
 			requester_name     TEXT NOT NULL,
 			requester_username TEXT NOT NULL DEFAULT '',
 			requester_email    TEXT DEFAULT '',
-			working_group      TEXT DEFAULT '',
 			dataset_type       TEXT DEFAULT 'simulation',
 			use_case           TEXT DEFAULT 'physics_analysis',
 			status             TEXT DEFAULT 'pending',
@@ -125,6 +124,46 @@ func migrate(db *DB) error {
 		`ALTER TABLE users ADD COLUMN IF NOT EXISTS preferred_name TEXT NOT NULL DEFAULT ''`,
 		`ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar BYTEA`,
 		`ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_mime TEXT NOT NULL DEFAULT ''`,
+		`CREATE TABLE IF NOT EXISTS coordinator_groups (
+			id          SERIAL PRIMARY KEY,
+			name        TEXT NOT NULL UNIQUE,
+			description TEXT NOT NULL DEFAULT '',
+			created_at  TIMESTAMPTZ DEFAULT NOW()
+		)`,
+		`CREATE TABLE IF NOT EXISTS coordinator_group_members (
+			group_id INTEGER NOT NULL REFERENCES coordinator_groups(id) ON DELETE CASCADE,
+			user_id  INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+			PRIMARY KEY (group_id, user_id)
+		)`,
+		`ALTER TABLE dataset_requests ADD COLUMN IF NOT EXISTS assigned_group_id INTEGER REFERENCES coordinator_groups(id)`,
+		`INSERT INTO coordinator_groups (name) VALUES
+			('BSM physics'),
+			('Electroweak physics'),
+			('FCC-hh physics'),
+			('Flavour physics'),
+			('Global fits & EFT'),
+			('Higgs physics'),
+			('Precision calculations'),
+			('QCD and photon-photon physics'),
+			('Top-quark physics'),
+			('Computing Resources'),
+			('Core SW/Key4hep, Releases'),
+			('Digitization and Reconstruction Software'),
+			('Documentation and Trainings'),
+			('Geometry, Simulation'),
+			('Interaction Region, Beam Backgrounds'),
+			('MC Productions, GRID Tools'),
+			('Analysis Tools'),
+			('High-level reconstruction'),
+			('Monte Carlo tools')
+		ON CONFLICT (name) DO NOTHING`,
+		`UPDATE dataset_requests dr
+			SET assigned_group_id = cg.id
+			FROM coordinator_groups cg
+			WHERE cg.name = dr.working_group
+			  AND dr.working_group != ''
+			  AND dr.assigned_group_id IS NULL`,
+		`ALTER TABLE dataset_requests DROP COLUMN IF EXISTS working_group`,
 	}
 
 	for _, stmt := range stmts {

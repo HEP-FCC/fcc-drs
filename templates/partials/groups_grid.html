@@ -1,0 +1,9 @@
+{{define "groups_grid"}}
+<div class="columns is-multiline">
+  {{range .Groups}}
+  <div class="column is-half">
+    {{template "group_card" (groupCardData . $.Coordinators)}}
+  </div>
+  {{end}}
+</div>
+{{end}}

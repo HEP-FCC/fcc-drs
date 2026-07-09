@@ -84,6 +84,11 @@ func main() {
 
 	// Admin-only routes
 	mux.HandleFunc("GET /admin/users", middleware.RequireAdmin(h.AdminUsers))
+	mux.HandleFunc("GET /admin/groups", middleware.RequireAdmin(h.AdminGroups))
+	mux.HandleFunc("POST /admin/groups", middleware.RequireAdmin(h.AdminCreateGroup))
+	mux.HandleFunc("DELETE /admin/groups/{id}", middleware.RequireAdmin(h.AdminDeleteGroup))
+	mux.HandleFunc("POST /admin/groups/{id}/members", middleware.RequireAdmin(h.AdminAddGroupMember))
+	mux.HandleFunc("DELETE /admin/groups/{id}/members/{user_id}", middleware.RequireAdmin(h.AdminRemoveGroupMember))
 	mux.HandleFunc("POST /admin/users/{id}/role", middleware.RequireAdmin(h.AdminUpdateUserRole))
 
 	// Coordinator-only routes
@@ -94,8 +99,8 @@ func main() {
 	mux.HandleFunc("PATCH /requests/{id}", middleware.RequireAuth(h.PatchRequest))
 	mux.HandleFunc("POST /requests/{id}/status", middleware.RequireAuth(h.UpdateStatus))
 	mux.HandleFunc("POST /requests/{id}/approval", middleware.RequireCoordinator(h.ApprovalDecision))
-	mux.HandleFunc("POST /requests/{id}/priority", middleware.RequireCoordinator(h.UpdatePriority))
 	mux.HandleFunc("POST /requests/{id}/assign", middleware.RequireCoordinator(h.AssignRequest))
+	mux.HandleFunc("POST /requests/{id}/priority", middleware.RequireCoordinator(h.UpdatePriority))
 	mux.HandleFunc("POST /requests/{id}/comments", middleware.RequireAuth(h.AddComment))
 	mux.HandleFunc("GET /requests/{id}/comments/{comment_id}", middleware.RequireAuth(h.GetComment))
 	mux.HandleFunc("GET /requests/{id}/comments/{comment_id}/edit", middleware.RequireAuth(h.EditCommentForm))

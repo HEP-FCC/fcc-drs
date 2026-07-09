@@ -1,0 +1,31 @@
+{{define "content"}}
+
+  <!-- Header -->
+  <div class="mb-5">
+    <h1 class="is-size-4 has-text-weight-semibold">Administration</h1>
+    <div class="tabs is-small mb-0 mt-3">
+      <ul>
+        <li><a href="/admin/users">Users</a></li>
+        <li class="is-active"><a href="/admin/groups">Coordinator Groups</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Groups grid -->
+  <div id="groups-area">
+    {{template "groups_grid" .}}
+  </div>
+
+  <!-- Create group -->
+  <form hx-post="/admin/groups"
+        hx-target="#groups-area"
+        hx-swap="innerHTML"
+        class="box mt-2">
+    <p class="is-size-7 has-text-weight-semibold is-uppercase has-text-grey mb-3" style="letter-spacing:.05em">New Group</p>
+    <div class="is-flex is-align-items-center" style="gap:.5rem">
+      <input class="form-input" type="text" name="name" placeholder="Group name" required>
+      <button type="submit" class="button is-link is-small is-shrink-0" style="border-radius:.5rem">Add Group</button>
+    </div>
+  </form>
+
+{{end}}

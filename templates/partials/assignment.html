@@ -1,22 +1,46 @@
 {{define "assignment"}}
 <div id="assignment-area" class="column is-half">
-  <span class="detail-label is-uppercase block mb-1" style="font-size:.65rem;letter-spacing:.05em">Assigned To</span>
+  <span class="detail-label is-uppercase block mb-1" style="font-size:.65rem;letter-spacing:.05em">Coordinator Group</span>
   {{if .CurrentUser.IsCoordinator}}
-  <select name="assigned_to"
+  <select name="assigned_group_id"
           hx-post="/requests/{{.Request.ID}}/assign"
           hx-target="#assignment-area"
           hx-swap="outerHTML"
           hx-trigger="change"
           class="assign-select">
-    <option value="0" {{if eq .Request.AssignedTo 0}}selected{{end}}>— Unassigned —</option>
-    {{range .Coordinators}}
-    <option value="{{.ID}}" {{if eq .ID $.Request.AssignedTo}}selected{{end}}>{{.DisplayName}}</option>
+    <option value="0" {{if eq .Request.AssignedGroupID 0}}selected{{end}}>— Unassigned —</option>
+    {{range .Groups}}
+    <option value="{{.ID}}" {{if eq .ID $.Request.AssignedGroupID}}selected{{end}}>{{.Name}}</option>
     {{end}}
   </select>
+  {{if .AssignedGroup}}
+  <div class="is-flex is-flex-wrap-wrap mt-2" style="gap:.35rem">
+    {{range .AssignedGroup.Members}}
+    <div class="is-flex is-align-items-center gap-1" title="{{.DisplayedName}}">
+      <div class="drs-avatar" style="width:1.25rem;height:1.25rem">
+        <img src="/users/{{.Username}}/avatar" alt="{{.DisplayedName}}">
+      </div>
+      <span class="is-size-7 has-text-grey-dark">{{.DisplayedName}}</span>
+    </div>
+    {{end}}
+  </div>
+  {{end}}
   {{else}}
-  <span class="is-size-7 has-text-grey-dark is-truncated">
-    {{if .Request.AssignedToName}}{{.Request.AssignedToName}}{{else}}—{{end}}
-  </span>
+  {{if .AssignedGroup}}
+    <span class="is-size-7 has-text-weight-medium has-text-grey-dark is-block mb-1">{{.AssignedGroup.Name}}</span>
+    <div class="is-flex is-flex-wrap-wrap" style="gap:.35rem;margin-top:.25rem">
+      {{range .AssignedGroup.Members}}
+      <div class="is-flex is-align-items-center gap-1" title="{{.DisplayedName}}">
+        <div class="drs-avatar" style="width:1.25rem;height:1.25rem">
+          <img src="/users/{{.Username}}/avatar" alt="{{.DisplayedName}}">
+        </div>
+        <span class="is-size-7 has-text-grey-dark">{{.DisplayedName}}</span>
+      </div>
+      {{end}}
+    </div>
+  {{else}}
+  <span class="is-size-7 has-text-grey">—</span>
+  {{end}}
   {{end}}
 </div>
 {{end}}

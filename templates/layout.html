@@ -52,7 +52,7 @@
       <div class="drs-nav-center is-hidden-touch">
         <a href="/" class="navbar-item{{if eq .Title "Dashboard"}} is-active{{end}}">Dashboard</a>
         <a href="/requests" class="navbar-item{{if eq .Title "All Requests"}} is-active{{end}}">Requests</a>
-        {{if .CurrentUser.IsAdmin}}<a href="/admin/users" class="navbar-item{{if eq .Title "User Management"}} is-active{{end}}">Admin</a>{{end}}
+        {{if .CurrentUser.IsAdmin}}<a href="/admin/users" class="navbar-item{{if or (eq .Title "User Management") (eq .Title "Coordinator Groups")}} is-active{{end}}">Admin</a>{{end}}
       </div>
       {{end}}
 
@@ -63,7 +63,7 @@
         <div class="navbar-start is-hidden-desktop">
           <a href="/" class="navbar-item{{if eq .Title "Dashboard"}} is-active{{end}}">Dashboard</a>
           <a href="/requests" class="navbar-item{{if eq .Title "All Requests"}} is-active{{end}}">Requests</a>
-          {{if .CurrentUser.IsAdmin}}<a href="/admin/users" class="navbar-item{{if eq .Title "User Management"}} is-active{{end}}">Admin</a>{{end}}
+          {{if .CurrentUser.IsAdmin}}<a href="/admin/users" class="navbar-item{{if or (eq .Title "User Management") (eq .Title "Coordinator Groups")}} is-active{{end}}">Admin</a>{{end}}
         </div>
 
         <div class="navbar-end">
