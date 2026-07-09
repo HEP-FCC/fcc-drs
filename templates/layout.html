@@ -341,6 +341,15 @@
     function applyTheme(t) {
       var dark = t === 'dark' || (t === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
       document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+      updateAvatarTheme(dark);
+    }
+
+    function updateAvatarTheme(dark) {
+      document.querySelectorAll('.drs-avatar img, .drs-user-avatar img').forEach(function(img) {
+        if (img.src.startsWith('data:')) return;
+        var base = img.src.split('?')[0];
+        img.src = dark ? base + '?dark=1' : base;
+      });
     }
 
     function setTheme(t) {
@@ -360,7 +369,14 @@
       if (getTheme() === 'system') applyTheme('system');
     });
 
-    document.addEventListener('DOMContentLoaded', function() { updateThemeButtons(getTheme()); });
+    document.addEventListener('DOMContentLoaded', function() {
+      updateThemeButtons(getTheme());
+      updateAvatarTheme(document.documentElement.getAttribute('data-theme') === 'dark');
+    });
+
+    document.addEventListener('htmx:afterSettle', function(e) {
+      updateAvatarTheme(document.documentElement.getAttribute('data-theme') === 'dark');
+    });
 
     // ── Modals ─────────────────────────────────────────────────────────────
     function showAlert(message) {

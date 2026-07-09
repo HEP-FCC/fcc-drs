@@ -169,7 +169,7 @@
     <div class="columns is-multiline">
       <div class="column is-half">
         <span class="detail-label is-uppercase block mb-1" style="font-size:.65rem;letter-spacing:.05em">Requester</span>
-        <span class="is-size-7 has-text-weight-medium has-text-grey-dark">{{.RequesterName}}</span>
+        <span class="is-size-7 has-text-weight-medium has-text-grey-dark is-truncated">{{.RequesterName}}</span>
         {{if .RequesterEmail}}<a href="mailto:{{.RequesterEmail}}" class="is-size-7 has-text-link is-block">{{.RequesterEmail}}</a>{{end}}
       </div>
       {{template "assignment" $d}}

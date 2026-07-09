@@ -14,23 +14,26 @@
       </div>
       {{end}}
 
-      <form action="/profile" method="POST" enctype="multipart/form-data">
+      <!-- Avatar (forms are hidden; buttons reference them via form="...") -->
+      <form id="avatar-upload-form" action="/profile" method="POST" enctype="multipart/form-data" style="display:none">
+        <input id="avatar-file" type="file" name="avatar" accept="image/*"
+               onchange="var f=this.files[0]; if(f){ if(f.size>2*1024*1024){ showAlert('File is too large. Maximum size is 2 MB.'); this.value=''; return; } document.getElementById('avatar-name').textContent=f.name; document.getElementById('avatar-upload-btn').style.display=''; var r=new FileReader(); r.onload=function(e){ document.getElementById('avatar-preview').src=e.target.result; }; r.readAsDataURL(f); }">
+      </form>
+      <form id="avatar-delete-form" action="/profile/avatar/delete" method="POST" style="display:none"></form>
 
-        <!-- Avatar -->
-        <div class="box mb-4">
-          <p class="is-size-7 has-text-weight-semibold is-uppercase has-text-grey mb-4" style="letter-spacing:.05em">Avatar</p>
-          <div class="is-flex is-align-items-center" style="gap:1.5rem">
-            <div class="drs-avatar drs-avatar--lg">
-              <img src="/users/{{.CurrentUser.Username}}/avatar" alt="{{.CurrentUser.DisplayedName}}">
-            </div>
-            <div>
-              <p class="is-size-7 has-text-grey mb-2">
-                {{if .CurrentUser.HasAvatar}}Custom avatar active.{{else}}Upload an image to set a custom avatar.{{end}}
-              </p>
-              <div class="file is-small is-link is-light">
-                <label class="file-label">
-                  <input class="file-input" type="file" name="avatar" accept="image/*"
-                         onchange="document.getElementById('avatar-name').textContent = this.files[0]?.name || ''">
+      <div class="box mb-4">
+        <p class="is-size-7 has-text-weight-semibold is-uppercase has-text-grey mb-4" style="letter-spacing:.05em">Avatar</p>
+        <div class="is-flex is-align-items-flex-start" style="gap:1.5rem">
+          <div class="drs-avatar drs-avatar--lg">
+            <img id="avatar-preview" src="/users/{{.CurrentUser.Username}}/avatar" alt="{{.CurrentUser.DisplayedName}}">
+          </div>
+          <div style="min-width:0">
+            <p class="is-size-7 has-text-grey mb-2">
+              {{if .CurrentUser.HasAvatar}}Custom avatar active.{{else}}Upload an image to set a custom avatar.{{end}}
+            </p>
+            <div class="is-flex is-align-items-center is-flex-wrap-wrap" style="gap:.5rem">
+              <div class="file is-link is-light">
+                <label class="file-label" for="avatar-file">
                   <span class="file-cta" style="border-radius:.5rem">
                     <span class="file-icon">
                       <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -41,30 +44,32 @@
                   </span>
                 </label>
               </div>
-              <p class="is-size-7 has-text-grey mt-1" id="avatar-name"></p>
-              <p class="is-size-7 has-text-grey-light mt-1">JPEG, PNG, GIF or WebP · max 2 MB</p>
-            </div>
-          </div>
-          {{if .CurrentUser.HasAvatar}}
-          <div class="mt-4 pt-4" style="border-top:1px solid #e7e5e4">
-            <form action="/profile/avatar/delete" method="POST" style="display:inline">
-              <button type="submit" class="button is-small is-danger is-light"
-                      onclick="return confirm('Remove your custom avatar?')">
-                Remove custom avatar
+              <button id="avatar-upload-btn" form="avatar-upload-form" type="submit"
+                      class="button is-link" style="display:none">Upload</button>
+              {{if .CurrentUser.HasAvatar}}
+              <button type="button" class="button is-danger is-light"
+                      onclick="showConfirm('Remove your custom avatar?', function(){ document.getElementById('avatar-delete-form').submit(); })">
+                Remove
               </button>
-            </form>
+              {{end}}
+            </div>
+            <p class="is-size-7 has-text-grey mt-1 is-truncated" id="avatar-name"></p>
+            <p class="is-size-7 has-text-grey-light mt-1">JPEG, PNG, GIF or WebP · max 2 MB</p>
           </div>
-          {{end}}
         </div>
+      </div>
+
+      <form action="/profile" method="POST">
 
         <!-- Display name -->
         <div class="box mb-4">
           <p class="is-size-7 has-text-weight-semibold is-uppercase has-text-grey mb-4" style="letter-spacing:.05em">Display Name</p>
-          <div class="field">
-            <label class="form-label">Preferred name <span class="has-text-grey-light">(leave blank to use your SSO name)</span></label>
+          <label class="form-label">Preferred name <span class="has-text-grey-light">(leave blank to use your SSO name)</span></label>
+          <div class="is-flex" style="gap:.5rem">
             <input class="form-input" type="text" name="preferred_name"
                    value="{{.CurrentUser.PreferredName}}"
                    placeholder="{{.CurrentUser.DisplayName}}">
+            <button type="submit" class="button is-link">Save</button>
           </div>
         </div>
 
@@ -91,7 +96,6 @@
           </div>
         </div>
 
-        <button type="submit" class="button is-link">Save changes</button>
 
       </form>
 

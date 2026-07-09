@@ -1,5 +1,5 @@
 {{define "assignment"}}
-<div id="assignment-area">
+<div id="assignment-area" class="column is-half">
   <span class="detail-label is-uppercase block mb-1" style="font-size:.65rem;letter-spacing:.05em">Assigned To</span>
   {{if .CurrentUser.IsCoordinator}}
   <select name="assigned_to"
@@ -14,7 +14,7 @@
     {{end}}
   </select>
   {{else}}
-  <span class="is-size-7 has-text-grey-dark">
+  <span class="is-size-7 has-text-grey-dark is-truncated">
     {{if .Request.AssignedToName}}{{.Request.AssignedToName}}{{else}}—{{end}}
   </span>
   {{end}}
