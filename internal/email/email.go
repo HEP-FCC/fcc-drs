@@ -42,7 +42,7 @@ func (c Config) Send(to, subject, body string) error {
 		"From: FCC Dataset Request System <" + c.From + ">",
 		"To: " + to,
 		"Subject: " + subject,
-		"Content-Type: text/plain; charset=UTF-8",
+		"Content-Type: text/html; charset=UTF-8",
 		"",
 		body,
 	}, "\r\n")

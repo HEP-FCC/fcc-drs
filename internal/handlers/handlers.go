@@ -10,6 +10,8 @@ import (
 	"strings"
 	"time"
 
+	"os"
+
 	"dataset-tracker/internal/auth"
 	"dataset-tracker/internal/email"
 	"dataset-tracker/internal/middleware"
@@ -41,7 +43,7 @@ func New(db *sql.DB, driver string, oidcClient *auth.Client, devMode bool, versi
 		generatorCards: models.NewGeneratorCardStore(db, driver),
 		groups:         models.NewCoordinatorGroupStore(db, driver),
 		oidc:           oidcClient,
-		notifier:       notifications.New(users, email.ConfigFromEnv()),
+		notifier:       notifications.New(users, email.ConfigFromEnv(), os.Getenv("APP_URL")),
 		devMode:        devMode,
 		version:        version,
 	}

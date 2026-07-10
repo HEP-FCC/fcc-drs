@@ -22,6 +22,12 @@ spec:
           ports:
             - containerPort: 5050
           env:
+            - name: APP_URL
+              valueFrom:
+                secretKeyRef:
+                  name: fcc-drs-secrets
+                  key: app-url
+                  optional: true
             - name: DATABASE_URL
               valueFrom:
                 secretKeyRef:
