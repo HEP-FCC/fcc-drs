@@ -160,12 +160,19 @@ func migrate(db *DB) error {
 			('High-level reconstruction'),
 			('Monte Carlo tools')
 		ON CONFLICT (name) DO NOTHING`,
-		`UPDATE dataset_requests dr
-			SET assigned_group_id = cg.id
-			FROM coordinator_groups cg
-			WHERE cg.name = dr.working_group
-			  AND dr.working_group != ''
-			  AND dr.assigned_group_id IS NULL`,
+		`DO $$ BEGIN
+			IF EXISTS (
+				SELECT 1 FROM information_schema.columns
+				WHERE table_name='dataset_requests' AND column_name='working_group'
+			) THEN
+				UPDATE dataset_requests dr
+					SET assigned_group_id = cg.id
+					FROM coordinator_groups cg
+					WHERE cg.name = dr.working_group
+					  AND dr.working_group != ''
+					  AND dr.assigned_group_id IS NULL;
+			END IF;
+		END $$`,
 		`ALTER TABLE dataset_requests DROP COLUMN IF EXISTS working_group`,
 		`ALTER TABLE users ADD COLUMN IF NOT EXISTS notify_new_requests   BOOLEAN NOT NULL DEFAULT TRUE`,
 		`ALTER TABLE users ADD COLUMN IF NOT EXISTS notify_status_changes BOOLEAN NOT NULL DEFAULT TRUE`,
