@@ -476,6 +476,7 @@ func (h *Handler) CreateRequest(w http.ResponseWriter, r *http.Request) {
 		if g, err := h.groups.GetByName(groupName); err == nil && g != nil {
 			h.requests.AssignGroup(int(id), g.ID) //nolint:errcheck
 			req.AssignedGroupID = g.ID
+			req.AssignedGroupName = g.Name
 		}
 	}
 

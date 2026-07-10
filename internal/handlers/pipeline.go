@@ -188,6 +188,8 @@ func (h *Handler) AssignRequest(w http.ResponseWriter, r *http.Request) {
 		userID = user.ID
 	}
 
+	existing, _ := h.requests.GetByID(id)
+
 	if err := h.requests.AssignGroup(id, groupID); err != nil {
 		slog.Error("assign group", "error", err)
 		http.Error(w, "Internal Server Error", 500)
@@ -203,8 +205,10 @@ func (h *Handler) AssignRequest(w http.ResponseWriter, r *http.Request) {
 	var eventBody string
 	if groupID == 0 {
 		eventBody = "Group unassigned"
-	} else {
+	} else if existing == nil || existing.AssignedGroupID == 0 {
 		eventBody = "Assigned to group: " + req.AssignedGroupName
+	} else {
+		eventBody = existing.AssignedGroupName + " → " + req.AssignedGroupName
 	}
 	h.updates.Add(id, userID, models.UpdateAssigned, eventBody)
 	h.notifier.OnActivity(req, &models.Update{RequestID: id, UserID: userID, Type: models.UpdateAssigned, Body: eventBody})

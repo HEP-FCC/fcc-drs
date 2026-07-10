@@ -46,6 +46,7 @@
           <img src="/users/{{.RequesterUsername}}/avatar" alt="{{.RequesterName}}">
         </div>
         <span class="is-size-7 has-text-grey">{{truncate .RequesterName 20}}</span>
+        {{if .AssignedGroupName}}<span class="group-badge">{{.AssignedGroupName}}</span>{{end}}
       </div>
       <span class="is-size-7 has-text-grey-light">{{formatDate .CreatedAt}}</span>
     </div>

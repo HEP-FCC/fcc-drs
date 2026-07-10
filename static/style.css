@@ -340,6 +340,23 @@ a.navbar-item.is-active {
 }
 [data-theme=dark] .tag-drs { background: #292524; color: #a8a29e; }
 
+.group-badge {
+  display: inline-block;
+  padding: 0.1rem 0.5rem;
+  border-radius: 0.4rem;
+  font-size: 0.65rem;
+  font-weight: 600;
+  background: #eff6ff;
+  color: #1d4ed8;
+  letter-spacing: 0.01em;
+  max-width: 9rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: middle;
+}
+[data-theme=dark] .group-badge { background: rgba(37,99,235,.18); color: #93c5fd; }
+
 /* ── File upload ─────────────────────────────────────────────────────────── */
 /* Bulma uses height:2.5em — relative to font-size, so mismatched font-sizes
    between .file-cta and .file-name produce unequal heights. Fix with rem. */
