@@ -87,6 +87,14 @@ func (h *Handler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Notification preferences
+	notifNewReq := r.FormValue("notify_new_requests") == "1"
+	notifStatus := r.FormValue("notify_status_changes") == "1"
+	notifComments := r.FormValue("notify_comments") == "1"
+	if err := h.users.UpdateNotificationPrefs(user.ID, notifNewReq, notifStatus, notifComments); err != nil {
+		slog.Error("update notification prefs", "error", err)
+	}
+
 	// Avatar upload (optional)
 	if r.MultipartForm != nil {
 		file, header, err := r.FormFile("avatar")

@@ -50,6 +50,7 @@ func (h *Handler) AddComment(w http.ResponseWriter, r *http.Request) {
 	h.relations.CreateMentions(id, userID, body)
 
 	req, _ := h.requests.GetByID(id)
+	h.notifier.OnActivity(req, &models.Update{RequestID: id, UserID: userID, Type: evType, Body: body})
 	stages, _ := h.updates.GetByRequestID(id)
 	h.renderPartial(w, r, "activity", PageData{Request: req, Updates: stages})
 }
@@ -191,6 +192,7 @@ func (h *Handler) AssignRequest(w http.ResponseWriter, r *http.Request) {
 		eventBody = "Assigned to group: " + req.AssignedGroupName
 	}
 	h.updates.Add(id, userID, models.UpdateAssigned, eventBody)
+	h.notifier.OnActivity(req, &models.Update{RequestID: id, UserID: userID, Type: models.UpdateAssigned, Body: eventBody})
 
 	groups, _ := h.groups.GetAll()
 	assignedGroup := assignedGroupFrom(req, groups)
@@ -234,6 +236,7 @@ func (h *Handler) UpdatePriority(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Internal Server Error", 500)
 		return
 	}
+	h.notifier.OnActivity(req, &models.Update{RequestID: id, UserID: userID, Type: models.UpdatePriorityChanged, Body: body})
 
 	htmxTarget := r.Header.Get("HX-Target")
 	if strings.HasPrefix(htmxTarget, "priority-cell-") {
@@ -305,7 +308,9 @@ func (h *Handler) BatchAction(w http.ResponseWriter, r *http.Request) {
 			body += " (by " + userName + ")"
 		}
 		h.updates.Add(id, userID, models.UpdateStatusChanged, body)
-		h.sendStatusEmail(existing, status)
+		if fresh, err := h.requests.GetByID(id); err == nil {
+			h.notifier.OnActivity(fresh, &models.Update{RequestID: id, UserID: userID, Type: models.UpdateStatusChanged, Body: body})
+		}
 	}
 
 	w.Header().Set("HX-Redirect", r.Header.Get("HX-Current-URL"))

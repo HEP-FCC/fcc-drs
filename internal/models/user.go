@@ -24,6 +24,9 @@ type User struct {
 	HasAvatar        bool
 	CreatedAt        time.Time
 	LastLogin        time.Time
+	NotifyNewRequests   bool
+	NotifyStatusChanges bool
+	NotifyComments      bool
 	GroupMemberships []*CoordinatorGroup // populated in admin context only
 }
 
@@ -98,7 +101,8 @@ func (r *UserStore) Upsert(username, displayName, email string, role Role) (*Use
 func (r *UserStore) GetByUsername(username string) (*User, error) {
 	row := r.db.QueryRow(r.rebind(`
 		SELECT id, username, display_name, preferred_name, email, role,
-		       avatar IS NOT NULL as has_avatar, created_at, last_login
+		       avatar IS NOT NULL as has_avatar, created_at, last_login,
+			       notify_new_requests, notify_status_changes, notify_comments
 		FROM users WHERE username = ?`), username)
 	return scanUser(row)
 }
@@ -106,7 +110,8 @@ func (r *UserStore) GetByUsername(username string) (*User, error) {
 func (r *UserStore) GetByID(id int) (*User, error) {
 	row := r.db.QueryRow(r.rebind(`
 		SELECT id, username, display_name, preferred_name, email, role,
-		       avatar IS NOT NULL as has_avatar, created_at, last_login
+		       avatar IS NOT NULL as has_avatar, created_at, last_login,
+			       notify_new_requests, notify_status_changes, notify_comments
 		FROM users WHERE id = ?`), id)
 	return scanUser(row)
 }
@@ -124,7 +129,8 @@ func (r *UserStore) CreateSession(userID int, token string, expiresAt time.Time)
 func (r *UserStore) GetSession(token string) (*User, error) {
 	row := r.db.QueryRow(r.rebind(`
 		SELECT u.id, u.username, u.display_name, u.preferred_name, u.email, u.role,
-		       u.avatar IS NOT NULL as has_avatar, u.created_at, u.last_login
+		       u.avatar IS NOT NULL as has_avatar, u.created_at, u.last_login,
+			       u.notify_new_requests, u.notify_status_changes, u.notify_comments
 		FROM sessions s
 		JOIN users u ON u.id = s.user_id
 		WHERE s.id = ? AND s.expires_at > CURRENT_TIMESTAMP
@@ -140,7 +146,8 @@ func (r *UserStore) DeleteSession(token string) error {
 func (r *UserStore) GetCoordinators() ([]*User, error) {
 	rows, err := r.db.Query(`
 		SELECT id, username, display_name, preferred_name, email, role,
-		       avatar IS NOT NULL as has_avatar, created_at, last_login
+		       avatar IS NOT NULL as has_avatar, created_at, last_login,
+			       notify_new_requests, notify_status_changes, notify_comments
 		FROM users WHERE role IN ('coordinator', 'admin') ORDER BY display_name`)
 	if err != nil {
 		return nil, err
@@ -160,7 +167,8 @@ func (r *UserStore) GetCoordinators() ([]*User, error) {
 func (r *UserStore) GetAll() ([]*User, error) {
 	rows, err := r.db.Query(`
 		SELECT id, username, display_name, preferred_name, email, role,
-		       avatar IS NOT NULL as has_avatar, created_at, last_login
+		       avatar IS NOT NULL as has_avatar, created_at, last_login,
+			       notify_new_requests, notify_status_changes, notify_comments
 		FROM users ORDER BY display_name`)
 	if err != nil {
 		return nil, err
@@ -205,6 +213,54 @@ func (r *UserStore) GetAvatar(username string) ([]byte, string, error) {
 	return data, mime, err
 }
 
+func (r *UserStore) UpdateNotificationPrefs(userID int, newRequests, statusChanges, comments bool) error {
+	_, err := r.db.Exec(r.rebind(`
+		UPDATE users SET notify_new_requests=?, notify_status_changes=?, notify_comments=? WHERE id=?`),
+		newRequests, statusChanges, comments, userID)
+	return err
+}
+
+// notifQuery returns users (admins always + group members when groupID>0) with the given
+// notification column enabled, excluding a specific user ID (pass 0 to exclude nobody).
+func (r *UserStore) notifQuery(groupID, excludeID int, col string) ([]*User, error) {
+	q := r.rebind(`
+		SELECT DISTINCT u.id, u.username, u.display_name, u.preferred_name, u.email, u.role,
+		       u.avatar IS NOT NULL, u.created_at, u.last_login,
+		       u.notify_new_requests, u.notify_status_changes, u.notify_comments
+		FROM users u
+		LEFT JOIN coordinator_group_members cgm ON cgm.user_id = u.id AND cgm.group_id = ?
+		WHERE u.email != ''
+		  AND u.` + col + ` = TRUE
+		  AND u.id != ?
+		  AND (u.role = 'admin' OR cgm.user_id IS NOT NULL)`)
+	rows, err := r.db.Query(q, groupID, excludeID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var users []*User
+	for rows.Next() {
+		u, err := scanUser(rows)
+		if err != nil {
+			return nil, err
+		}
+		users = append(users, u)
+	}
+	return users, rows.Err()
+}
+
+func (r *UserStore) GetUsersForNewRequest(groupID int) ([]*User, error) {
+	return r.notifQuery(groupID, 0, "notify_new_requests")
+}
+
+func (r *UserStore) GetUsersForStatusChange(groupID int) ([]*User, error) {
+	return r.notifQuery(groupID, 0, "notify_status_changes")
+}
+
+func (r *UserStore) GetUsersForComment(groupID, excludeUserID int) ([]*User, error) {
+	return r.notifQuery(groupID, excludeUserID, "notify_comments")
+}
+
 func (r *UserStore) PurgeExpiredSessions() error {
 	_, err := r.db.Exec(`DELETE FROM sessions WHERE expires_at <= CURRENT_TIMESTAMP`)
 	return err
@@ -215,6 +271,7 @@ func scanUser(row scannable) (*User, error) {
 	err := row.Scan(
 		&u.ID, &u.Username, &u.DisplayName, &u.PreferredName, &u.Email, &u.Role,
 		&u.HasAvatar, timeVal{&u.CreatedAt}, timeVal{&u.LastLogin},
+		&u.NotifyNewRequests, &u.NotifyStatusChanges, &u.NotifyComments,
 	)
 	if u.PreferredName != "" {
 		u.DisplayName = u.PreferredName

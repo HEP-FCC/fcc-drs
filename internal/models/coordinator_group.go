@@ -109,7 +109,8 @@ func (s *CoordinatorGroupStore) GetByID(id int) (*CoordinatorGroup, error) {
 func (s *CoordinatorGroupStore) getMembers(groupID int) ([]*User, error) {
 	rows, err := s.db.Query(s.rebind(`
 		SELECT u.id, u.username, u.display_name, u.preferred_name, u.email, u.role,
-		       u.avatar IS NOT NULL AS has_avatar, u.created_at, u.last_login
+		       u.avatar IS NOT NULL AS has_avatar, u.created_at, u.last_login,
+			       u.notify_new_requests, u.notify_status_changes, u.notify_comments
 		FROM coordinator_group_members cgm
 		JOIN users u ON u.id = cgm.user_id
 		WHERE cgm.group_id = ?

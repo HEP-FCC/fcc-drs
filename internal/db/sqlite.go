@@ -85,6 +85,9 @@ func migrate(db *DB) error {
 		SELECT id FROM coordinator_groups WHERE name = working_group
 	) WHERE working_group != '' AND assigned_group_id IS NULL`)
 	db.Exec(`ALTER TABLE dataset_requests DROP COLUMN working_group`)
+	db.Exec(`ALTER TABLE users ADD COLUMN notify_new_requests INTEGER NOT NULL DEFAULT 1`)
+	db.Exec(`ALTER TABLE users ADD COLUMN notify_status_changes INTEGER NOT NULL DEFAULT 1`)
+	db.Exec(`ALTER TABLE users ADD COLUMN notify_comments INTEGER NOT NULL DEFAULT 1`)
 
 	_, err := db.Exec(`
 		CREATE TABLE IF NOT EXISTS users (
@@ -92,9 +95,12 @@ func migrate(db *DB) error {
 			username     TEXT NOT NULL UNIQUE,
 			display_name TEXT NOT NULL DEFAULT '',
 			email        TEXT NOT NULL DEFAULT '',
-			role         TEXT NOT NULL DEFAULT 'requester',
-			created_at   DATETIME DEFAULT CURRENT_TIMESTAMP,
-			last_login   DATETIME DEFAULT CURRENT_TIMESTAMP
+			role                  TEXT NOT NULL DEFAULT 'requester',
+			notify_new_requests   INTEGER NOT NULL DEFAULT 1,
+			notify_status_changes INTEGER NOT NULL DEFAULT 1,
+			notify_comments       INTEGER NOT NULL DEFAULT 1,
+			created_at            DATETIME DEFAULT CURRENT_TIMESTAMP,
+			last_login            DATETIME DEFAULT CURRENT_TIMESTAMP
 		);
 
 		CREATE TABLE IF NOT EXISTS sessions (

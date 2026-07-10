@@ -44,9 +44,12 @@ func migrate(db *DB) error {
 			username     TEXT NOT NULL UNIQUE,
 			display_name TEXT NOT NULL DEFAULT '',
 			email        TEXT NOT NULL DEFAULT '',
-			role         TEXT NOT NULL DEFAULT 'requester',
-			created_at   TIMESTAMPTZ DEFAULT NOW(),
-			last_login   TIMESTAMPTZ DEFAULT NOW()
+			role                  TEXT NOT NULL DEFAULT 'requester',
+			notify_new_requests   BOOLEAN NOT NULL DEFAULT TRUE,
+			notify_status_changes BOOLEAN NOT NULL DEFAULT TRUE,
+			notify_comments       BOOLEAN NOT NULL DEFAULT TRUE,
+			created_at            TIMESTAMPTZ DEFAULT NOW(),
+			last_login            TIMESTAMPTZ DEFAULT NOW()
 		)`,
 		`CREATE TABLE IF NOT EXISTS sessions (
 			id         TEXT PRIMARY KEY,
@@ -164,6 +167,9 @@ func migrate(db *DB) error {
 			  AND dr.working_group != ''
 			  AND dr.assigned_group_id IS NULL`,
 		`ALTER TABLE dataset_requests DROP COLUMN IF EXISTS working_group`,
+		`ALTER TABLE users ADD COLUMN IF NOT EXISTS notify_new_requests   BOOLEAN NOT NULL DEFAULT TRUE`,
+		`ALTER TABLE users ADD COLUMN IF NOT EXISTS notify_status_changes BOOLEAN NOT NULL DEFAULT TRUE`,
+		`ALTER TABLE users ADD COLUMN IF NOT EXISTS notify_comments       BOOLEAN NOT NULL DEFAULT TRUE`,
 	}
 
 	for _, stmt := range stmts {

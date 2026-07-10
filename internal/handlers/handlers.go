@@ -14,6 +14,7 @@ import (
 	"dataset-tracker/internal/email"
 	"dataset-tracker/internal/middleware"
 	"dataset-tracker/internal/models"
+	"dataset-tracker/internal/notifications"
 )
 
 type Handler struct {
@@ -24,24 +25,25 @@ type Handler struct {
 	generatorCards *models.GeneratorCardStore
 	groups         *models.CoordinatorGroupStore
 	oidc           *auth.Client
+	notifier       *notifications.Notifier
 	funcMap        template.FuncMap
 	devMode        bool
 	version        string
-	emailCfg       email.Config
 }
 
 func New(db *sql.DB, driver string, oidcClient *auth.Client, devMode bool, version string) *Handler {
+	users := models.NewUserStore(db, driver)
 	h := &Handler{
 		requests:       models.NewRequestStore(db, driver),
-		users:          models.NewUserStore(db, driver),
+		users:          users,
 		updates:        models.NewUpdateStore(db, driver),
 		relations:      models.NewRelationStore(db, driver),
 		generatorCards: models.NewGeneratorCardStore(db, driver),
 		groups:         models.NewCoordinatorGroupStore(db, driver),
 		oidc:           oidcClient,
+		notifier:       notifications.New(users, email.ConfigFromEnv()),
 		devMode:        devMode,
 		version:        version,
-		emailCfg:       email.ConfigFromEnv(),
 	}
 	h.funcMap = template.FuncMap{
 		"useCaseLabels":        func() []models.Option { return models.UseCaseLabels },
@@ -304,54 +306,6 @@ func canEdit(user *models.User, req *models.DatasetRequest) bool {
 	return req.Status == models.StatusDraft || req.Status == models.StatusPending
 }
 
-// sendNewRequestEmail notifies all coordinators and admins when a request is submitted.
-func (h *Handler) sendNewRequestEmail(req *models.DatasetRequest) {
-	if !h.emailCfg.Enabled() {
-		return
-	}
-	coordinators, err := h.users.GetCoordinators()
-	if err != nil {
-		slog.Error("get coordinators for email", "error", err)
-		return
-	}
-	desc := req.Description
-	if len(desc) > 500 {
-		desc = desc[:500] + "…"
-	}
-	subject := fmt.Sprintf("[FCC-DRS] New request #%d: %s", req.ID, req.Title)
-	body := fmt.Sprintf(
-		"A new dataset request has been submitted.\n\nTitle: %s\nID: %d\nRequester: %s\n\nDescription:\n%s\n\nFCC Dataset Request System",
-		req.Title, req.ID, req.RequesterName, desc,
-	)
-	for _, c := range coordinators {
-		if c.Email == "" {
-			continue
-		}
-		if err := h.emailCfg.Send(c.Email, subject, body); err != nil {
-			slog.Error("send new request email", "request_id", req.ID, "user", c.Username, "error", err)
-		} else {
-			slog.Info("sent new request email", "request_id", req.ID, "user", c.Username)
-		}
-	}
-}
-
-// sendStatusEmail notifies the requester of a status change (no-op if email unconfigured).
-func (h *Handler) sendStatusEmail(req *models.DatasetRequest, newStatus models.Status) {
-	if !h.emailCfg.Enabled() || req.RequesterEmail == "" {
-		return
-	}
-	subject := fmt.Sprintf("[FCC-DRS] Request #%d status updated: %s", req.ID, newStatus)
-	body := fmt.Sprintf(
-		"Your dataset request \"%s\" (ID: %d) has been updated.\n\nNew status: %s\n\nFCC Dataset Request System",
-		req.Title, req.ID, req.StatusLabel(),
-	)
-	if err := h.emailCfg.Send(req.RequesterEmail, subject, body); err != nil {
-		slog.Error("send status email", "request_id", req.ID, "error", err)
-	} else {
-		slog.Info("sent status email", "request_id", req.ID, "to", req.RequesterEmail)
-	}
-}
-
 // ── handlers ──────────────────────────────────────────────────────────────────
 
 func (h *Handler) Dashboard(w http.ResponseWriter, r *http.Request) {
@@ -519,18 +473,18 @@ func (h *Handler) CreateRequest(w http.ResponseWriter, r *http.Request) {
 	if groupName := strings.TrimSpace(r.FormValue("group_name")); groupName != "" {
 		if g, err := h.groups.GetByName(groupName); err == nil && g != nil {
 			h.requests.AssignGroup(int(id), g.ID) //nolint:errcheck
+			req.AssignedGroupID = g.ID
 		}
 	}
 
-	// Log creation event
+	// Log creation event and notify.
 	userName := "unknown"
 	if user != nil {
 		userName = user.DisplayName
 	}
-	h.updates.Add(int(id), createdBy, models.UpdateCreated, "Request submitted by "+userName)
-	if req.Status == models.StatusPending {
-		h.sendNewRequestEmail(req)
-	}
+	activityBody := "Request submitted by " + userName
+	h.updates.Add(int(id), createdBy, models.UpdateCreated, activityBody)
+	h.notifier.OnActivity(req, &models.Update{RequestID: int(id), UserID: createdBy, Type: models.UpdateCreated, Body: activityBody})
 	h.relations.CreateMentions(int(id), createdBy, req.Description, req.Notes)
 	h.saveGeneratorCardFromForm(r, int(id), createdBy)
 
@@ -829,17 +783,17 @@ func (h *Handler) UpdateStatus(w http.ResponseWriter, r *http.Request) {
 		body += " (by " + userName + ")"
 	}
 	h.updates.Add(id, userID, models.UpdateStatusChanged, body)
-	if status == models.StatusPending {
-		h.sendNewRequestEmail(existing)
-	} else {
-		h.sendStatusEmail(existing, status)
-	}
 
 	req, err := h.requests.GetByID(id)
 	if err != nil {
 		http.Error(w, "Internal Server Error", 500)
 		return
 	}
+	evType := models.UpdateStatusChanged
+	if status == models.StatusPending {
+		evType = models.UpdateCreated // re-submission: notify coordinators as new request
+	}
+	h.notifier.OnActivity(req, &models.Update{RequestID: id, UserID: userID, Type: evType, Body: body})
 
 	if strings.HasPrefix(r.Header.Get("HX-Target"), "status-cell-") {
 		h.renderPartial(w, r, "status_badge", PageData{Request: req})
@@ -913,8 +867,7 @@ func (h *Handler) ApprovalDecision(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	existing, err := h.requests.GetByID(id)
-	if err != nil {
+	if _, err := h.requests.GetByID(id); err != nil {
 		http.Error(w, "Not Found", 404)
 		return
 	}
@@ -956,21 +909,30 @@ func (h *Handler) ApprovalDecision(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Notify for the approval decision itself.
+	h.notifier.OnActivity(req, &models.Update{RequestID: id, UserID: userID, Type: models.UpdateStatusChanged, Body: body})
+
 	// Auto-promote when both tracks approved.
 	if req.PhysicsApproval == "approved" && req.ResourcesApproval == "approved" && req.Status == models.StatusPending {
+		autoBody := "under review → approved (both approvals granted)"
 		if err := h.requests.UpdateStatus(id, models.StatusApproved); err == nil {
-			h.updates.Add(id, userID, models.UpdateStatusChanged, "under review → approved (both approvals granted)")
-			h.sendStatusEmail(existing, models.StatusApproved)
+			h.updates.Add(id, userID, models.UpdateStatusChanged, autoBody)
+			if fresh, err := h.requests.GetByID(id); err == nil {
+				h.notifier.OnActivity(fresh, &models.Update{RequestID: id, UserID: userID, Type: models.UpdateStatusChanged, Body: autoBody})
+			}
 		}
 	} else if decision == "rejected" && req.Status == models.StatusPending {
+		autoBody := "under review → rejected (" + trackLabel + " approval denied)"
 		if err := h.requests.UpdateStatus(id, models.StatusRejected); err == nil {
-			h.updates.Add(id, userID, models.UpdateStatusChanged, "under review → rejected ("+trackLabel+" approval denied)")
-			h.sendStatusEmail(existing, models.StatusRejected)
+			h.updates.Add(id, userID, models.UpdateStatusChanged, autoBody)
+			if fresh, err := h.requests.GetByID(id); err == nil {
+				h.notifier.OnActivity(fresh, &models.Update{RequestID: id, UserID: userID, Type: models.UpdateStatusChanged, Body: autoBody})
+			}
 		}
 	} else if decision == "revert" && (req.Status == models.StatusApproved || req.Status == models.StatusRejected || req.Status == models.StatusCompleted || req.Status == models.StatusInProgress) {
-		// Revert overall status back to under review when an approval is revoked.
+		autoBody := string(req.Status) + " → under review (" + trackLabel + " approval reverted)"
 		if err := h.requests.UpdateStatus(id, models.StatusPending); err == nil {
-			h.updates.Add(id, userID, models.UpdateStatusChanged, string(req.Status)+" → under review ("+trackLabel+" approval reverted)")
+			h.updates.Add(id, userID, models.UpdateStatusChanged, autoBody)
 		}
 	}
 

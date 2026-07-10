@@ -73,6 +73,33 @@
           </div>
         </div>
 
+        <!-- Notification preferences -->
+        <div class="box mb-4">
+          <p class="is-size-7 has-text-weight-semibold is-uppercase has-text-grey mb-4" style="letter-spacing:.05em">Email Notifications</p>
+          <div class="is-flex is-flex-direction-column" style="gap:.75rem">
+            {{if .CurrentUser.IsCoordinator}}
+            <label class="checkbox is-size-7">
+              <input type="checkbox" name="notify_new_requests" value="1"
+                     {{if .CurrentUser.NotifyNewRequests}}checked{{end}}>
+              New requests assigned to my coordinator group
+            </label>
+            {{end}}
+            <label class="checkbox is-size-7">
+              <input type="checkbox" name="notify_status_changes" value="1"
+                     {{if .CurrentUser.NotifyStatusChanges}}checked{{end}}>
+              Status and approval changes on requests
+            </label>
+            <label class="checkbox is-size-7">
+              <input type="checkbox" name="notify_comments" value="1"
+                     {{if .CurrentUser.NotifyComments}}checked{{end}}>
+              New comments on requests
+            </label>
+          </div>
+          <div class="mt-4">
+            <button type="submit" class="button is-link">Save</button>
+          </div>
+        </div>
+
         <!-- Account info (read-only) -->
         <div class="box mb-5">
           <p class="is-size-7 has-text-weight-semibold is-uppercase has-text-grey mb-4" style="letter-spacing:.05em">Account</p>
