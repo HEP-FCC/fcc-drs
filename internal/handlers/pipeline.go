@@ -154,6 +154,21 @@ func (h *Handler) DeleteComment(w http.ResponseWriter, r *http.Request) {
 }
 
 
+func (h *Handler) GetActivity(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(r.PathValue("id"))
+	if err != nil {
+		http.Error(w, "Not Found", 404)
+		return
+	}
+	req, err := h.requests.GetByID(id)
+	if err != nil {
+		http.Error(w, "Not Found", 404)
+		return
+	}
+	updates, _ := h.updates.GetByRequestID(id)
+	h.renderPartial(w, r, "activity", PageData{Request: req, Updates: updates})
+}
+
 func (h *Handler) AssignRequest(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(r.PathValue("id"))
 	if err != nil {
@@ -196,7 +211,12 @@ func (h *Handler) AssignRequest(w http.ResponseWriter, r *http.Request) {
 
 	groups, _ := h.groups.GetAll()
 	assignedGroup := assignedGroupFrom(req, groups)
-	h.renderPartial(w, r, "assignment", PageData{Request: req, Groups: groups, AssignedGroup: assignedGroup})
+	w.Header().Set("HX-Trigger", "reload-activity")
+	h.renderPartial(w, r, "assignment", PageData{
+		Request:       req,
+		Groups:        groups,
+		AssignedGroup: assignedGroup,
+	})
 }
 
 func (h *Handler) UpdatePriority(w http.ResponseWriter, r *http.Request) {

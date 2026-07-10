@@ -101,6 +101,7 @@ func main() {
 	mux.HandleFunc("POST /requests/{id}/approval", middleware.RequireCoordinator(h.ApprovalDecision))
 	mux.HandleFunc("POST /requests/{id}/assign", middleware.RequireCoordinator(h.AssignRequest))
 	mux.HandleFunc("POST /requests/{id}/priority", middleware.RequireCoordinator(h.UpdatePriority))
+	mux.HandleFunc("GET /requests/{id}/activity", middleware.RequireAuth(h.GetActivity))
 	mux.HandleFunc("POST /requests/{id}/comments", middleware.RequireAuth(h.AddComment))
 	mux.HandleFunc("GET /requests/{id}/comments/{comment_id}", middleware.RequireAuth(h.GetComment))
 	mux.HandleFunc("GET /requests/{id}/comments/{comment_id}/edit", middleware.RequireAuth(h.EditCommentForm))

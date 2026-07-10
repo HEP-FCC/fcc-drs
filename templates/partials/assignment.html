@@ -6,15 +6,71 @@
           hx-post="/requests/{{.Request.ID}}/assign"
           hx-target="#assignment-area"
           hx-swap="outerHTML"
-          hx-trigger="change"
+          hx-trigger="action-confirmed"
           class="assign-select">
     <option value="0" {{if eq .Request.AssignedGroupID 0}}selected{{end}}>— Unassigned —</option>
     {{range .Groups}}
-    <option value="{{.ID}}" {{if eq .ID $.Request.AssignedGroupID}}selected{{end}}>{{.Name}}</option>
+    <option value="{{.ID}}"
+            data-member-names="{{range .Members}}{{.DisplayedName}}|{{end}}"
+            data-member-usernames="{{range .Members}}{{.Username}}|{{end}}"
+            {{if eq .ID $.Request.AssignedGroupID}}selected{{end}}>{{.Name}}</option>
     {{end}}
   </select>
+  <script>
+  (function(){
+    var sel = document.querySelector('select[name="assigned_group_id"]');
+    if (!sel) return;
+    sel.dataset.current = sel.value;
+    sel.addEventListener('change', function() {
+      var newVal = sel.value;
+      var opt = sel.options[sel.selectedIndex];
+      sel.value = sel.dataset.current;
+      var names = (opt.dataset.memberNames || '').split('|').map(function(s){ return s.trim(); }).filter(Boolean);
+      var usernames = (opt.dataset.memberUsernames || '').split('|').map(function(s){ return s.trim(); }).filter(Boolean);
+      var detail = document.getElementById('confirm-detail');
+      detail.innerHTML = '';
+      if (names.length) {
+        var label = document.createElement('p');
+        label.className = 'is-size-7 has-text-grey mb-2';
+        label.textContent = 'Coordinators:';
+        detail.appendChild(label);
+        var list = document.createElement('div');
+        list.className = 'is-flex is-flex-wrap-wrap';
+        list.style.gap = '.6rem';
+        names.forEach(function(name, i) {
+          var item = document.createElement('div');
+          item.className = 'is-flex is-align-items-center gap-1';
+          item.title = name;
+          var avatarDiv = document.createElement('div');
+          avatarDiv.className = 'drs-avatar';
+          avatarDiv.style.cssText = 'width:1.25rem;height:1.25rem';
+          var img = document.createElement('img');
+          img.src = '/users/' + (usernames[i] || '') + '/avatar';
+          img.alt = name;
+          avatarDiv.appendChild(img);
+          item.appendChild(avatarDiv);
+          var span = document.createElement('span');
+          span.className = 'is-size-7 has-text-grey-dark';
+          span.textContent = name;
+          item.appendChild(span);
+          list.appendChild(item);
+        });
+        detail.appendChild(list);
+      } else if (newVal !== '0') {
+        var note = document.createElement('p');
+        note.className = 'is-size-7 has-text-grey-light';
+        note.textContent = 'No coordinators assigned to this group yet.';
+        detail.appendChild(note);
+      }
+      showConfirm('Reassign to "' + opt.text + '"?', function() {
+        sel.value = newVal;
+        htmx.trigger(sel, 'action-confirmed');
+      });
+    });
+  })();
+  </script>
   {{if .AssignedGroup}}
-  <div class="is-flex is-flex-wrap-wrap mt-2" style="gap:.35rem">
+  <div class="is-flex is-flex-wrap-wrap mt-2" style="gap:.6rem">
     {{range .AssignedGroup.Members}}
     <div class="is-flex is-align-items-center gap-1" title="{{.DisplayedName}}">
       <div class="drs-avatar" style="width:1.25rem;height:1.25rem">
