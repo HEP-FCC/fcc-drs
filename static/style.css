@@ -473,6 +473,8 @@ select.form-input { cursor: pointer; }
 .event-internal { background: #fffbeb; border: 1px solid #fde68a; }
 [data-theme=dark] .event-comment  { background: #252220; border-color: #3d3830; }
 [data-theme=dark] .event-internal { background: #251800; border-color: #6b3a0a; }
+.form-input.is-internal { background: #fffbeb; border-color: #fde68a; }
+[data-theme=dark] .form-input.is-internal { background: #251800; border-color: #6b3a0a; }
 
 /* ── Batch checkboxes ────────────────────────────────────────────────────── */
 .batch-cb {

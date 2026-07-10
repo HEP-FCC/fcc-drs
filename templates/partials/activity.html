@@ -70,8 +70,9 @@
     <div class="is-flex is-align-items-center is-justify-content-space-between gap-3">
       {{if $cu.IsCoordinator}}
       <label class="is-flex is-align-items-center gap-2 is-size-7 has-text-grey" style="cursor:pointer">
-        <input type="checkbox" name="internal" value="1" class="batch-cb">
-        Internal note (coordinators only)
+        <input type="checkbox" name="internal" value="1" class="batch-cb"
+               onchange="this.closest('form').querySelector('textarea').classList.toggle('is-internal', this.checked)">
+        Internal (coordinators only)
       </label>
       {{else}}
       <div></div>
