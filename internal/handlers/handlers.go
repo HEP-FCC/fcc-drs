@@ -516,7 +516,7 @@ func (h *Handler) CreateRequest(w http.ResponseWriter, r *http.Request) {
 	slog.Info("created request", "id", id)
 
 	// Set initial group assignment from the form's group dropdown.
-	if groupName := strings.TrimSpace(r.FormValue("working_group")); groupName != "" {
+	if groupName := strings.TrimSpace(r.FormValue("group_name")); groupName != "" {
 		if g, err := h.groups.GetByName(groupName); err == nil && g != nil {
 			h.requests.AssignGroup(int(id), g.ID) //nolint:errcheck
 		}
