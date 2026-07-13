@@ -20,6 +20,7 @@ import (
 )
 
 type Handler struct {
+	db             *sql.DB
 	requests       *models.RequestStore
 	users          *models.UserStore
 	updates        *models.UpdateStore
@@ -36,6 +37,7 @@ type Handler struct {
 func New(db *sql.DB, driver string, oidcClient *auth.Client, devMode bool, version string) *Handler {
 	users := models.NewUserStore(db, driver)
 	h := &Handler{
+		db:             db,
 		requests:       models.NewRequestStore(db, driver),
 		users:          users,
 		updates:        models.NewUpdateStore(db, driver),

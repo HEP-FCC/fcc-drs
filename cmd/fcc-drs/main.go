@@ -57,6 +57,8 @@ func main() {
 	// Static assets — public
 	mux.Handle("GET /static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))
 
+	mux.HandleFunc("GET /healthz", h.Healthz)
+
 	// Auth — public
 	mux.HandleFunc("GET /login", h.ShowLogin)
 	mux.HandleFunc("GET /auth/login", h.Login)
