@@ -17,8 +17,10 @@ body {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  min-height: 100dvh;
   background-color: var(--bulma-background);
 }
+[data-theme=dark],
 [data-theme=dark] body {
   background-color: #0d0c0b;
   color: #e8e3de;
@@ -131,6 +133,9 @@ a.navbar-item.is-active {
 [data-theme=dark] .theme-btn[data-active] { background: #44403c; color: #fafaf9; }
 
 /* ── Footer ──────────────────────────────────────────────────────────────── */
+.footer {
+  padding-bottom: calc(1.25rem + env(safe-area-inset-bottom));
+}
 [data-theme=dark] .footer {
   background-color: #1c1917;
   border-top: 1px solid #3d3830;
