@@ -51,6 +51,8 @@
             <span class="tag is-link is-light is-small">{{.Name}}</span>
             {{end}}
           </div>
+          {{else if eq .Role "coordinator"}}
+          <span class="tag is-warning is-light is-small">No group</span>
           {{else}}
           <span class="is-size-7 has-text-grey-light">—</span>
           {{end}}
