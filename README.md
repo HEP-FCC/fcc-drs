@@ -165,6 +165,16 @@ oc logs -f deployment/fcc-drs  # tail logs
 
 The database schema is created automatically on first startup. No manual migration step is required.
 
+### External network visibility
+
+New routes on CERN PaaS default to CERN-network-only visibility via a `haproxy.router.openshift.io/ip_whitelist` annotation set directly on the live Route object (it is not tracked in these Kustomize manifests). If the app is unreachable from outside CERN — TLS handshake succeeds but HTTP requests get an empty reply — clear this annotation:
+
+```bash
+oc annotate route fcc-drs -n fcc-drs haproxy.router.openshift.io/ip_whitelist="" --overwrite
+```
+
+Or via the OKD console: Administrator view → Networking → Routes → route's ⋮ menu → Edit Annotations → set the value to an empty string (deleting the key entirely does not work). Same applies to `fcc-drs-test` in the `fcc-drs-test` namespace.
+
 ### Environment variables reference
 
 | Variable            | Required | Description |
