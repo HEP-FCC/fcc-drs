@@ -186,6 +186,7 @@ Or via the OKD console: Administrator view → Networking → Routes → route's
 | `PORT`              | No  | HTTP listen port (default `5050`) |
 | `DEV_MODE`          | No  | Set to `TRUE` to bypass CERN SSO (local dev only) |
 | `SQLITE_PATH`       | No  | Override SQLite file path (dev only, default `./data/requests.db`) |
+| `APP_URL`           | No  | Public base URL (e.g. `https://fcc-drs.web.cern.ch`, no trailing slash) — used for links in notification emails and for `og:image`/`og:url` link-preview metadata |
 | `SMTP_HOST`         | No  | SMTP server for email notifications |
 | `SMTP_PORT`         | No  | SMTP port (default 587) |
 | `SMTP_USER`         | No  | SMTP username |
