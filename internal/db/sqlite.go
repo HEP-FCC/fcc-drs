@@ -88,6 +88,15 @@ func migrate(db *DB) error {
 	db.Exec(`ALTER TABLE users ADD COLUMN notify_new_requests INTEGER NOT NULL DEFAULT 1`)
 	db.Exec(`ALTER TABLE users ADD COLUMN notify_status_changes INTEGER NOT NULL DEFAULT 1`)
 	db.Exec(`ALTER TABLE users ADD COLUMN notify_comments INTEGER NOT NULL DEFAULT 1`)
+	db.Exec(`CREATE TABLE IF NOT EXISTS campaigns (
+		id         INTEGER PRIMARY KEY AUTOINCREMENT,
+		name       TEXT NOT NULL UNIQUE,
+		status     TEXT NOT NULL DEFAULT 'open',
+		created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+	)`)
+	db.Exec(`ALTER TABLE dataset_requests ADD COLUMN campaign_id INTEGER REFERENCES campaigns(id)`)
+	db.Exec(`ALTER TABLE campaigns ADD COLUMN tag TEXT NOT NULL DEFAULT ''`)
+	db.Exec(`ALTER TABLE campaigns ADD COLUMN closed_at DATETIME`)
 
 	_, err := db.Exec(`
 		CREATE TABLE IF NOT EXISTS users (

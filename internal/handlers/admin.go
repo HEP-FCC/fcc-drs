@@ -155,6 +155,95 @@ func (h *Handler) AdminRemoveGroupMember(w http.ResponseWriter, r *http.Request)
 	h.renderPartial(w, r, "group_card", PageData{Group: group, Coordinators: coordinators})
 }
 
+func (h *Handler) adminCampaignsPageData() (PageData, error) {
+	campaigns, err := h.campaigns.GetAll()
+	if err != nil {
+		return PageData{}, err
+	}
+	return PageData{Title: "Manage Campaigns", Campaigns: campaigns}, nil
+}
+
+func (h *Handler) AdminCampaigns(w http.ResponseWriter, r *http.Request) {
+	data, err := h.adminCampaignsPageData()
+	if err != nil {
+		slog.Error("admin list campaigns", "error", err)
+		http.Error(w, "Internal Server Error", 500)
+		return
+	}
+	h.renderPage(w, r, "admin_campaigns", data)
+}
+
+func (h *Handler) AdminCreateCampaign(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, "Bad Request", 400)
+		return
+	}
+	name := strings.TrimSpace(r.FormValue("name"))
+	if name == "" {
+		http.Error(w, "campaign name is required", 400)
+		return
+	}
+	tag := strings.TrimSpace(r.FormValue("tag"))
+	if err := h.campaigns.Create(name, tag); err != nil {
+		slog.Error("create campaign", "name", name, "error", err)
+		http.Error(w, "Internal Server Error", 500)
+		return
+	}
+	data, err := h.adminCampaignsPageData()
+	if err != nil {
+		http.Error(w, "Internal Server Error", 500)
+		return
+	}
+	h.renderPartial(w, r, "campaigns_grid", data)
+}
+
+func (h *Handler) AdminUpdateCampaignStatus(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(r.PathValue("id"))
+	if err != nil {
+		http.Error(w, "Not Found", 404)
+		return
+	}
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, "Bad Request", 400)
+		return
+	}
+	status := r.FormValue("status")
+	if status != "open" && status != "closed" {
+		http.Error(w, "invalid status", 400)
+		return
+	}
+	if err := h.campaigns.UpdateStatus(id, status); err != nil {
+		slog.Error("update campaign status", "id", id, "error", err)
+		http.Error(w, "Internal Server Error", 500)
+		return
+	}
+	data, err := h.adminCampaignsPageData()
+	if err != nil {
+		http.Error(w, "Internal Server Error", 500)
+		return
+	}
+	h.renderPartial(w, r, "campaigns_grid", data)
+}
+
+func (h *Handler) AdminDeleteCampaign(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(r.PathValue("id"))
+	if err != nil {
+		http.Error(w, "Not Found", 404)
+		return
+	}
+	if err := h.campaigns.Delete(id); err != nil {
+		slog.Error("delete campaign", "id", id, "error", err)
+		http.Error(w, "Internal Server Error", 500)
+		return
+	}
+	data, err := h.adminCampaignsPageData()
+	if err != nil {
+		http.Error(w, "Internal Server Error", 500)
+		return
+	}
+	h.renderPartial(w, r, "campaigns_grid", data)
+}
+
 func (h *Handler) AdminUsers(w http.ResponseWriter, r *http.Request) {
 	data, err := h.adminUsersPageData()
 	if err != nil {

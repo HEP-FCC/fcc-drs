@@ -36,6 +36,7 @@
         </div>
         {{if .DatasetType}}<span>·</span><span class="is-capitalized">{{.DatasetType}}</span>{{end}}
         {{if .AssignedGroupName}}<span class="group-badge">{{.AssignedGroupName}}</span>{{end}}
+        {{if .CampaignName}}<span class="campaign-badge" title="{{.CampaignName}}">{{if .CampaignTag}}{{.CampaignTag}}{{else}}{{.CampaignName}}{{end}}</span>{{end}}
       </div>
 
       {{if .TagList}}
@@ -72,8 +73,9 @@
         {{if $.CurrentUser.IsCoordinator}}
         <button
           hx-delete="/requests/{{.ID}}"
-          hx-confirm="Delete this request? This cannot be undone."
+          hx-trigger="action-confirmed"
           hx-swap="none"
+          onclick="confirmAction(this, 'Delete this request? This cannot be undone.')"
           class="btn-icon btn-icon-danger"
           title="Delete">
           <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -104,7 +106,7 @@
             Request {{sortIcon "title" .Filter.Sort .Filter.SortDir}}
           </button>
         </th>
-        <th class="has-text-weight-medium has-text-grey is-uppercase" style="font-size:.75rem;letter-spacing:.05em;padding:.875rem 1.25rem;width:10rem">Group</th>
+        <th class="has-text-weight-medium has-text-grey is-uppercase" style="font-size:.75rem;letter-spacing:.05em;padding:.875rem 1.25rem;width:10rem">Group / Campaign</th>
         <th style="padding:.875rem 1.25rem" class="is-hidden-mobile">
           <button
             hx-get="/requests"
@@ -176,8 +178,12 @@
         </td>
         <td style="padding:1rem 1.25rem">
           {{if .AssignedGroupName}}
-          <span class="group-badge">{{.AssignedGroupName}}</span>
-          {{else}}
+          <span class="group-badge is-block mb-1">{{.AssignedGroupName}}</span>
+          {{end}}
+          {{if .CampaignName}}
+          <span class="campaign-badge is-block" title="{{.CampaignName}}">{{if .CampaignTag}}{{.CampaignTag}}{{else}}{{.CampaignName}}{{end}}</span>
+          {{end}}
+          {{if and (not .AssignedGroupName) (not .CampaignName)}}
           <span class="is-size-7 has-text-grey-lighter">—</span>
           {{end}}
         </td>
@@ -200,7 +206,11 @@
             hx-post="/requests/{{.ID}}/status"
             hx-target="#status-cell-{{.ID}}"
             hx-swap="innerHTML"
-            hx-trigger="change"
+            hx-trigger="status-confirmed"
+            data-prev="{{.Status}}"
+            data-physics-approval="{{.PhysicsApproval}}"
+            data-resources-approval="{{.ResourcesApproval}}"
+            onchange="confirmStatusApproval(this)"
             class="status-select {{statusClass .Status}}"
             title="Change status">
             <option value="draft"       {{if eq .Status "draft"}}selected{{end}}>Draft</option>
@@ -208,36 +218,14 @@
             <option value="approved"    {{if eq .Status "approved"}}selected{{end}}>Approved</option>
             <option value="in_progress" {{if eq .Status "in_progress"}}selected{{end}}>In Progress</option>
             <option value="completed"   {{if eq .Status "completed"}}selected{{end}}>Completed</option>
+            <option value="failed"      {{if eq .Status "failed"}}selected{{end}}>Failed</option>
             <option value="rejected"    {{if eq .Status "rejected"}}selected{{end}}>Rejected</option>
             <option value="cancelled"   {{if eq .Status "cancelled"}}selected{{end}}>Cancelled</option>
           </select>
           {{else}}
           <span class="status-badge {{statusClass .Status}}">{{.StatusLabel}}</span>
           {{end}}
-          {{if or (eq .Status "pending") (ne .PhysicsApproval "") (ne .ResourcesApproval "")}}
-          <div class="is-flex is-align-items-center gap-2 mt-2">
-            <div class="is-flex is-align-items-center gap-1" title="Physics: {{if eq .PhysicsApproval "approved"}}approved{{else if eq .PhysicsApproval "rejected"}}rejected{{else}}pending{{end}}">
-              {{if eq .PhysicsApproval "approved"}}
-              <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="#10b981" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
-              {{else if eq .PhysicsApproval "rejected"}}
-              <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="#f87171" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
-              {{else}}
-              <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="#d4d4d4" stroke-width="2"><circle cx="12" cy="12" r="9"/></svg>
-              {{end}}
-              <span class="has-text-grey-light" style="font-size:.65rem;line-height:1">Phys</span>
-            </div>
-            <div class="is-flex is-align-items-center gap-1" title="Resources: {{if eq .ResourcesApproval "approved"}}approved{{else if eq .ResourcesApproval "rejected"}}rejected{{else}}pending{{end}}">
-              {{if eq .ResourcesApproval "approved"}}
-              <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="#10b981" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
-              {{else if eq .ResourcesApproval "rejected"}}
-              <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="#f87171" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
-              {{else}}
-              <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="#d4d4d4" stroke-width="2"><circle cx="12" cy="12" r="9"/></svg>
-              {{end}}
-              <span class="has-text-grey-light" style="font-size:.65rem;line-height:1">Res</span>
-            </div>
-          </div>
-          {{end}}
+          {{template "approval_icons" .}}
         </td>
         <td style="padding:1rem 1.25rem" id="priority-cell-{{.ID}}" class="is-hidden-touch">
           {{if $.CurrentUser.IsCoordinator}}
@@ -276,8 +264,9 @@
           {{if $.CurrentUser.IsCoordinator}}
           <button
             hx-delete="/requests/{{.ID}}"
-            hx-confirm="Delete this request? This cannot be undone."
+            hx-trigger="action-confirmed"
             hx-swap="none"
+            onclick="confirmAction(this, 'Delete this request? This cannot be undone.')"
             class="btn-icon btn-icon-danger"
             title="Delete">
             <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">

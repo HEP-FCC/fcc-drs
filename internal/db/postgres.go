@@ -177,6 +177,15 @@ func migrate(db *DB) error {
 		`ALTER TABLE users ADD COLUMN IF NOT EXISTS notify_new_requests   BOOLEAN NOT NULL DEFAULT TRUE`,
 		`ALTER TABLE users ADD COLUMN IF NOT EXISTS notify_status_changes BOOLEAN NOT NULL DEFAULT TRUE`,
 		`ALTER TABLE users ADD COLUMN IF NOT EXISTS notify_comments       BOOLEAN NOT NULL DEFAULT TRUE`,
+		`CREATE TABLE IF NOT EXISTS campaigns (
+			id         SERIAL PRIMARY KEY,
+			name       TEXT NOT NULL UNIQUE,
+			status     TEXT NOT NULL DEFAULT 'open',
+			created_at TIMESTAMPTZ DEFAULT NOW()
+		)`,
+		`ALTER TABLE dataset_requests ADD COLUMN IF NOT EXISTS campaign_id INTEGER REFERENCES campaigns(id)`,
+		`ALTER TABLE campaigns ADD COLUMN IF NOT EXISTS tag TEXT NOT NULL DEFAULT ''`,
+		`ALTER TABLE campaigns ADD COLUMN IF NOT EXISTS closed_at TIMESTAMPTZ`,
 	}
 
 	for _, stmt := range stmts {

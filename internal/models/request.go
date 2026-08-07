@@ -41,6 +41,7 @@ const (
 	StatusRejected   Status = "rejected"
 	StatusInProgress Status = "in_progress"
 	StatusCompleted  Status = "completed"
+	StatusFailed     Status = "failed"
 	StatusCancelled  Status = "cancelled"
 )
 
@@ -75,6 +76,10 @@ type DatasetRequest struct {
 	AssignedToName     string
 	AssignedGroupID    int
 	AssignedGroupName  string
+	CampaignID         int
+	CampaignName       string
+	CampaignTag        string
+	CampaignStatus     string
 	PhysicsApproval    string // "" | "approved" | "rejected"
 	ResourcesApproval string // "" | "approved" | "rejected"
 	CreatedAt         time.Time
@@ -106,6 +111,8 @@ func (r *DatasetRequest) StatusLabel() string {
 		return "In Progress"
 	case StatusCompleted:
 		return "Completed"
+	case StatusFailed:
+		return "Failed"
 	case StatusCancelled:
 		return "Cancelled"
 	default:
@@ -184,12 +191,14 @@ const selectCols = `
 	COALESCE(dr.statistics,''), COALESCE(dr.target_campaign,''), COALESCE(dr.key4hep_stack,''), dr.format, dr.due_date, dr.notes, dr.tags, COALESCE(dr.created_by,0),
 	COALESCE(dr.assigned_to,0), COALESCE(au.display_name,''),
 	COALESCE(dr.assigned_group_id,0), COALESCE(cg.name,''),
+	COALESCE(dr.campaign_id,0), COALESCE(camp.name,''), COALESCE(camp.tag,''), COALESCE(camp.status,''),
 	COALESCE(dr.physics_approval,''), COALESCE(dr.resources_approval,''),
 	dr.created_at, dr.updated_at`
 
 const joinCols = `
 	LEFT JOIN users au ON au.id = dr.assigned_to
-	LEFT JOIN coordinator_groups cg ON cg.id = dr.assigned_group_id`
+	LEFT JOIN coordinator_groups cg ON cg.id = dr.assigned_group_id
+	LEFT JOIN campaigns camp ON camp.id = dr.campaign_id`
 
 func requestOrderBy(col, dir string) string {
 	d := "DESC"
@@ -377,6 +386,15 @@ func (r *RequestStore) AssignGroup(id, groupID int) error {
 	return err
 }
 
+func (r *RequestStore) AssignCampaign(id, campaignID int) error {
+	var cid interface{}
+	if campaignID != 0 {
+		cid = campaignID
+	}
+	_, err := r.db.Exec(r.rebind("UPDATE dataset_requests SET campaign_id=? WHERE id=?"), cid, id)
+	return err
+}
+
 func (r *RequestStore) Delete(id int) error {
 	_, err := r.db.Exec(r.rebind("DELETE FROM dataset_requests WHERE id=?"), id)
 	return err
@@ -399,6 +417,53 @@ func (r *RequestStore) GetStats() (*Stats, error) {
 		&stats.Completed, &stats.Critical, &stats.Rejected,
 	)
 	return &stats, err
+}
+
+func (r *RequestStore) GetByCampaign(campaignID int) ([]*DatasetRequest, error) {
+	rows, err := r.db.Query(r.rebind(`SELECT`+selectCols+`
+		FROM dataset_requests dr
+		` + joinCols + `
+		WHERE dr.campaign_id = ?
+		ORDER BY dr.updated_at DESC`), campaignID)
+	if err != nil {
+		return nil, fmt.Errorf("query requests by campaign: %w", err)
+	}
+	defer rows.Close()
+
+	var requests []*DatasetRequest
+	for rows.Next() {
+		req, err := scanRequest(rows)
+		if err != nil {
+			return nil, err
+		}
+		requests = append(requests, req)
+	}
+	return requests, rows.Err()
+}
+
+// GetEligibleUnassigned returns requests that have passed approval (approved,
+// in_progress, or completed) but have not been assigned to a campaign yet.
+func (r *RequestStore) GetEligibleUnassigned() ([]*DatasetRequest, error) {
+	rows, err := r.db.Query(r.rebind(`SELECT`+selectCols+`
+		FROM dataset_requests dr
+		`+joinCols+`
+		WHERE dr.status IN (?, ?, ?) AND COALESCE(dr.campaign_id, 0) = 0
+		ORDER BY dr.updated_at DESC`),
+		string(StatusApproved), string(StatusInProgress), string(StatusCompleted))
+	if err != nil {
+		return nil, fmt.Errorf("query eligible unassigned requests: %w", err)
+	}
+	defer rows.Close()
+
+	var requests []*DatasetRequest
+	for rows.Next() {
+		req, err := scanRequest(rows)
+		if err != nil {
+			return nil, err
+		}
+		requests = append(requests, req)
+	}
+	return requests, rows.Err()
 }
 
 func (r *RequestStore) GetRecent(limit int) ([]*DatasetRequest, error) {
@@ -434,6 +499,7 @@ func scanRequest(row scannable) (*DatasetRequest, error) {
 		&req.EstimatedSize, &req.Statistics, &req.TargetCampaign, &req.Key4hepStack, &req.Format, &req.DueDate, &req.Notes, &req.Tags,
 		&req.CreatedBy, &req.AssignedTo, &req.AssignedToName,
 		&req.AssignedGroupID, &req.AssignedGroupName,
+		&req.CampaignID, &req.CampaignName, &req.CampaignTag, &req.CampaignStatus,
 		&req.PhysicsApproval, &req.ResourcesApproval,
 		timeVal{&req.CreatedAt}, timeVal{&req.UpdatedAt},
 	)

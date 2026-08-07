@@ -1,0 +1,26 @@
+{{define "approval_icons"}}
+{{if or (eq .Status "pending") (ne .PhysicsApproval "") (ne .ResourcesApproval "")}}
+<div class="is-flex is-align-items-center gap-2 mt-2">
+  <div class="is-flex is-align-items-center gap-1" title="Physics: {{if eq .PhysicsApproval "approved"}}approved{{else if eq .PhysicsApproval "rejected"}}rejected{{else}}pending{{end}}">
+    {{if eq .PhysicsApproval "approved"}}
+    <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="#10b981" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
+    {{else if eq .PhysicsApproval "rejected"}}
+    <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="#f87171" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+    {{else}}
+    <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="#d4d4d4" stroke-width="2"><circle cx="12" cy="12" r="9"/></svg>
+    {{end}}
+    <span class="has-text-grey-light" style="font-size:.65rem;line-height:1">Phys</span>
+  </div>
+  <div class="is-flex is-align-items-center gap-1" title="Resources: {{if eq .ResourcesApproval "approved"}}approved{{else if eq .ResourcesApproval "rejected"}}rejected{{else}}pending{{end}}">
+    {{if eq .ResourcesApproval "approved"}}
+    <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="#10b981" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
+    {{else if eq .ResourcesApproval "rejected"}}
+    <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="#f87171" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+    {{else}}
+    <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="#d4d4d4" stroke-width="2"><circle cx="12" cy="12" r="9"/></svg>
+    {{end}}
+    <span class="has-text-grey-light" style="font-size:.65rem;line-height:1">Res</span>
+  </div>
+</div>
+{{end}}
+{{end}}

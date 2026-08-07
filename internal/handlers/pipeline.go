@@ -223,6 +223,113 @@ func (h *Handler) AssignRequest(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+func (h *Handler) AssignCampaign(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(r.PathValue("id"))
+	if err != nil {
+		http.Error(w, "Not Found", 404)
+		return
+	}
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, "Bad Request", 400)
+		return
+	}
+
+	existing, err := h.requests.GetByID(id)
+	if err != nil {
+		http.Error(w, "Not Found", 404)
+		return
+	}
+	if !campaignAssignable(existing.Status) {
+		http.Error(w, "request must be approved before it can be added to a campaign", http.StatusBadRequest)
+		return
+	}
+	if existing.PhysicsApproval != "approved" || existing.ResourcesApproval != "approved" {
+		slog.Warn("campaign assignment with incomplete approval tracks",
+			"request_id", id, "status", existing.Status,
+			"physics_approval", existing.PhysicsApproval, "resources_approval", existing.ResourcesApproval)
+	}
+
+	campaignID, _ := strconv.Atoi(r.FormValue("campaign_id"))
+
+	if campaignID != existing.CampaignID {
+		// Closed campaigns are a historical record — locked against both
+		// removal and reassignment once closed. Still-open campaigns stay
+		// fully mutable.
+		if existing.CampaignID != 0 && existing.CampaignStatus == "closed" {
+			http.Error(w, "cannot change campaign assignment once its campaign is closed", http.StatusBadRequest)
+			return
+		}
+		if campaignID != 0 {
+			target, err := h.campaigns.GetByID(campaignID)
+			if err != nil {
+				http.Error(w, "Not Found", 404)
+				return
+			}
+			if target.Status == "closed" {
+				http.Error(w, "cannot assign a request to a closed campaign", http.StatusBadRequest)
+				return
+			}
+		}
+	}
+
+	user := middleware.GetUser(r)
+	userID := 0
+	if user != nil {
+		userID = user.ID
+	}
+
+	if err := h.requests.AssignCampaign(id, campaignID); err != nil {
+		slog.Error("assign campaign", "error", err)
+		http.Error(w, "Internal Server Error", 500)
+		return
+	}
+
+	req, err := h.requests.GetByID(id)
+	if err != nil {
+		http.Error(w, "Internal Server Error", 500)
+		return
+	}
+
+	var eventBody string
+	if campaignID == 0 {
+		eventBody = "Removed from campaign"
+	} else if existing.CampaignID == 0 {
+		eventBody = "Added to campaign: " + req.CampaignName
+	} else {
+		eventBody = existing.CampaignName + " → " + req.CampaignName
+	}
+	h.updates.Add(id, userID, models.UpdateAssigned, eventBody)
+	h.notifier.OnActivity(req, &models.Update{RequestID: id, UserID: userID, Type: models.UpdateAssigned, Body: eventBody})
+
+	// Being added to a campaign moves the request from approved into active work.
+	if campaignID != 0 && req.Status == models.StatusApproved {
+		autoBody := "approved → in_progress (assigned to campaign)"
+		if err := h.requests.UpdateStatus(id, models.StatusInProgress); err == nil {
+			h.updates.Add(id, userID, models.UpdateStatusChanged, autoBody)
+			if fresh, err := h.requests.GetByID(id); err == nil {
+				req = fresh
+				h.notifier.OnActivity(req, &models.Update{RequestID: id, UserID: userID, Type: models.UpdateStatusChanged, Body: autoBody})
+			}
+		}
+	}
+
+	updates, _ := h.updates.GetByRequestID(id)
+	groups, _ := h.groups.GetAll()
+	assignedGroup := assignedGroupFrom(req, groups)
+	campaigns, _ := h.campaigns.GetAssignable(req.CampaignID)
+	relations, _ := h.relations.GetByRequestID(id)
+	cards, _ := h.generatorCards.GetByRequestID(id)
+	h.renderPartial(w, r, "request_detail", PageData{
+		Request:        req,
+		Updates:        updates,
+		Groups:         groups,
+		AssignedGroup:  assignedGroup,
+		Campaigns:      campaigns,
+		Relations:      relations,
+		GeneratorCards: cards,
+	})
+}
+
 func (h *Handler) UpdatePriority(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(r.PathValue("id"))
 	if err != nil {
@@ -270,6 +377,7 @@ func (h *Handler) UpdatePriority(w http.ResponseWriter, r *http.Request) {
 	updates, _ := h.updates.GetByRequestID(id)
 	groups, _ := h.groups.GetAll()
 	assignedGroup := assignedGroupFrom(req, groups)
+	campaigns, _ := h.campaigns.GetAssignable(req.CampaignID)
 	relations, _ := h.relations.GetByRequestID(id)
 	cards, _ := h.generatorCards.GetByRequestID(id)
 	h.renderPartial(w, r, "request_detail", PageData{
@@ -277,6 +385,7 @@ func (h *Handler) UpdatePriority(w http.ResponseWriter, r *http.Request) {
 		Updates:        updates,
 		Groups:         groups,
 		AssignedGroup:  assignedGroup,
+		Campaigns:      campaigns,
 		Relations:      relations,
 		GeneratorCards: cards,
 	})

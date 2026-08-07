@@ -22,6 +22,7 @@
           <option value="approved"    style="background:#dbeafe;color:#2563eb" {{if eq .Status "approved"}}selected{{end}}>Approved</option>
           <option value="in_progress" style="background:#ede9fe;color:#7c3aed" {{if eq .Status "in_progress"}}selected{{end}}>In Progress</option>
           <option value="completed"   style="background:#d1fae5;color:#059669" {{if eq .Status "completed"}}selected{{end}}>Completed</option>
+          <option value="failed"      style="background:#fef2f2;color:#991b1b" {{if eq .Status "failed"}}selected{{end}}>Failed</option>
           <option value="rejected"    style="background:#fee2e2;color:#dc2626" {{if eq .Status "rejected"}}selected{{end}}>Rejected</option>
           <option value="cancelled"   style="background:#f4f4f5;color:#71717a" {{if eq .Status "cancelled"}}selected{{end}}>Cancelled</option>
         </select>
@@ -180,6 +181,7 @@
         </div>
       </div>
       {{template "assignment" $d}}
+      {{template "campaign_assignment" $d}}
       <div class="column is-half">
         <span class="detail-label is-uppercase block mb-1" style="font-size:.65rem;letter-spacing:.05em">Created</span>
         <span class="is-size-7 has-text-grey">{{formatDateTime .CreatedAt}}</span>
