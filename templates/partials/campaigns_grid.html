@@ -1,0 +1,9 @@
+{{define "campaigns_grid"}}
+<div class="columns is-multiline">
+  {{range .Campaigns}}
+  <div class="column is-half">
+    {{template "campaign_card" (campaignCardData .)}}
+  </div>
+  {{end}}
+</div>
+{{end}}

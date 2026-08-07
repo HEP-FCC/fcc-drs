@@ -6,28 +6,36 @@
   <button hx-post="/requests/batch"
           hx-include=".batch-cb:checked"
           hx-vals='{"action":"approve"}'
+          hx-trigger="batch-confirmed"
           hx-swap="none"
+          onclick="confirmBatchAction(this, 'approve')"
           class="button is-link is-small" style="border-radius:0.5rem">
     Approve
   </button>
   <button hx-post="/requests/batch"
           hx-include=".batch-cb:checked"
           hx-vals='{"action":"in_progress"}'
+          hx-trigger="batch-confirmed"
           hx-swap="none"
+          onclick="confirmBatchAction(this, 'in_progress')"
           class="button is-small btn-violet" style="border-radius:0.5rem">
     In Progress
   </button>
   <button hx-post="/requests/batch"
           hx-include=".batch-cb:checked"
           hx-vals='{"action":"complete"}'
+          hx-trigger="batch-confirmed"
           hx-swap="none"
+          onclick="confirmBatchAction(this, 'complete')"
           class="button is-success is-small" style="border-radius:0.5rem">
     Complete
   </button>
   <button hx-post="/requests/batch"
           hx-include=".batch-cb:checked"
           hx-vals='{"action":"reject"}'
+          hx-trigger="batch-confirmed"
           hx-swap="none"
+          onclick="confirmBatchAction(this, 'reject')"
           class="button is-danger is-small" style="border-radius:0.5rem">
     Reject
   </button>

@@ -70,7 +70,8 @@
       <div class="drs-nav-center is-hidden-touch">
         <a href="/" class="navbar-item{{if eq .Title "Dashboard"}} is-active{{end}}">Dashboard</a>
         <a href="/requests" class="navbar-item{{if eq .Title "All Requests"}} is-active{{end}}">Requests</a>
-        {{if .CurrentUser.IsAdmin}}<a href="/admin/users" class="navbar-item{{if or (eq .Title "User Management") (eq .Title "Coordinator Groups")}} is-active{{end}}">Admin</a>{{end}}
+        {{if .CurrentUser.IsCoordinator}}<a href="/campaigns" class="navbar-item{{if eq .Title "Campaigns"}} is-active{{end}}">Campaigns</a>{{end}}
+        {{if .CurrentUser.IsAdmin}}<a href="/admin/users" class="navbar-item{{if or (eq .Title "User Management") (eq .Title "Coordinator Groups") (eq .Title "Manage Campaigns")}} is-active{{end}}">Admin</a>{{end}}
       </div>
       {{end}}
 
@@ -81,7 +82,8 @@
         <div class="navbar-start is-hidden-desktop">
           <a href="/" class="navbar-item{{if eq .Title "Dashboard"}} is-active{{end}}">Dashboard</a>
           <a href="/requests" class="navbar-item{{if eq .Title "All Requests"}} is-active{{end}}">Requests</a>
-          {{if .CurrentUser.IsAdmin}}<a href="/admin/users" class="navbar-item{{if or (eq .Title "User Management") (eq .Title "Coordinator Groups")}} is-active{{end}}">Admin</a>{{end}}
+          {{if .CurrentUser.IsCoordinator}}<a href="/campaigns" class="navbar-item{{if eq .Title "Campaigns"}} is-active{{end}}">Campaigns</a>{{end}}
+          {{if .CurrentUser.IsAdmin}}<a href="/admin/users" class="navbar-item{{if or (eq .Title "User Management") (eq .Title "Coordinator Groups") (eq .Title "Manage Campaigns")}} is-active{{end}}">Admin</a>{{end}}
         </div>
 
         <div class="navbar-end">
@@ -409,9 +411,26 @@
       document.documentElement.classList.remove('is-clipped');
     }
 
-    function showConfirm(message, onConfirm) {
+    // checkboxLabel is optional — when set, the Confirm button stays disabled
+    // until the checkbox is ticked, for an extra explicit-intent step.
+    function showConfirm(message, onConfirm, checkboxLabel) {
       document.getElementById('confirm-message').textContent = message;
       var ok = document.getElementById('confirm-ok');
+      if (checkboxLabel) {
+        var detail = document.getElementById('confirm-detail');
+        var wrap = document.createElement('label');
+        wrap.className = 'checkbox is-flex is-align-items-flex-start gap-2 is-size-7 has-text-grey-dark';
+        var cb = document.createElement('input');
+        cb.type = 'checkbox';
+        cb.style.marginTop = '.15rem';
+        wrap.appendChild(cb);
+        wrap.appendChild(document.createTextNode(' ' + checkboxLabel));
+        detail.appendChild(wrap);
+        ok.disabled = true;
+        cb.addEventListener('change', function() { ok.disabled = !cb.checked; });
+      } else {
+        ok.disabled = false;
+      }
       ok.onclick = function() { closeConfirm(); onConfirm(); };
       document.getElementById('confirm-overlay').classList.add('is-active');
       document.documentElement.classList.add('is-clipped');
@@ -427,17 +446,22 @@
       if (e.key === 'Escape') { closeAlert(); closeConfirm(); closeModal(); }
     });
 
+    var STATUS_REQUIRES_APPROVAL = { approved: 1, in_progress: 1, completed: 1 };
+
     function confirmStatusApproval(sel) {
       var prev = sel.dataset.prev;
-      if (sel.value === 'approved') {
+      if (STATUS_REQUIRES_APPROVAL[sel.value]) {
+        var newVal = sel.value;
+        var label = sel.options[sel.selectedIndex].text;
         var physics = sel.dataset.physicsApproval;
         var resources = sel.dataset.resourcesApproval;
         if (physics !== 'approved' || resources !== 'approved') {
-          showConfirm('Not all approval tracks are granted yet. Set status to Approved anyway?', function() {
-            sel.dataset.prev = sel.value;
+          sel.value = prev;
+          showConfirm('Not all approval tracks are granted yet. Set status to ' + label + ' anyway?', function() {
+            sel.value = newVal;
+            sel.dataset.prev = newVal;
             htmx.trigger(sel, 'status-confirmed');
           });
-          sel.value = prev;
           return;
         }
       }
@@ -528,6 +552,32 @@
     function deselectAll() {
       document.querySelectorAll('.batch-cb').forEach(function(cb) { cb.checked = false; });
       updateBatchToolbar();
+    }
+
+    var BATCH_ACTION_LABELS = { approve: 'Approved', in_progress: 'In Progress', complete: 'Completed', reject: 'Rejected' };
+    var BATCH_APPROVAL_REQUIRED = { approve: 1, in_progress: 1, complete: 1 };
+
+    function confirmBatchAction(btn, action) {
+      var boxes = document.querySelectorAll('.batch-cb:checked');
+      var count = boxes.length;
+      if (count === 0) return;
+      var label = BATCH_ACTION_LABELS[action] || action;
+      var plural = count === 1 ? '' : 's';
+      var message = label + ' ' + count + ' request' + plural + '?';
+      if (BATCH_APPROVAL_REQUIRED[action]) {
+        var missing = 0;
+        boxes.forEach(function(cb) {
+          var sel = document.querySelector('#status-cell-' + cb.value + ' select[name="status"]');
+          if (sel && (sel.dataset.physicsApproval !== 'approved' || sel.dataset.resourcesApproval !== 'approved')) {
+            missing++;
+          }
+        });
+        if (missing > 0) {
+          message = missing + ' of ' + count + ' selected request' + plural + ' ' + (missing === 1 ? 'is' : 'are') +
+            ' missing approval tracks. Set status to ' + label + ' anyway?';
+        }
+      }
+      showConfirm(message, function() { htmx.trigger(btn, 'batch-confirmed'); });
     }
     document.addEventListener('change', function(e) {
       if (e.target.classList.contains('batch-cb')) updateBatchToolbar();

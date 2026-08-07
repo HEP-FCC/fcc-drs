@@ -1,0 +1,53 @@
+{{define "campaign_assignment"}}
+<div id="campaign-assignment-area" class="column is-half">
+  <span class="detail-label is-uppercase block mb-1" style="font-size:.65rem;letter-spacing:.05em">Campaign</span>
+  {{if and .CurrentUser.IsCoordinator (campaignAssignable .Request.Status) (ne .Request.CampaignStatus "closed")}}
+  <select name="campaign_id"
+          hx-post="/requests/{{.Request.ID}}/campaign"
+          hx-target="closest [data-request-detail-root]"
+          hx-swap="innerHTML"
+          hx-trigger="action-confirmed"
+          data-physics-approval="{{.Request.PhysicsApproval}}"
+          data-resources-approval="{{.Request.ResourcesApproval}}"
+          class="assign-select">
+    <option value="0" {{if eq .Request.CampaignID 0}}selected{{end}}>— Unassigned —</option>
+    {{range .Campaigns}}
+    <option value="{{.ID}}" {{if eq .ID $.Request.CampaignID}}selected{{end}}>{{.Name}}{{if eq .Status "closed"}} (closed){{end}}</option>
+    {{end}}
+  </select>
+  <script>
+  (function(){
+    var sel = document.querySelector('select[name="campaign_id"]');
+    if (!sel) return;
+    sel.dataset.current = sel.value;
+    sel.addEventListener('change', function() {
+      var newVal = sel.value;
+      var opt = sel.options[sel.selectedIndex];
+      sel.value = sel.dataset.current;
+      var message = 'Set campaign to "' + opt.text + '"?';
+      var checkboxLabel = null;
+      if (newVal !== '0' && (sel.dataset.physicsApproval !== 'approved' || sel.dataset.resourcesApproval !== 'approved')) {
+        message = 'Not all approval tracks are granted yet. ' + message;
+        checkboxLabel = 'I understand this request has not been fully approved and want to assign it to a campaign anyway.';
+      }
+      showConfirm(message, function() {
+        sel.value = newVal;
+        htmx.trigger(sel, 'action-confirmed');
+      }, checkboxLabel);
+    });
+  })();
+  </script>
+  {{else}}
+    {{if .Request.CampaignName}}
+    <span class="is-size-7 has-text-weight-semibold has-text-dark is-block">{{.Request.CampaignName}}</span>
+    {{if eq .Request.CampaignStatus "closed"}}
+    <span class="is-size-7 has-text-grey-light" title="This campaign is closed — assignment is locked">(closed — locked)</span>
+    {{end}}
+    {{else if .CurrentUser.IsCoordinator}}
+    <span class="is-size-7 has-text-grey" title="The request must be approved before assigning a campaign">Not yet approved</span>
+    {{else}}
+    <span class="is-size-7 has-text-grey">—</span>
+    {{end}}
+  {{end}}
+</div>
+{{end}}

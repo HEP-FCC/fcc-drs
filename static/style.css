@@ -288,6 +288,7 @@ a.navbar-item.is-active {
 .status-rejected   { background: #fee2e2; color: #dc2626; }
 .status-inprogress { background: #ede9fe; color: #7c3aed; }
 .status-completed  { background: #d1fae5; color: #059669; }
+.status-failed     { background: #fef2f2; color: #991b1b; }
 .status-cancelled  { background: #f4f4f5; color: #71717a; }
 
 /* Inline status select */
@@ -317,6 +318,7 @@ a.navbar-item.is-active {
 .status-select.status-rejected   { background-color: #fee2e2; color: #dc2626; }
 .status-select.status-inprogress { background-color: #ede9fe; color: #7c3aed; }
 .status-select.status-completed  { background-color: #d1fae5; color: #059669; }
+.status-select.status-failed     { background-color: #fef2f2; color: #991b1b; }
 .status-select.status-cancelled  { background-color: #f4f4f5; color: #71717a; }
 
 /* ── Priority pips ───────────────────────────────────────────────────────── */
@@ -361,6 +363,23 @@ a.navbar-item.is-active {
   vertical-align: middle;
 }
 [data-theme=dark] .group-badge { background: rgba(37,99,235,.18); color: #93c5fd; }
+
+.campaign-badge {
+  display: inline-block;
+  padding: 0.1rem 0.5rem;
+  border-radius: 0.4rem;
+  font-size: 0.65rem;
+  font-weight: 600;
+  background: #f5f3ff;
+  color: #7c3aed;
+  letter-spacing: 0.01em;
+  max-width: 9rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: middle;
+}
+[data-theme=dark] .campaign-badge { background: rgba(124,58,237,.18); color: #c4b5fd; }
 
 /* ── File upload ─────────────────────────────────────────────────────────── */
 /* Bulma uses height:2.5em — relative to font-size, so mismatched font-sizes
@@ -413,6 +432,7 @@ a.navbar-item.is-active {
 textarea.form-input { line-height: 1.5; height: auto; padding-top: 0.55rem; padding-bottom: 0.55rem; }
 select.form-input { cursor: pointer; }
 .form-input-readonly { background-color: #f5f5f4; color: #78716c; cursor: not-allowed; }
+.form-input-narrow { width: auto; max-width: 10rem; flex-shrink: 0; }
 
 [data-theme=dark] .form-input { background: #201e1c; border-color: #4a4540; color: #fafaf9; }
 [data-theme=dark] .form-input:focus { border-color: #818cf8; box-shadow: 0 0 0 3px rgba(129,140,248,.15); }
@@ -638,6 +658,7 @@ select.form-input { cursor: pointer; }
 [data-theme=dark] .status-rejected,   [data-theme=dark] .status-select.status-rejected   { background: #450a0a; color: #f87171; }
 [data-theme=dark] .status-inprogress, [data-theme=dark] .status-select.status-inprogress { background: #2e1065; color: #a78bfa; }
 [data-theme=dark] .status-completed,  [data-theme=dark] .status-select.status-completed  { background: #052e16; color: #34d399; }
+[data-theme=dark] .status-failed,     [data-theme=dark] .status-select.status-failed     { background: #450a0a; color: #fca5a5; }
 [data-theme=dark] .status-cancelled,  [data-theme=dark] .status-select.status-cancelled  { background: #3f3f46; color: #a1a1aa; }
 
 /* ── Priority select dark variants ──────────────────────────────────────── */
@@ -710,6 +731,11 @@ select.form-input { cursor: pointer; }
   border: 1px solid #e4e4e7;
 }
 [data-theme=dark] .panel-row { background: #252220; border-color: #3d3830; }
+a.panel-row { text-decoration: none; color: inherit; }
+a.panel-row:hover { border-color: #c7d2fe; }
+[data-theme=dark] a.panel-row:hover { border-color: #4f46e5; }
+
+.campaign-unassigned-box { border-left: 3px solid #f59e0b; }
 
 /* ── Avatar circle ───────────────────────────────────────────────────────── */
 .drs-avatar {

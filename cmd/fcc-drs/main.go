@@ -92,9 +92,14 @@ func main() {
 	mux.HandleFunc("POST /admin/groups/{id}/members", middleware.RequireAdmin(h.AdminAddGroupMember))
 	mux.HandleFunc("DELETE /admin/groups/{id}/members/{user_id}", middleware.RequireAdmin(h.AdminRemoveGroupMember))
 	mux.HandleFunc("POST /admin/users/{id}/role", middleware.RequireAdmin(h.AdminUpdateUserRole))
+	mux.HandleFunc("GET /admin/campaigns", middleware.RequireAdmin(h.AdminCampaigns))
+	mux.HandleFunc("POST /admin/campaigns", middleware.RequireAdmin(h.AdminCreateCampaign))
+	mux.HandleFunc("POST /admin/campaigns/{id}/status", middleware.RequireAdmin(h.AdminUpdateCampaignStatus))
+	mux.HandleFunc("DELETE /admin/campaigns/{id}", middleware.RequireAdmin(h.AdminDeleteCampaign))
 
 	// Coordinator-only routes
 	mux.HandleFunc("GET /coordinator", middleware.RequireCoordinator(h.CoordinatorView))
+	mux.HandleFunc("GET /campaigns", middleware.RequireCoordinator(h.CampaignsView))
 	mux.HandleFunc("POST /requests/batch", middleware.RequireCoordinator(h.BatchAction))
 	mux.HandleFunc("GET /requests/{id}/section/{section}", middleware.RequireAuth(h.ViewSection))
 	mux.HandleFunc("GET /requests/{id}/section/{section}/edit", middleware.RequireAuth(h.EditSection))
@@ -102,6 +107,7 @@ func main() {
 	mux.HandleFunc("POST /requests/{id}/status", middleware.RequireAuth(h.UpdateStatus))
 	mux.HandleFunc("POST /requests/{id}/approval", middleware.RequireCoordinator(h.ApprovalDecision))
 	mux.HandleFunc("POST /requests/{id}/assign", middleware.RequireCoordinator(h.AssignRequest))
+	mux.HandleFunc("POST /requests/{id}/campaign", middleware.RequireCoordinator(h.AssignCampaign))
 	mux.HandleFunc("POST /requests/{id}/priority", middleware.RequireCoordinator(h.UpdatePriority))
 	mux.HandleFunc("GET /requests/{id}/activity", middleware.RequireAuth(h.GetActivity))
 	mux.HandleFunc("POST /requests/{id}/comments", middleware.RequireAuth(h.AddComment))

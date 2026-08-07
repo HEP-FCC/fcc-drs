@@ -27,6 +27,7 @@ type Handler struct {
 	relations      *models.RelationStore
 	generatorCards *models.GeneratorCardStore
 	groups         *models.CoordinatorGroupStore
+	campaigns      *models.CampaignStore
 	oidc           *auth.Client
 	notifier       *notifications.Notifier
 	funcMap        template.FuncMap
@@ -46,6 +47,7 @@ func New(db *sql.DB, driver string, oidcClient *auth.Client, devMode bool, versi
 		relations:      models.NewRelationStore(db, driver),
 		generatorCards: models.NewGeneratorCardStore(db, driver),
 		groups:         models.NewCoordinatorGroupStore(db, driver),
+		campaigns:      models.NewCampaignStore(db, driver),
 		oidc:           oidcClient,
 		notifier:       notifications.New(users, email.ConfigFromEnv(), appURL),
 		devMode:        devMode,
@@ -59,6 +61,10 @@ func New(db *sql.DB, driver string, oidcClient *auth.Client, devMode bool, versi
 		"groupCardData": func(g *models.CoordinatorGroup, coordinators []*models.User) PageData {
 			return PageData{Group: g, Coordinators: coordinators}
 		},
+		"campaignCardData": func(c *models.Campaign) PageData {
+			return PageData{Campaign: c}
+		},
+		"campaignAssignable": campaignAssignable,
 		"statusClass":    statusClass,
 		"priorityClass":  priorityClass,
 		"truncate":       truncate,
@@ -150,10 +156,23 @@ func statusClass(s models.Status) string {
 		return "status-inprogress"
 	case models.StatusCompleted:
 		return "status-completed"
+	case models.StatusFailed:
+		return "status-failed"
 	case models.StatusCancelled:
 		return "status-cancelled"
 	default:
 		return "status-draft"
+	}
+}
+
+// campaignAssignable reports whether a request's status permits campaign assignment —
+// approved, or any later stage (in_progress, completed, failed) that already passed approval.
+func campaignAssignable(status models.Status) bool {
+	switch status {
+	case models.StatusApproved, models.StatusInProgress, models.StatusCompleted, models.StatusFailed:
+		return true
+	default:
+		return false
 	}
 }
 
@@ -258,6 +277,12 @@ type PageData struct {
 	Groups         []*models.CoordinatorGroup
 	Group          *models.CoordinatorGroup
 	AssignedGroup  *models.CoordinatorGroup
+	Campaigns      []*models.Campaign
+	Campaign       *models.Campaign
+	OpenCampaigns      []CampaignGroup
+	ClosedCampaigns    []CampaignGroup
+	UnassignedRequests []*models.DatasetRequest
+	CampaignsTab       string
 	Relations      []*models.Relation
 	GeneratorCards []*models.GeneratorCard
 	GeneratorCard  *models.GeneratorCard
@@ -539,17 +564,18 @@ func (h *Handler) GetRequest(w http.ResponseWriter, r *http.Request) {
 	activity, _ := h.updates.GetByRequestID(id)
 	groups, _ := h.groups.GetAll()
 	assignedGroup := assignedGroupFrom(req, groups)
+	campaigns, _ := h.campaigns.GetAssignable(req.CampaignID)
 	relations, _ := h.relations.GetByRequestID(id)
 	cards, _ := h.generatorCards.GetByRequestID(id)
 
 	if r.Header.Get("HX-Request") == "true" {
 		h.renderPartial(w, r, "request_detail", PageData{
-			Request: req, Updates: activity, Groups: groups, AssignedGroup: assignedGroup, Relations: relations, GeneratorCards: cards,
+			Request: req, Updates: activity, Groups: groups, AssignedGroup: assignedGroup, Campaigns: campaigns, Relations: relations, GeneratorCards: cards,
 		})
 		return
 	}
 	h.renderPage(w, r, "request_detail_page", PageData{
-		Title: req.Title, Request: req, Updates: activity, Groups: groups, AssignedGroup: assignedGroup, Relations: relations, GeneratorCards: cards,
+		Title: req.Title, Request: req, Updates: activity, Groups: groups, AssignedGroup: assignedGroup, Campaigns: campaigns, Relations: relations, GeneratorCards: cards,
 	})
 }
 
@@ -812,6 +838,7 @@ func (h *Handler) UpdateStatus(w http.ResponseWriter, r *http.Request) {
 	updates, _ := h.updates.GetByRequestID(id)
 	groups, _ := h.groups.GetAll()
 	assignedGroup := assignedGroupFrom(req, groups)
+	campaigns, _ := h.campaigns.GetAssignable(req.CampaignID)
 	relations, _ := h.relations.GetByRequestID(id)
 	cards, _ := h.generatorCards.GetByRequestID(id)
 	h.renderPartial(w, r, "request_detail", PageData{
@@ -819,6 +846,7 @@ func (h *Handler) UpdateStatus(w http.ResponseWriter, r *http.Request) {
 		Updates:        updates,
 		Groups:         groups,
 		AssignedGroup:  assignedGroup,
+		Campaigns:      campaigns,
 		Relations:      relations,
 		GeneratorCards: cards,
 	})
@@ -951,8 +979,9 @@ func (h *Handler) ApprovalDecision(w http.ResponseWriter, r *http.Request) {
 	updates, _ := h.updates.GetByRequestID(id)
 	groups, _ := h.groups.GetAll()
 	assignedGroup := assignedGroupFrom(req, groups)
+	campaigns, _ := h.campaigns.GetAssignable(req.CampaignID)
 	relations, _ := h.relations.GetByRequestID(id)
-	h.renderPartial(w, r, "request_detail", PageData{Request: req, Updates: updates, Groups: groups, AssignedGroup: assignedGroup, Relations: relations})
+	h.renderPartial(w, r, "request_detail", PageData{Request: req, Updates: updates, Groups: groups, AssignedGroup: assignedGroup, Campaigns: campaigns, Relations: relations})
 }
 
 func (h *Handler) GetStats(w http.ResponseWriter, r *http.Request) {

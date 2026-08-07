@@ -1,0 +1,44 @@
+{{define "content"}}
+
+  <!-- Header -->
+  <div class="mb-5">
+    <h1 class="is-size-4 has-text-weight-semibold">Campaigns</h1>
+    <div class="tabs is-small mb-0 mt-3">
+      <ul>
+        <li class="{{if eq .CampaignsTab "open"}}is-active{{end}}"><a href="/campaigns?tab=open">Open</a></li>
+        <li class="{{if eq .CampaignsTab "closed"}}is-active{{end}}"><a href="/campaigns?tab=closed">Closed</a></li>
+      </ul>
+    </div>
+  </div>
+
+  {{if eq .CampaignsTab "closed"}}
+    {{if .ClosedCampaigns}}
+      {{range .ClosedCampaigns}}{{template "campaign_group_box" .}}{{end}}
+    {{else}}
+      <p class="is-size-7 has-text-grey">No closed campaigns.</p>
+    {{end}}
+  {{else}}
+    {{if .UnassignedRequests}}
+    <div class="box mb-5 campaign-unassigned-box">
+      <p class="is-size-7 has-text-weight-semibold is-uppercase has-text-grey mb-3" style="letter-spacing:.05em">Needs Campaign Assignment</p>
+      <div class="is-flex is-flex-direction-column gap-2">
+        {{range .UnassignedRequests}}
+        <a href="/requests/{{.ID}}" class="panel-row">
+          <div class="is-flex is-align-items-center gap-2 min-w-0">
+            <span class="status-badge {{statusClass .Status}}">{{.StatusLabel}}</span>
+            <span class="is-size-7 has-text-weight-medium has-text-dark is-truncated">{{truncate .Title 60}}</span>
+          </div>
+          <span class="is-size-7 has-text-grey-light is-shrink-0">{{.RequesterName}}</span>
+        </a>
+        {{end}}
+      </div>
+    </div>
+    {{end}}
+    {{if .OpenCampaigns}}
+      {{range .OpenCampaigns}}{{template "campaign_group_box" .}}{{end}}
+    {{else}}
+      <p class="is-size-7 has-text-grey">No open campaigns.</p>
+    {{end}}
+  {{end}}
+
+{{end}}

@@ -1,0 +1,33 @@
+{{define "content"}}
+
+  <!-- Header -->
+  <div class="mb-5">
+    <h1 class="is-size-4 has-text-weight-semibold">Administration</h1>
+    <div class="tabs is-small mb-0 mt-3">
+      <ul>
+        <li><a href="/admin/users">Users</a></li>
+        <li><a href="/admin/groups">Coordinator Groups</a></li>
+        <li class="is-active"><a href="/admin/campaigns">Campaigns</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Campaigns grid -->
+  <div id="campaigns-area">
+    {{template "campaigns_grid" .}}
+  </div>
+
+  <!-- Create campaign -->
+  <form hx-post="/admin/campaigns"
+        hx-target="#campaigns-area"
+        hx-swap="innerHTML"
+        class="box mt-2">
+    <p class="is-size-7 has-text-weight-semibold is-uppercase has-text-grey mb-3" style="letter-spacing:.05em">New Campaign</p>
+    <div class="is-flex is-align-items-center" style="gap:.5rem">
+      <input class="form-input" type="text" name="name" placeholder="Campaign name (e.g. Autumn 2026)" required>
+      <input class="form-input form-input-narrow" type="text" name="tag" placeholder="Short tag (e.g. autumn2026)">
+      <button type="submit" class="button is-link is-small is-shrink-0" style="border-radius:.5rem">Add Campaign</button>
+    </div>
+  </form>
+
+{{end}}

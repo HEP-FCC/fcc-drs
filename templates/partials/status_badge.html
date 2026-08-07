@@ -6,7 +6,11 @@
   hx-post="/requests/{{.ID}}/status"
   hx-target="#status-cell-{{.ID}}"
   hx-swap="innerHTML"
-  hx-trigger="change"
+  hx-trigger="status-confirmed"
+  data-prev="{{.Status}}"
+  data-physics-approval="{{.PhysicsApproval}}"
+  data-resources-approval="{{.ResourcesApproval}}"
+  onchange="confirmStatusApproval(this)"
   class="status-select {{statusClass .Status}}"
   title="Change status">
   <option value="draft"       {{if eq .Status "draft"}}selected{{end}}>Draft</option>
@@ -14,11 +18,13 @@
   <option value="approved"    {{if eq .Status "approved"}}selected{{end}}>Approved</option>
   <option value="in_progress" {{if eq .Status "in_progress"}}selected{{end}}>In Progress</option>
   <option value="completed"   {{if eq .Status "completed"}}selected{{end}}>Completed</option>
+  <option value="failed"      {{if eq .Status "failed"}}selected{{end}}>Failed</option>
   <option value="rejected"    {{if eq .Status "rejected"}}selected{{end}}>Rejected</option>
   <option value="cancelled"   {{if eq .Status "cancelled"}}selected{{end}}>Cancelled</option>
 </select>
 {{else}}
 <span class="status-badge {{statusClass .Status}}">{{.StatusLabel}}</span>
 {{end}}
+{{template "approval_icons" .}}
 {{end}}
 {{end}}
