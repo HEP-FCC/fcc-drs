@@ -32,10 +32,12 @@ type Handler struct {
 	funcMap        template.FuncMap
 	devMode        bool
 	version        string
+	appURL         string
 }
 
 func New(db *sql.DB, driver string, oidcClient *auth.Client, devMode bool, version string) *Handler {
 	users := models.NewUserStore(db, driver)
+	appURL := strings.TrimSuffix(os.Getenv("APP_URL"), "/")
 	h := &Handler{
 		db:             db,
 		requests:       models.NewRequestStore(db, driver),
@@ -45,9 +47,10 @@ func New(db *sql.DB, driver string, oidcClient *auth.Client, devMode bool, versi
 		generatorCards: models.NewGeneratorCardStore(db, driver),
 		groups:         models.NewCoordinatorGroupStore(db, driver),
 		oidc:           oidcClient,
-		notifier:       notifications.New(users, email.ConfigFromEnv(), os.Getenv("APP_URL")),
+		notifier:       notifications.New(users, email.ConfigFromEnv(), appURL),
 		devMode:        devMode,
 		version:        version,
+		appURL:         appURL,
 	}
 	h.funcMap = template.FuncMap{
 		"useCaseLabels":        func() []models.Option { return models.UseCaseLabels },
@@ -97,6 +100,7 @@ func New(db *sql.DB, driver string, oidcClient *auth.Client, devMode bool, versi
 func (h *Handler) renderPage(w http.ResponseWriter, r *http.Request, page string, data PageData) {
 	data.CurrentUser = middleware.GetUser(r)
 	data.Version = h.version
+	data.AppURL = h.appURL
 	tmpl, err := template.New("").Funcs(h.funcMap).ParseFiles(
 		"templates/layout.html",
 		"templates/"+page+".html",
@@ -247,6 +251,7 @@ type PageData struct {
 	Error       string
 	DevMode     bool
 	Version     string
+	AppURL      string
 	Updates     []*models.Update
 	Users       []*models.User
 	Coordinators   []*models.User
