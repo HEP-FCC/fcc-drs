@@ -153,7 +153,6 @@ func (h *Handler) DeleteComment(w http.ResponseWriter, r *http.Request) {
 	h.renderPartial(w, r, "activity", PageData{Request: req, Updates: stages})
 }
 
-
 func (h *Handler) GetActivity(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(r.PathValue("id"))
 	if err != nil {
@@ -298,8 +297,8 @@ func (h *Handler) AssignCampaign(w http.ResponseWriter, r *http.Request) {
 	} else {
 		eventBody = existing.CampaignName + " → " + req.CampaignName
 	}
-	h.updates.Add(id, userID, models.UpdateAssigned, eventBody)
-	h.notifier.OnActivity(req, &models.Update{RequestID: id, UserID: userID, Type: models.UpdateAssigned, Body: eventBody})
+	h.updates.Add(id, userID, models.UpdateCampaignAssigned, eventBody)
+	h.notifier.OnActivity(req, &models.Update{RequestID: id, UserID: userID, Type: models.UpdateCampaignAssigned, Body: eventBody})
 
 	// Being added to a campaign moves the request from approved into active work.
 	if campaignID != 0 && req.Status == models.StatusApproved {

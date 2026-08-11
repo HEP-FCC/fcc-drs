@@ -9,12 +9,13 @@ import (
 type UpdateType string
 
 const (
-	UpdateComment         UpdateType = "comment"
-	UpdateInternalNote    UpdateType = "internal_note"
-	UpdateStatusChanged   UpdateType = "status_changed"
-	UpdatePriorityChanged UpdateType = "priority_changed"
-	UpdateAssigned        UpdateType = "assigned"
-	UpdateCreated         UpdateType = "created"
+	UpdateComment          UpdateType = "comment"
+	UpdateInternalNote     UpdateType = "internal_note"
+	UpdateStatusChanged    UpdateType = "status_changed"
+	UpdatePriorityChanged  UpdateType = "priority_changed"
+	UpdateAssigned         UpdateType = "assigned"
+	UpdateCampaignAssigned UpdateType = "campaign_assigned"
+	UpdateCreated          UpdateType = "created"
 )
 
 type Update struct {
