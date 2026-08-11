@@ -155,6 +155,18 @@ func (s *CoordinatorGroupStore) RemoveMember(groupID, userID int) error {
 	return err
 }
 
+// IsMember reports whether the given user belongs to the given coordinator group.
+func (s *CoordinatorGroupStore) IsMember(groupID, userID int) (bool, error) {
+	var exists bool
+	err := s.db.QueryRow(s.rebind(`
+		SELECT EXISTS(SELECT 1 FROM coordinator_group_members WHERE group_id = ? AND user_id = ?)`),
+		groupID, userID).Scan(&exists)
+	if err != nil {
+		return false, fmt.Errorf("check group membership: %w", err)
+	}
+	return exists, nil
+}
+
 // GetMembershipsByUser returns a map of userID → groups that user belongs to.
 // Groups in the map contain only ID/Name/Description (no recursive Members list).
 func (s *CoordinatorGroupStore) GetMembershipsByUser() (map[int][]*CoordinatorGroup, error) {

@@ -38,6 +38,7 @@ type Handler struct {
 
 func New(db *sql.DB, driver string, oidcClient *auth.Client, devMode bool, version string) *Handler {
 	users := models.NewUserStore(db, driver)
+	groups := models.NewCoordinatorGroupStore(db, driver)
 	appURL := strings.TrimSuffix(os.Getenv("APP_URL"), "/")
 	h := &Handler{
 		db:             db,
@@ -46,10 +47,10 @@ func New(db *sql.DB, driver string, oidcClient *auth.Client, devMode bool, versi
 		updates:        models.NewUpdateStore(db, driver),
 		relations:      models.NewRelationStore(db, driver),
 		generatorCards: models.NewGeneratorCardStore(db, driver),
-		groups:         models.NewCoordinatorGroupStore(db, driver),
+		groups:         groups,
 		campaigns:      models.NewCampaignStore(db, driver),
 		oidc:           oidcClient,
-		notifier:       notifications.New(users, email.ConfigFromEnv(), appURL),
+		notifier:       notifications.New(users, groups, email.ConfigFromEnv(), appURL),
 		devMode:        devMode,
 		version:        version,
 		appURL:         appURL,

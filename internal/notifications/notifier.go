@@ -12,12 +12,13 @@ import (
 
 type Notifier struct {
 	users    *models.UserStore
+	groups   *models.CoordinatorGroupStore
 	emailCfg email.Config
 	baseURL  string
 }
 
-func New(users *models.UserStore, cfg email.Config, baseURL string) *Notifier {
-	return &Notifier{users: users, emailCfg: cfg, baseURL: baseURL}
+func New(users *models.UserStore, groups *models.CoordinatorGroupStore, cfg email.Config, baseURL string) *Notifier {
+	return &Notifier{users: users, groups: groups, emailCfg: cfg, baseURL: baseURL}
 }
 
 // OnActivity fires email notifications for a logged activity event.
@@ -41,6 +42,8 @@ func (n *Notifier) dispatch(req *models.DatasetRequest, update *models.Update) {
 		n.notifyComment(req, update)
 	case models.UpdateAssigned:
 		n.notifyAssigned(req, update)
+	case models.UpdateCampaignAssigned:
+		n.notifyCampaignAssigned(req, update)
 	case models.UpdatePriorityChanged:
 		n.notifyPriorityChange(req, update)
 	}
@@ -56,6 +59,11 @@ func (n *Notifier) requestInfoHTML(req *models.DatasetRequest) string {
 		groupRow = `<tr><td style="padding:4px 12px 4px 0;color:#6b7280;vertical-align:top;white-space:nowrap">Assigned group</td>` +
 			`<td style="padding:4px 0">` + html.EscapeString(req.AssignedGroupName) + `</td></tr>`
 	}
+	campaignRow := ""
+	if req.CampaignName != "" {
+		campaignRow = `<tr><td style="padding:4px 12px 4px 0;color:#6b7280;vertical-align:top;white-space:nowrap">Campaign</td>` +
+			`<td style="padding:4px 0">` + html.EscapeString(req.CampaignName) + `</td></tr>`
+	}
 	linkRow := ""
 	if n.baseURL != "" {
 		url := n.baseURL + "/requests/" + strconv.Itoa(req.ID)
@@ -70,10 +78,29 @@ func (n *Notifier) requestInfoHTML(req *models.DatasetRequest) string {
 		`<tr><td style="padding:4px 12px 4px 0;color:#6b7280;vertical-align:top;white-space:nowrap">Requester</td>` +
 		`<td style="padding:4px 0">` + html.EscapeString(req.RequesterName) + `</td></tr>` +
 		groupRow +
+		campaignRow +
 		linkRow +
 		`</table>` +
 		`<p style="color:#6b7280;margin:16px 0 6px 0;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em">Description</p>` +
 		`<p style="background:#f9fafb;border-left:3px solid #e5e7eb;padding:10px 12px;margin:0;color:#374151;white-space:pre-wrap">` + html.EscapeString(desc) + `</p>`
+}
+
+// assignedGroupActorHTML returns an HTML line noting that the acting user is
+// a coordinator of the request's currently assigned group, or "" if the
+// request has no assigned group or the actor isn't a member of it.
+func (n *Notifier) assignedGroupActorHTML(req *models.DatasetRequest, userID int) string {
+	if req.AssignedGroupID == 0 {
+		return ""
+	}
+	actor, err := n.users.GetByID(userID)
+	if err != nil || !actor.IsCoordinator() {
+		return ""
+	}
+	isMember, err := n.groups.IsMember(req.AssignedGroupID, userID)
+	if err != nil || !isMember {
+		return ""
+	}
+	return `<p style="margin:0 0 4px 0;color:#6b7280">Action taken by a coordinator of the assigned group.</p>`
 }
 
 func htmlWrap(greeting, inner string) string {
@@ -101,6 +128,7 @@ func (n *Notifier) notifyNewRequest(req *models.DatasetRequest, _ *models.Update
 func (n *Notifier) notifyStatusChange(req *models.DatasetRequest, update *models.Update) {
 	subject := fmt.Sprintf("[FCC-DRS] Request #%d status updated: %s", req.ID, req.Title)
 	inner := `<p style="margin:0 0 4px 0">Status changed: <strong>` + html.EscapeString(update.Body) + `</strong></p>` +
+		n.assignedGroupActorHTML(req, update.UserID) +
 		n.requestInfoHTML(req)
 	users, _ := n.users.GetUsersForStatusChange(req.AssignedGroupID)
 	sent := n.sendToUsers(users, req.ID, subject, inner)
@@ -115,6 +143,7 @@ func (n *Notifier) notifyComment(req *models.DatasetRequest, update *models.Upda
 	}
 	inner := `<p style="margin:0 0 12px 0">A new comment was added.</p>` +
 		`<p style="background:#f9fafb;border-left:3px solid #e5e7eb;padding:10px 12px;margin:0 0 4px 0;color:#374151;white-space:pre-wrap">` + html.EscapeString(preview) + `</p>` +
+		n.assignedGroupActorHTML(req, update.UserID) +
 		n.requestInfoHTML(req)
 	users, _ := n.users.GetUsersForComment(req.AssignedGroupID, update.UserID)
 	sent := n.sendToUsers(users, req.ID, subject, inner)
@@ -142,7 +171,35 @@ func (n *Notifier) notifyAssigned(req *models.DatasetRequest, update *models.Upd
 			"</strong> to <strong>" + html.EscapeString(req.AssignedGroupName) + "</strong>."
 	}
 	subject := fmt.Sprintf("[FCC-DRS] Request #%d group assigned: %s", req.ID, req.Title)
-	inner := `<p style="margin:0 0 4px 0">` + actionHTML + `</p>` + n.requestInfoHTML(req)
+	inner := `<p style="margin:0 0 4px 0">` + actionHTML + `</p>` +
+		n.assignedGroupActorHTML(req, update.UserID) +
+		n.requestInfoHTML(req)
+	users, _ := n.users.GetUsersForComment(req.AssignedGroupID, update.UserID)
+	sent := n.sendToUsers(users, req.ID, subject, inner)
+	n.notifyRequester(req, update.UserID, sent, subject, inner, "status")
+}
+
+func (n *Notifier) notifyCampaignAssigned(req *models.DatasetRequest, update *models.Update) {
+	var actionHTML string
+	switch {
+	case req.CampaignName == "":
+		actionHTML = "The request has been removed from its campaign."
+	case strings.HasPrefix(update.Body, "Added to campaign:"):
+		actionHTML = "Request added to campaign <strong>" + html.EscapeString(req.CampaignName) + "</strong>."
+	default:
+		// Reassignment: body is "OldCampaign → NewCampaign"
+		parts := strings.SplitN(update.Body, " → ", 2)
+		oldCampaign := ""
+		if len(parts) == 2 {
+			oldCampaign = parts[0]
+		}
+		actionHTML = "Campaign changed from <strong>" + html.EscapeString(oldCampaign) +
+			"</strong> to <strong>" + html.EscapeString(req.CampaignName) + "</strong>."
+	}
+	subject := fmt.Sprintf("[FCC-DRS] Request #%d campaign updated: %s", req.ID, req.Title)
+	inner := `<p style="margin:0 0 4px 0">` + actionHTML + `</p>` +
+		n.assignedGroupActorHTML(req, update.UserID) +
+		n.requestInfoHTML(req)
 	users, _ := n.users.GetUsersForComment(req.AssignedGroupID, update.UserID)
 	sent := n.sendToUsers(users, req.ID, subject, inner)
 	n.notifyRequester(req, update.UserID, sent, subject, inner, "status")
@@ -151,6 +208,7 @@ func (n *Notifier) notifyAssigned(req *models.DatasetRequest, update *models.Upd
 func (n *Notifier) notifyPriorityChange(req *models.DatasetRequest, update *models.Update) {
 	subject := fmt.Sprintf("[FCC-DRS] Request #%d priority changed: %s", req.ID, req.Title)
 	inner := `<p style="margin:0 0 4px 0">Priority changed: <strong>` + html.EscapeString(update.Body) + `</strong></p>` +
+		n.assignedGroupActorHTML(req, update.UserID) +
 		n.requestInfoHTML(req)
 	users, _ := n.users.GetUsersForStatusChange(req.AssignedGroupID)
 	n.sendToUsers(users, req.ID, subject, inner)
