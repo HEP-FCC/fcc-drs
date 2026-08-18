@@ -55,16 +55,14 @@ main { flex: 1; }
   line-height: 1;
 }
 
-/* Absolutely centered nav links (desktop) */
-.navbar .container { position: relative; }
+/* Nav links centered in the flex space between brand and navbar-end
+   (desktop) — flex-grow lets it fill the remaining row width so it can
+   never overlap navbar-end, unlike a container-wide absolute center. */
 .drs-nav-center {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
   display: flex;
+  flex-grow: 1;
   align-items: stretch;
-  height: 100%;
-  z-index: 1;
+  justify-content: center;
 }
 
 [data-theme=dark] .navbar,
@@ -104,9 +102,27 @@ a.navbar-item.is-active {
 .navbar-item .drs-user-avatar img { max-height: none; }
 .drs-avatar--lg { width: 5rem; height: 5rem; }
 
+/* Profile (avatar + name/role) and logout share one row, pushed to
+   opposite edges — regardless of breakpoint, since .navbar-item is only a
+   flex container at desktop widths, block below that. */
+.drs-profile-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+.drs-profile-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-width: 0;
+}
+.drs-profile-item p { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
 /* ── Theme toggle ────────────────────────────────────────────────────────── */
 .theme-toggle {
   display: flex;
+  width: fit-content;
   align-items: center;
   gap: 0.125rem;
   padding: 0.125rem;
@@ -114,6 +130,17 @@ a.navbar-item.is-active {
   background-color: #f5f5f4;
 }
 [data-theme=dark] .theme-toggle { background-color: #292524; }
+
+/* In the burger menu, stretch the pill to 80% of the item width instead of
+   staying pinned to its compact desktop size, and let the buttons fill it
+   evenly rather than leaving dead space after the last one. */
+@media (max-width: 1023px) {
+  .theme-toggle {
+    width: 80%;
+    margin: 0 auto;
+  }
+  .theme-toggle .theme-btn { flex: 1; }
+}
 
 .theme-btn {
   padding: 0.3rem;
@@ -566,6 +593,15 @@ select.form-input { cursor: pointer; }
   margin: 0 0.25rem;
 }
 [data-theme=dark] .navbar-separator { background: #3d3830; }
+
+/* Horizontal divider between nav links and theme/profile/logout in the
+   burger menu, where everything stacks in one column. */
+.navbar-mobile-divider {
+  border: none;
+  border-top: 1px solid #e7e5e4;
+  margin: 0.5rem 1.5rem;
+}
+[data-theme=dark] .navbar-mobile-divider { border-top-color: #3d3830; }
 
 /* ── Login header ────────────────────────────────────────────────────────── */
 .login-header {
