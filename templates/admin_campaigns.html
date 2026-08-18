@@ -21,6 +21,7 @@
   <form hx-post="/admin/campaigns"
         hx-target="#campaigns-area"
         hx-swap="innerHTML"
+        hx-on::after-request="if (event.detail.successful) this.reset()"
         class="box mt-2">
     <p class="is-size-7 has-text-weight-semibold is-uppercase has-text-grey mb-3" style="letter-spacing:.05em">New Campaign</p>
     <div class="is-flex is-align-items-center" style="gap:.5rem">
