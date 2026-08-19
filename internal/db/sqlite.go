@@ -34,71 +34,9 @@ func Init() (*DB, error) {
 }
 
 func migrate(db *DB) error {
-	// Additive migrations — errors swallowed (column/table already exists).
-	db.Exec(`UPDATE users SET role = 'coordinator' WHERE role = 'manager'`)
-	db.Exec(`ALTER TABLE users ADD COLUMN preferred_name TEXT NOT NULL DEFAULT ''`)
-	db.Exec(`ALTER TABLE users ADD COLUMN avatar BLOB`)
-	db.Exec(`ALTER TABLE users ADD COLUMN avatar_mime TEXT NOT NULL DEFAULT ''`)
-	db.Exec(`ALTER TABLE dataset_requests ADD COLUMN created_by INTEGER REFERENCES users(id)`)
-	db.Exec(`ALTER TABLE dataset_requests ADD COLUMN requester_username TEXT NOT NULL DEFAULT ''`)
-	db.Exec(`ALTER TABLE dataset_requests ADD COLUMN assigned_to INTEGER REFERENCES users(id)`)
-	db.Exec(`ALTER TABLE dataset_requests RENAME COLUMN requester_cern_username TO requester_username`)
-	db.Exec(`ALTER TABLE users RENAME COLUMN cern_username TO username`)
-	db.Exec(`ALTER TABLE dataset_requests ADD COLUMN physics_approval TEXT NOT NULL DEFAULT ''`)
-	db.Exec(`ALTER TABLE dataset_requests ADD COLUMN resources_approval TEXT NOT NULL DEFAULT ''`)
-	db.Exec(`ALTER TABLE dataset_requests ADD COLUMN statistics TEXT NOT NULL DEFAULT ''`)
-	db.Exec(`ALTER TABLE dataset_requests ADD COLUMN target_campaign TEXT NOT NULL DEFAULT ''`)
-	db.Exec(`ALTER TABLE dataset_requests ADD COLUMN key4hep_stack TEXT NOT NULL DEFAULT ''`)
-	db.Exec(`CREATE TABLE IF NOT EXISTS coordinator_groups (
-		id          INTEGER PRIMARY KEY AUTOINCREMENT,
-		name        TEXT NOT NULL UNIQUE,
-		description TEXT NOT NULL DEFAULT '',
-		created_at  DATETIME DEFAULT CURRENT_TIMESTAMP
-	)`)
-	db.Exec(`CREATE TABLE IF NOT EXISTS coordinator_group_members (
-		group_id INTEGER NOT NULL REFERENCES coordinator_groups(id) ON DELETE CASCADE,
-		user_id  INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-		PRIMARY KEY (group_id, user_id)
-	)`)
-	db.Exec(`INSERT OR IGNORE INTO coordinator_groups (name) VALUES
-		('BSM physics'),
-		('Electroweak physics'),
-		('FCC-hh physics'),
-		('Flavour physics'),
-		('Global fits & EFT'),
-		('Higgs physics'),
-		('Precision calculations'),
-		('QCD and photon-photon physics'),
-		('Top-quark physics'),
-		('Computing Resources'),
-		('Core SW/Key4hep, Releases'),
-		('Digitization and Reconstruction Software'),
-		('Documentation and Trainings'),
-		('Geometry, Simulation'),
-		('Interaction Region, Beam Backgrounds'),
-		('MC Productions, GRID Tools'),
-		('Analysis Tools'),
-		('High-level reconstruction'),
-		('Monte Carlo tools')`)
-	db.Exec(`ALTER TABLE dataset_requests ADD COLUMN assigned_group_id INTEGER REFERENCES coordinator_groups(id)`)
-	db.Exec(`UPDATE dataset_requests SET assigned_group_id = (
-		SELECT id FROM coordinator_groups WHERE name = working_group
-	) WHERE working_group != '' AND assigned_group_id IS NULL`)
-	db.Exec(`ALTER TABLE dataset_requests DROP COLUMN working_group`)
-	db.Exec(`ALTER TABLE users ADD COLUMN notify_new_requests INTEGER NOT NULL DEFAULT 1`)
-	db.Exec(`ALTER TABLE users ADD COLUMN notify_status_changes INTEGER NOT NULL DEFAULT 1`)
-	db.Exec(`ALTER TABLE users ADD COLUMN notify_comments INTEGER NOT NULL DEFAULT 1`)
-	db.Exec(`CREATE TABLE IF NOT EXISTS campaigns (
-		id         INTEGER PRIMARY KEY AUTOINCREMENT,
-		name       TEXT NOT NULL UNIQUE,
-		status     TEXT NOT NULL DEFAULT 'open',
-		created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-	)`)
-	db.Exec(`ALTER TABLE dataset_requests ADD COLUMN campaign_id INTEGER REFERENCES campaigns(id)`)
-	db.Exec(`ALTER TABLE campaigns ADD COLUMN tag TEXT NOT NULL DEFAULT ''`)
-	db.Exec(`ALTER TABLE campaigns ADD COLUMN closed_at DATETIME`)
-
-	_, err := db.Exec(`
+	// Baseline tables first — the additive migrations below alter/reference
+	// them, and must run after they exist on a fresh database.
+	if _, err := db.Exec(`
 		CREATE TABLE IF NOT EXISTS users (
 			id           INTEGER PRIMARY KEY AUTOINCREMENT,
 			username     TEXT NOT NULL UNIQUE,
@@ -180,6 +118,72 @@ func migrate(db *DB) error {
 		BEGIN
 			UPDATE dataset_requests SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
 		END;
-	`)
-	return err
+	`); err != nil {
+		return err
+	}
+
+	// Additive migrations — errors swallowed (column/table already exists).
+	db.Exec(`UPDATE users SET role = 'coordinator' WHERE role = 'manager'`)
+	db.Exec(`ALTER TABLE users ADD COLUMN preferred_name TEXT NOT NULL DEFAULT ''`)
+	db.Exec(`ALTER TABLE users ADD COLUMN avatar BLOB`)
+	db.Exec(`ALTER TABLE users ADD COLUMN avatar_mime TEXT NOT NULL DEFAULT ''`)
+	db.Exec(`ALTER TABLE dataset_requests ADD COLUMN created_by INTEGER REFERENCES users(id)`)
+	db.Exec(`ALTER TABLE dataset_requests ADD COLUMN requester_username TEXT NOT NULL DEFAULT ''`)
+	db.Exec(`ALTER TABLE dataset_requests ADD COLUMN assigned_to INTEGER REFERENCES users(id)`)
+	db.Exec(`ALTER TABLE dataset_requests RENAME COLUMN requester_cern_username TO requester_username`)
+	db.Exec(`ALTER TABLE users RENAME COLUMN cern_username TO username`)
+	db.Exec(`ALTER TABLE dataset_requests ADD COLUMN physics_approval TEXT NOT NULL DEFAULT ''`)
+	db.Exec(`ALTER TABLE dataset_requests ADD COLUMN resources_approval TEXT NOT NULL DEFAULT ''`)
+	db.Exec(`ALTER TABLE dataset_requests ADD COLUMN statistics TEXT NOT NULL DEFAULT ''`)
+	db.Exec(`ALTER TABLE dataset_requests ADD COLUMN target_campaign TEXT NOT NULL DEFAULT ''`)
+	db.Exec(`ALTER TABLE dataset_requests ADD COLUMN key4hep_stack TEXT NOT NULL DEFAULT ''`)
+	db.Exec(`CREATE TABLE IF NOT EXISTS coordinator_groups (
+		id          INTEGER PRIMARY KEY AUTOINCREMENT,
+		name        TEXT NOT NULL UNIQUE,
+		description TEXT NOT NULL DEFAULT '',
+		created_at  DATETIME DEFAULT CURRENT_TIMESTAMP
+	)`)
+	db.Exec(`CREATE TABLE IF NOT EXISTS coordinator_group_members (
+		group_id INTEGER NOT NULL REFERENCES coordinator_groups(id) ON DELETE CASCADE,
+		user_id  INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+		PRIMARY KEY (group_id, user_id)
+	)`)
+	db.Exec(`INSERT OR IGNORE INTO coordinator_groups (name) VALUES
+		('BSM physics'),
+		('Electroweak physics'),
+		('FCC-hh physics'),
+		('Flavour physics'),
+		('Global fits & EFT'),
+		('Higgs physics'),
+		('Precision calculations'),
+		('QCD and photon-photon physics'),
+		('Top-quark physics'),
+		('Computing Resources'),
+		('Core SW/Key4hep, Releases'),
+		('Digitization and Reconstruction Software'),
+		('Documentation and Trainings'),
+		('Geometry, Simulation'),
+		('Interaction Region, Beam Backgrounds'),
+		('MC Productions, GRID Tools'),
+		('Analysis Tools'),
+		('High-level reconstruction'),
+		('Monte Carlo tools')`)
+	db.Exec(`ALTER TABLE dataset_requests ADD COLUMN assigned_group_id INTEGER REFERENCES coordinator_groups(id)`)
+	db.Exec(`UPDATE dataset_requests SET assigned_group_id = (
+		SELECT id FROM coordinator_groups WHERE name = working_group
+	) WHERE working_group != '' AND assigned_group_id IS NULL`)
+	db.Exec(`ALTER TABLE dataset_requests DROP COLUMN working_group`)
+	db.Exec(`ALTER TABLE users ADD COLUMN notify_new_requests INTEGER NOT NULL DEFAULT 1`)
+	db.Exec(`ALTER TABLE users ADD COLUMN notify_status_changes INTEGER NOT NULL DEFAULT 1`)
+	db.Exec(`ALTER TABLE users ADD COLUMN notify_comments INTEGER NOT NULL DEFAULT 1`)
+	db.Exec(`CREATE TABLE IF NOT EXISTS campaigns (
+		id         INTEGER PRIMARY KEY AUTOINCREMENT,
+		name       TEXT NOT NULL UNIQUE,
+		status     TEXT NOT NULL DEFAULT 'open',
+		created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+	)`)
+	db.Exec(`ALTER TABLE dataset_requests ADD COLUMN campaign_id INTEGER REFERENCES campaigns(id)`)
+	db.Exec(`ALTER TABLE campaigns ADD COLUMN tag TEXT NOT NULL DEFAULT ''`)
+	db.Exec(`ALTER TABLE campaigns ADD COLUMN closed_at DATETIME`)
+	return nil
 }
