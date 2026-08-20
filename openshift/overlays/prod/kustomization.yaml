@@ -7,11 +7,12 @@ resources:
   - ../../base
   - route.yaml
 
-# Set newName to your CERN GitLab registry path and update newTag to the release tag before each deploy.
+# newTag is a placeholder — deploy-prod in .gitlab-ci.yml overwrites it with
+# $CI_COMMIT_TAG via sed before applying.
 images:
   - name: fcc-drs
     newName: gitlab-registry.cern.ch/hep-fcc/fcc-drs
-    newTag: v0.1.0
+    newTag: latest
 
 patches:
   - patch: |-

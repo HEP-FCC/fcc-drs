@@ -7,7 +7,8 @@ resources:
   - ../../base
   - route.yaml
 
-# Set newName to your CERN GitLab registry path and update newTag before each deploy.
+# newTag is a placeholder — deploy-staging in .gitlab-ci.yml overwrites it with
+# ${CI_COMMIT_BRANCH}-${CI_COMMIT_SHORT_SHA} via sed before applying.
 images:
   - name: fcc-drs
     newName: gitlab-registry.cern.ch/hep-fcc/fcc-drs
