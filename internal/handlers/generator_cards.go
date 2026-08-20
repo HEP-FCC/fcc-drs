@@ -14,7 +14,7 @@ import (
 	"dataset-tracker/internal/models"
 )
 
-const maxGeneratorCardSize = 1 << 20  // 1 MB
+const maxGeneratorCardSize = 1 << 20 // 1 MB
 const maxGeneratorCardsPerUpload = 20
 
 // saveGeneratorCardFromForm reads all "generator_card" files from a parsed
