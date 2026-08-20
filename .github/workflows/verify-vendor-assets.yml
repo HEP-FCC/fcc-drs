@@ -1,0 +1,24 @@
+name: Verify vendored assets
+
+on:
+  pull_request:
+    paths:
+      - Makefile
+      - static/vendor/**
+  push:
+    branches: [main]
+    paths:
+      - Makefile
+      - static/vendor/**
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: make assets
+      - run: |
+          git diff --exit-code -- static/vendor/ || {
+            echo "::error::static/vendor/ is out of sync with the version pins in Makefile — run 'make assets' locally and commit the result."
+            exit 1
+          }
