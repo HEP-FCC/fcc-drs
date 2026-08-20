@@ -11,7 +11,7 @@ variables:
 build:
   stage: build
   image:
-    name: gcr.io/kaniko-project/executor:v1.23.0-debug
+    name: gcr.io/kaniko-project/executor:v1.24.0-debug
     entrypoint: [""]
   script:
     - VERSION=${CI_COMMIT_TAG:-${CI_COMMIT_BRANCH}-${CI_COMMIT_SHORT_SHA}}
