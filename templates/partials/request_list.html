@@ -36,7 +36,7 @@
         </div>
         {{if .DatasetType}}<span>·</span><span class="is-capitalized">{{.DatasetType}}</span>{{end}}
         {{if .AssignedGroupName}}<span class="group-badge">{{.AssignedGroupName}}</span>{{end}}
-        {{if .CampaignName}}<span class="campaign-badge" title="{{.CampaignName}}">{{if .CampaignTag}}{{.CampaignTag}}{{else}}{{.CampaignName}}{{end}}</span>{{end}}
+        {{if .CampaignName}}<span class="campaign-badge" title="{{.CampaignName}}">{{.CampaignName}}</span>{{end}}
       </div>
 
       {{if .TagList}}
@@ -181,7 +181,7 @@
           <span class="group-badge is-block mb-1">{{.AssignedGroupName}}</span>
           {{end}}
           {{if .CampaignName}}
-          <span class="campaign-badge is-block" title="{{.CampaignName}}">{{if .CampaignTag}}{{.CampaignTag}}{{else}}{{.CampaignName}}{{end}}</span>
+          <span class="campaign-badge is-block" title="{{.CampaignName}}">{{.CampaignName}}</span>
           {{end}}
           {{if and (not .AssignedGroupName) (not .CampaignName)}}
           <span class="is-size-7 has-text-grey-lighter">—</span>
