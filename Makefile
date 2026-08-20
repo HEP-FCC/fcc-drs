@@ -2,9 +2,9 @@ VERSION := $(shell git describe --tags --always --dirty 2>/dev/null || echo "dev
 BINARY  := fcc-drs
 CMD     := ./cmd/fcc-drs
 
-KATEX_VERSION := 0.16.11
-HTMX_VERSION  := 2.0.4
-MARKED_VERSION := 14
+KATEX_VERSION := 0.18.4
+HTMX_VERSION  := 2.0.10
+MARKED_VERSION := 18.0.10
 BULMA_VERSION := 1.0.4
 
 VENDOR := static/vendor
@@ -46,7 +46,7 @@ assets:
 	  https://unpkg.com/htmx.org@$(HTMX_VERSION)/dist/htmx.min.js
 	@echo "→ Downloading marked $(MARKED_VERSION)..."
 	curl -sL -o $(VENDOR)/marked.min.js \
-	  https://cdn.jsdelivr.net/npm/marked@$(MARKED_VERSION)/marked.min.js
+	  https://cdn.jsdelivr.net/npm/marked@$(MARKED_VERSION)/lib/marked.umd.js
 	@echo "→ Downloading Bulma $(BULMA_VERSION)..."
 	curl -sL -o $(VENDOR)/bulma.min.css \
 	  https://cdn.jsdelivr.net/npm/bulma@$(BULMA_VERSION)/css/bulma.min.css

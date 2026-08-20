@@ -1,0 +1,40 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "gomod": {
+    "enabled": true
+  },
+  "dockerfile": {
+    "enabled": true
+  },
+  "customManagers": [
+    {
+      "customType": "regex",
+      "managerFilePatterns": ["/^Makefile$/"],
+      "matchStrings": ["HTMX_VERSION\\s*:=\\s*(?<currentValue>[\\d.]+)"],
+      "depNameTemplate": "htmx.org",
+      "datasourceTemplate": "npm"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": ["/^Makefile$/"],
+      "matchStrings": ["MARKED_VERSION\\s*:=\\s*(?<currentValue>[\\d.]+)"],
+      "depNameTemplate": "marked",
+      "datasourceTemplate": "npm"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": ["/^Makefile$/"],
+      "matchStrings": ["BULMA_VERSION\\s*:=\\s*(?<currentValue>[\\d.]+)"],
+      "depNameTemplate": "bulma",
+      "datasourceTemplate": "npm"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": ["/^Makefile$/"],
+      "matchStrings": ["KATEX_VERSION\\s*:=\\s*(?<currentValue>[\\d.]+)"],
+      "depNameTemplate": "katex",
+      "datasourceTemplate": "npm"
+    }
+  ]
+}
