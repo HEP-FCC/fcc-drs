@@ -18,7 +18,6 @@ const stateCookie = "oidc_state"
 const sessionTTL = 24 * time.Hour
 const stateTTL = 10 * time.Minute
 
-
 func (h *Handler) ShowLogin(w http.ResponseWriter, r *http.Request) {
 	if middleware.GetUser(r) != nil {
 		http.Redirect(w, r, "/", http.StatusSeeOther)
@@ -74,7 +73,6 @@ func (h *Handler) DevLogin(w http.ResponseWriter, r *http.Request) {
 	slog.Warn("dev login", "user", username, "role", role)
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
-
 
 // Login initiates the CERN SSO OIDC flow.
 func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {

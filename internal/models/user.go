@@ -15,19 +15,19 @@ const (
 )
 
 type User struct {
-	ID               int
-	Username         string // preferred_username from OIDC
-	DisplayName      string
-	PreferredName    string
-	Email            string
-	Role             Role
-	HasAvatar        bool
-	CreatedAt        time.Time
-	LastLogin        time.Time
+	ID                  int
+	Username            string // preferred_username from OIDC
+	DisplayName         string
+	PreferredName       string
+	Email               string
+	Role                Role
+	HasAvatar           bool
+	CreatedAt           time.Time
+	LastLogin           time.Time
 	NotifyNewRequests   bool
 	NotifyStatusChanges bool
 	NotifyComments      bool
-	GroupMemberships []*CoordinatorGroup // populated in admin context only
+	GroupMemberships    []*CoordinatorGroup // populated in admin context only
 }
 
 func (u *User) IsAdmin() bool {
@@ -71,7 +71,6 @@ func (u *User) Initial() string {
 	}
 	return string([]rune(n)[0])
 }
-
 
 type UserStore struct {
 	db *sql.DB

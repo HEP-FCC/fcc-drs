@@ -71,16 +71,16 @@ type DatasetRequest struct {
 	DueDate           string
 	Notes             string
 	Tags              string
-	CreatedBy          int
-	AssignedTo         int
-	AssignedToName     string
-	AssignedGroupID    int
-	AssignedGroupName  string
-	CampaignID         int
-	CampaignName       string
-	CampaignTag        string
-	CampaignStatus     string
-	PhysicsApproval    string // "" | "approved" | "rejected"
+	CreatedBy         int
+	AssignedTo        int
+	AssignedToName    string
+	AssignedGroupID   int
+	AssignedGroupName string
+	CampaignID        int
+	CampaignName      string
+	CampaignTag       string
+	CampaignStatus    string
+	PhysicsApproval   string // "" | "approved" | "rejected"
 	ResourcesApproval string // "" | "approved" | "rejected"
 	CreatedAt         time.Time
 	UpdatedAt         time.Time
@@ -305,7 +305,7 @@ func (r *RequestStore) GetActive() ([]*DatasetRequest, error) {
 func (r *RequestStore) GetByID(id int) (*DatasetRequest, error) {
 	row := r.db.QueryRow(r.rebind(`SELECT`+selectCols+`
 		FROM dataset_requests dr
-		` + joinCols + `
+		`+joinCols+`
 		WHERE dr.id = ?`), id)
 	return scanRequest(row)
 }
@@ -422,7 +422,7 @@ func (r *RequestStore) GetStats() (*Stats, error) {
 func (r *RequestStore) GetByCampaign(campaignID int) ([]*DatasetRequest, error) {
 	rows, err := r.db.Query(r.rebind(`SELECT`+selectCols+`
 		FROM dataset_requests dr
-		` + joinCols + `
+		`+joinCols+`
 		WHERE dr.campaign_id = ?
 		ORDER BY dr.updated_at DESC`), campaignID)
 	if err != nil {
@@ -469,7 +469,7 @@ func (r *RequestStore) GetEligibleUnassigned() ([]*DatasetRequest, error) {
 func (r *RequestStore) GetRecent(limit int) ([]*DatasetRequest, error) {
 	rows, err := r.db.Query(r.rebind(`SELECT`+selectCols+`
 		FROM dataset_requests dr
-		` + joinCols + `
+		`+joinCols+`
 		ORDER BY dr.created_at DESC LIMIT ?`), limit)
 	if err != nil {
 		return nil, err

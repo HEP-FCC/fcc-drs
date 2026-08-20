@@ -30,7 +30,6 @@ func (h *Handler) adminUsersPageData() (PageData, error) {
 	return PageData{Title: "User Management", Users: users, Groups: groups}, nil
 }
 
-
 func (h *Handler) adminGroupsPageData() (PageData, error) {
 	groups, err := h.groups.GetAll()
 	if err != nil {

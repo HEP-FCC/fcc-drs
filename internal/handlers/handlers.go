@@ -56,9 +56,9 @@ func New(db *sql.DB, driver string, oidcClient *auth.Client, devMode bool, versi
 		appURL:         appURL,
 	}
 	h.funcMap = template.FuncMap{
-		"useCaseLabels":        func() []models.Option { return models.UseCaseLabels },
-		"datasetTypeLabels":    func() []models.Option { return models.DatasetTypeLabels },
-		"relationTypeLabels":   func() []models.Option { return models.RelationTypeLabels },
+		"useCaseLabels":      func() []models.Option { return models.UseCaseLabels },
+		"datasetTypeLabels":  func() []models.Option { return models.DatasetTypeLabels },
+		"relationTypeLabels": func() []models.Option { return models.RelationTypeLabels },
 		"groupCardData": func(g *models.CoordinatorGroup, coordinators []*models.User) PageData {
 			return PageData{Group: g, Coordinators: coordinators}
 		},
@@ -66,15 +66,15 @@ func New(db *sql.DB, driver string, oidcClient *auth.Client, devMode bool, versi
 			return PageData{Campaign: c}
 		},
 		"campaignAssignable": campaignAssignable,
-		"statusClass":    statusClass,
-		"priorityClass":  priorityClass,
-		"truncate":       truncate,
-		"formatDate":     formatDate,
-		"formatDateTime": formatDateTime,
-		"timeAgo":        timeAgo,
-		"formatSize":     formatSize,
-		"add":            func(a, b int) int { return a + b },
-		"currentYear":    func() int { return time.Now().Year() },
+		"statusClass":        statusClass,
+		"priorityClass":      priorityClass,
+		"truncate":           truncate,
+		"formatDate":         formatDate,
+		"formatDateTime":     formatDateTime,
+		"timeAgo":            timeAgo,
+		"formatSize":         formatSize,
+		"add":                func(a, b int) int { return a + b },
+		"currentYear":        func() int { return time.Now().Year() },
 		"nextSortDir": func(col, currentSort, currentDir string) string {
 			if col != currentSort {
 				switch col {
@@ -260,35 +260,35 @@ func timeAgo(t time.Time) string {
 // ── page data ─────────────────────────────────────────────────────────────────
 
 type PageData struct {
-	Title       string
-	Requests    []*models.DatasetRequest
-	Request     *models.DatasetRequest
-	Stats       *models.Stats
-	Recent      []*models.DatasetRequest
-	Filter      FilterState
-	Pagination  *Pagination
-	CurrentUser *models.User
-	Error       string
-	DevMode     bool
-	Version     string
-	AppURL      string
-	Updates     []*models.Update
-	Users       []*models.User
-	Coordinators   []*models.User
-	Groups         []*models.CoordinatorGroup
-	Group          *models.CoordinatorGroup
-	AssignedGroup  *models.CoordinatorGroup
-	Campaigns      []*models.Campaign
-	Campaign       *models.Campaign
+	Title              string
+	Requests           []*models.DatasetRequest
+	Request            *models.DatasetRequest
+	Stats              *models.Stats
+	Recent             []*models.DatasetRequest
+	Filter             FilterState
+	Pagination         *Pagination
+	CurrentUser        *models.User
+	Error              string
+	DevMode            bool
+	Version            string
+	AppURL             string
+	Updates            []*models.Update
+	Users              []*models.User
+	Coordinators       []*models.User
+	Groups             []*models.CoordinatorGroup
+	Group              *models.CoordinatorGroup
+	AssignedGroup      *models.CoordinatorGroup
+	Campaigns          []*models.Campaign
+	Campaign           *models.Campaign
 	OpenCampaigns      []CampaignGroup
 	ClosedCampaigns    []CampaignGroup
 	UnassignedRequests []*models.DatasetRequest
 	CampaignsTab       string
-	Relations      []*models.Relation
-	GeneratorCards []*models.GeneratorCard
-	GeneratorCard  *models.GeneratorCard
-	Clone          *models.DatasetRequest
-	Comment *models.Update
+	Relations          []*models.Relation
+	GeneratorCards     []*models.GeneratorCard
+	GeneratorCard      *models.GeneratorCard
+	Clone              *models.DatasetRequest
+	Comment            *models.Update
 }
 
 type FilterState struct {
@@ -466,24 +466,39 @@ func (h *Handler) CreateRequest(w http.ResponseWriter, r *http.Request) {
 	}
 
 	req := &models.DatasetRequest{
-		Title:             strings.TrimSpace(r.FormValue("title")),
-		Description:       strings.TrimSpace(r.FormValue("description")),
-		RequesterName:     func() string { if user != nil { return user.DisplayName }; return "" }(),
-		RequesterUsername: func() string { if user != nil { return user.Username }; return "" }(),
-		RequesterEmail:    func() string { if user != nil { return user.Email }; return "" }(),
-		DatasetType:       r.FormValue("dataset_type"),
-		UseCase:           r.FormValue("use_case"),
-		Status:            status,
-		Priority:          priority,
-		EstimatedSize:     strings.TrimSpace(r.FormValue("estimated_size")),
-		Statistics:        strings.TrimSpace(r.FormValue("statistics")),
-		TargetCampaign:    strings.TrimSpace(r.FormValue("target_campaign")),
-		Key4hepStack:      strings.TrimSpace(r.FormValue("key4hep_stack")),
-		Format:            strings.TrimSpace(r.FormValue("format")),
-		DueDate:           r.FormValue("due_date"),
-		Notes:             strings.TrimSpace(r.FormValue("notes")),
-		Tags:              strings.TrimSpace(r.FormValue("tags")),
-		CreatedBy:         createdBy,
+		Title:       strings.TrimSpace(r.FormValue("title")),
+		Description: strings.TrimSpace(r.FormValue("description")),
+		RequesterName: func() string {
+			if user != nil {
+				return user.DisplayName
+			}
+			return ""
+		}(),
+		RequesterUsername: func() string {
+			if user != nil {
+				return user.Username
+			}
+			return ""
+		}(),
+		RequesterEmail: func() string {
+			if user != nil {
+				return user.Email
+			}
+			return ""
+		}(),
+		DatasetType:    r.FormValue("dataset_type"),
+		UseCase:        r.FormValue("use_case"),
+		Status:         status,
+		Priority:       priority,
+		EstimatedSize:  strings.TrimSpace(r.FormValue("estimated_size")),
+		Statistics:     strings.TrimSpace(r.FormValue("statistics")),
+		TargetCampaign: strings.TrimSpace(r.FormValue("target_campaign")),
+		Key4hepStack:   strings.TrimSpace(r.FormValue("key4hep_stack")),
+		Format:         strings.TrimSpace(r.FormValue("format")),
+		DueDate:        r.FormValue("due_date"),
+		Notes:          strings.TrimSpace(r.FormValue("notes")),
+		Tags:           strings.TrimSpace(r.FormValue("tags")),
+		CreatedBy:      createdBy,
 	}
 
 	if req.Title == "" {
