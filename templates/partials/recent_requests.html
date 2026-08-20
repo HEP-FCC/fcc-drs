@@ -47,6 +47,7 @@
         </div>
         <span class="is-size-7 has-text-grey">{{truncate .RequesterName 20}}</span>
         {{if .AssignedGroupName}}<span class="group-badge">{{.AssignedGroupName}}</span>{{end}}
+        {{if .CampaignName}}<span class="campaign-badge" title="{{.CampaignName}}">{{.CampaignName}}</span>{{end}}
       </div>
       <span class="is-size-7 has-text-grey-light">{{formatDate .CreatedAt}}</span>
     </div>
