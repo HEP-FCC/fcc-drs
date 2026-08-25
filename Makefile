@@ -4,7 +4,7 @@ CMD     := ./cmd/fcc-drs
 
 KATEX_VERSION := 0.18.4
 HTMX_VERSION  := 2.0.10
-MARKED_VERSION := 18.0.10
+MARKED_VERSION := 18.0.11
 BULMA_VERSION := 1.0.4
 
 VENDOR := static/vendor
