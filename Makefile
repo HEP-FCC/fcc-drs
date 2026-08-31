@@ -2,7 +2,7 @@ VERSION := $(shell git describe --tags --always --dirty 2>/dev/null || echo "dev
 BINARY  := fcc-drs
 CMD     := ./cmd/fcc-drs
 
-KATEX_VERSION := 0.18.4
+KATEX_VERSION := 0.18.5
 HTMX_VERSION  := 2.0.10
 MARKED_VERSION := 18.0.10
 BULMA_VERSION := 1.0.4
