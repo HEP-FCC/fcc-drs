@@ -830,7 +830,7 @@ func (h *Handler) UpdateStatus(w http.ResponseWriter, r *http.Request) {
 		userID = user.ID
 		userName = user.DisplayName
 	}
-	body := string(existing.Status) + " → " + string(status)
+	body := strings.ToLower(models.StatusLabel(existing.Status)) + " → " + strings.ToLower(models.StatusLabel(status))
 	if userName != "" {
 		body += " (by " + userName + ")"
 	}
@@ -984,7 +984,7 @@ func (h *Handler) ApprovalDecision(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	} else if decision == "revert" && (req.Status == models.StatusApproved || req.Status == models.StatusRejected || req.Status == models.StatusCompleted || req.Status == models.StatusInProgress) {
-		autoBody := string(req.Status) + " → under review (" + trackLabel + " approval reverted)"
+		autoBody := strings.ToLower(models.StatusLabel(req.Status)) + " → under review (" + trackLabel + " approval reverted)"
 		if err := h.requests.UpdateStatus(id, models.StatusPending); err == nil {
 			h.updates.Add(id, userID, models.UpdateStatusChanged, autoBody)
 		}

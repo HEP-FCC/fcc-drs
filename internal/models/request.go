@@ -98,7 +98,11 @@ func (r *DatasetRequest) ApprovalLabel(v string) string {
 }
 
 func (r *DatasetRequest) StatusLabel() string {
-	switch r.Status {
+	return StatusLabel(r.Status)
+}
+
+func StatusLabel(s Status) string {
+	switch s {
 	case StatusDraft:
 		return "Draft"
 	case StatusPending:
@@ -116,7 +120,7 @@ func (r *DatasetRequest) StatusLabel() string {
 	case StatusCancelled:
 		return "Cancelled"
 	default:
-		return string(r.Status)
+		return string(s)
 	}
 }
 
