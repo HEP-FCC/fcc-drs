@@ -35,6 +35,13 @@
       "matchStrings": ["KATEX_VERSION\\s*:=\\s*(?<currentValue>[\\d.]+)"],
       "depNameTemplate": "katex",
       "datasourceTemplate": "npm"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": ["/^Makefile$/"],
+      "matchStrings": ["DOMPURIFY_VERSION\\s*:=\\s*(?<currentValue>[\\d.]+)"],
+      "depNameTemplate": "dompurify",
+      "datasourceTemplate": "npm"
     }
   ]
 }
