@@ -302,7 +302,7 @@ func (h *Handler) AssignCampaign(w http.ResponseWriter, r *http.Request) {
 
 	// Being added to a campaign moves the request from approved into active work.
 	if campaignID != 0 && req.Status == models.StatusApproved {
-		autoBody := "approved → in_progress (assigned to campaign)"
+		autoBody := "approved → in progress (assigned to campaign)"
 		if err := h.requests.UpdateStatus(id, models.StatusInProgress); err == nil {
 			h.updates.Add(id, userID, models.UpdateStatusChanged, autoBody)
 			if fresh, err := h.requests.GetByID(id); err == nil {
@@ -435,7 +435,7 @@ func (h *Handler) BatchAction(w http.ResponseWriter, r *http.Request) {
 			slog.Error("batch update status", "id", id, "error", err)
 			continue
 		}
-		body := string(existing.Status) + " → " + string(status)
+		body := strings.ToLower(models.StatusLabel(existing.Status)) + " → " + strings.ToLower(models.StatusLabel(status))
 		if userName != "" {
 			body += " (by " + userName + ")"
 		}
