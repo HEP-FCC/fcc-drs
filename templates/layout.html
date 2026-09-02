@@ -315,8 +315,10 @@
       }
       var root = document.contains(e.detail.target) ? e.detail.target : document;
       renderMd(root);
-      var commentBox = document.querySelector('#activity-area textarea[name="body"]');
-      if (commentBox) commentBox.value = '';
+      if (e.detail.target.id === 'activity-area') {
+        var commentBox = e.detail.target.querySelector('textarea[name="body"]');
+        if (commentBox) commentBox.value = '';
+      }
     });
 
     document.body.addEventListener('htmx:afterRequest', function(e) {

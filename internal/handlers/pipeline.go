@@ -113,12 +113,20 @@ func (h *Handler) PatchComment(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "comment body required", 400)
 		return
 	}
-	if err := h.updates.UpdateBody(commentID, body); err != nil {
+	evType := comment.Type
+	if user.IsCoordinator() {
+		evType = models.UpdateComment
+		if r.FormValue("internal") == "1" {
+			evType = models.UpdateInternalNote
+		}
+	}
+	if err := h.updates.UpdateBody(commentID, body, evType); err != nil {
 		slog.Error("patch comment", "error", err)
 		http.Error(w, "Internal Server Error", 500)
 		return
 	}
 	comment.Body = body
+	comment.Type = evType
 	h.renderPartial(w, r, "comment_view", PageData{Comment: comment})
 }
 
