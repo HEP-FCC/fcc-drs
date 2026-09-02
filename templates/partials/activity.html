@@ -125,18 +125,29 @@
 {{end}}
 
 {{define "comment_edit"}}
+{{$cu := .CurrentUser}}
 {{$c := .Comment}}
 <div id="comment-{{$c.ID}}" class="{{if $c.IsInternal}}event-internal{{else}}event-comment{{end}} mb-2 p-3" style="border-radius:.75rem">
   <form hx-patch="/requests/{{$c.RequestID}}/comments/{{$c.ID}}"
         hx-target="#comment-{{$c.ID}}" hx-swap="outerHTML">
     <textarea name="body" rows="3" required autocomplete="off"
               class="form-input mb-2" style="resize:none">{{$c.Body}}</textarea>
-    <div class="is-flex gap-2 is-justify-content-flex-end">
-      <button type="button"
-              hx-get="/requests/{{$c.RequestID}}/comments/{{$c.ID}}"
-              hx-target="#comment-{{$c.ID}}" hx-swap="outerHTML"
-              class="button">Cancel</button>
-      <button type="submit" class="button has-text-link">Save</button>
+    <div class="is-flex is-align-items-center is-justify-content-space-between gap-3">
+      {{if $cu.IsCoordinator}}
+      <label class="is-flex is-align-items-center gap-2 is-size-7 has-text-grey" style="cursor:pointer">
+        <input type="checkbox" name="internal" value="1" class="batch-cb" {{if $c.IsInternal}}checked{{end}}>
+        Internal (coordinators only)
+      </label>
+      {{else}}
+      <div></div>
+      {{end}}
+      <div class="is-flex gap-2">
+        <button type="button"
+                hx-get="/requests/{{$c.RequestID}}/comments/{{$c.ID}}"
+                hx-target="#comment-{{$c.ID}}" hx-swap="outerHTML"
+                class="button">Cancel</button>
+        <button type="submit" class="button has-text-link">Save</button>
+      </div>
     </div>
   </form>
 </div>

@@ -82,8 +82,8 @@ func (us *UpdateStore) GetByID(id int) (*Update, error) {
 	return &up, nil
 }
 
-func (us *UpdateStore) UpdateBody(id int, body string) error {
-	_, err := us.db.Exec(us.rebind(`UPDATE request_activity SET body = ? WHERE id = ?`), body, id)
+func (us *UpdateStore) UpdateBody(id int, body string, updateType UpdateType) error {
+	_, err := us.db.Exec(us.rebind(`UPDATE request_activity SET body = ?, type = ? WHERE id = ?`), body, updateType, id)
 	return err
 }
 
