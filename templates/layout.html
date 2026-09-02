@@ -42,6 +42,7 @@
   <script defer src="/static/vendor/katex/auto-render.min.js"></script>
   <!-- marked -->
   <script src="/static/vendor/marked.min.js"></script>
+  <script src="/static/vendor/purify.min.js"></script>
 </head>
 <body hx-boost="false">
 
@@ -340,16 +341,16 @@
     }
 
     function renderMd(root) {
-      if (typeof marked === 'undefined' || typeof renderMathInElement === 'undefined') return;
+      if (typeof marked === 'undefined' || typeof renderMathInElement === 'undefined' || typeof DOMPurify === 'undefined') return;
       root = root || document;
       root.querySelectorAll('[data-md]:not([data-rendered])').forEach(function(el) {
         el.setAttribute('data-rendered', '');
-        el.innerHTML = marked.parse(linkRequestRefs(el.textContent));
+        el.innerHTML = DOMPurify.sanitize(marked.parse(linkRequestRefs(el.textContent)));
         renderMathInElement(el, mathOpts);
       });
       root.querySelectorAll('[data-md-inline]:not([data-rendered])').forEach(function(el) {
         el.setAttribute('data-rendered', '');
-        el.innerHTML = marked.parseInline(linkRequestRefs(el.textContent));
+        el.innerHTML = DOMPurify.sanitize(marked.parseInline(linkRequestRefs(el.textContent)));
         renderMathInElement(el, mathOpts);
       });
     }

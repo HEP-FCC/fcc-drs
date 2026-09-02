@@ -39,9 +39,9 @@ func (c Config) Send(to, subject, body string) error {
 	addr := c.Host + ":" + port
 
 	msg := strings.Join([]string{
-		"From: FCC Dataset Request System <" + c.From + ">",
-		"To: " + to,
-		"Subject: " + subject,
+		"From: FCC Dataset Request System <" + sanitizeHeader(c.From) + ">",
+		"To: " + sanitizeHeader(to),
+		"Subject: " + sanitizeHeader(subject),
 		"Content-Type: text/html; charset=UTF-8",
 		"",
 		body,
@@ -53,4 +53,10 @@ func (c Config) Send(to, subject, body string) error {
 	}
 
 	return smtp.SendMail(addr, auth, c.From, []string{to}, []byte(msg))
+}
+
+// sanitizeHeader strips CR/LF from a value bound for a raw email header,
+// preventing header injection (e.g. a request title smuggling a Bcc: line).
+func sanitizeHeader(s string) string {
+	return strings.NewReplacer("\r", "", "\n", "").Replace(s)
 }
