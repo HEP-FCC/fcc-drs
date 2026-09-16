@@ -165,6 +165,14 @@
     {{end}}
   </div>
 
+  <!-- Production IDs -->
+  {{if .CampaignID}}
+  <div class="pt-4 mb-5 has-divider-top">
+    <span class="detail-label block mb-2">Production IDs</span>
+    <div id="production-ids-area">{{template "production_ids" $d}}</div>
+  </div>
+  {{end}}
+
   <!-- People + Timestamps -->
   <div class="pt-4 mb-5 has-divider-top">
     <div class="columns is-multiline">

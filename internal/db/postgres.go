@@ -186,6 +186,14 @@ func migrate(db *DB) error {
 		`ALTER TABLE dataset_requests ADD COLUMN IF NOT EXISTS campaign_id INTEGER REFERENCES campaigns(id)`,
 		`ALTER TABLE campaigns ADD COLUMN IF NOT EXISTS tag TEXT NOT NULL DEFAULT ''`,
 		`ALTER TABLE campaigns ADD COLUMN IF NOT EXISTS closed_at TIMESTAMPTZ`,
+		`CREATE TABLE IF NOT EXISTS production_ids (
+			id            SERIAL PRIMARY KEY,
+			request_id    INTEGER NOT NULL REFERENCES dataset_requests(id) ON DELETE CASCADE,
+			label         TEXT NOT NULL DEFAULT '',
+			production_id INTEGER NOT NULL,
+			created_by    INTEGER REFERENCES users(id),
+			created_at    TIMESTAMPTZ DEFAULT NOW()
+		)`,
 	}
 
 	for _, stmt := range stmts {

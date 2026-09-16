@@ -121,6 +121,8 @@ func main() {
 	mux.HandleFunc("GET /requests/{id}/generator-cards/{card_id}/view", middleware.RequireAuth(h.ViewGeneratorCard))
 	mux.HandleFunc("GET /requests/{id}/generator-cards/{card_id}/download", middleware.RequireAuth(h.DownloadGeneratorCard))
 	mux.HandleFunc("DELETE /requests/{id}/generator-cards/{card_id}", middleware.RequireAuth(h.DeleteGeneratorCard))
+	mux.HandleFunc("POST /requests/{id}/production-ids", middleware.RequireCoordinator(h.AddProductionID))
+	mux.HandleFunc("DELETE /requests/{id}/production-ids/{prod_id}", middleware.RequireCoordinator(h.DeleteProductionID))
 	mux.HandleFunc("DELETE /requests/{id}", middleware.RequireAuth(h.DeleteRequest))
 
 	port := os.Getenv("PORT")
