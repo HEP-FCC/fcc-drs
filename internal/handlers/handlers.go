@@ -26,6 +26,7 @@ type Handler struct {
 	updates        *models.UpdateStore
 	relations      *models.RelationStore
 	generatorCards *models.GeneratorCardStore
+	productionIDs  *models.ProductionIDStore
 	groups         *models.CoordinatorGroupStore
 	campaigns      *models.CampaignStore
 	oidc           *auth.Client
@@ -47,6 +48,7 @@ func New(db *sql.DB, driver string, oidcClient *auth.Client, devMode bool, versi
 		updates:        models.NewUpdateStore(db, driver),
 		relations:      models.NewRelationStore(db, driver),
 		generatorCards: models.NewGeneratorCardStore(db, driver),
+		productionIDs:  models.NewProductionIDStore(db, driver),
 		groups:         groups,
 		campaigns:      models.NewCampaignStore(db, driver),
 		oidc:           oidcClient,
@@ -287,6 +289,7 @@ type PageData struct {
 	Relations          []*models.Relation
 	GeneratorCards     []*models.GeneratorCard
 	GeneratorCard      *models.GeneratorCard
+	ProductionIDs      []*models.ProductionID
 	Clone              *models.DatasetRequest
 	Comment            *models.Update
 }
@@ -583,15 +586,16 @@ func (h *Handler) GetRequest(w http.ResponseWriter, r *http.Request) {
 	campaigns, _ := h.campaigns.GetAssignable(req.CampaignID)
 	relations, _ := h.relations.GetByRequestID(id)
 	cards, _ := h.generatorCards.GetByRequestID(id)
+	prodIDs, _ := h.productionIDs.GetByRequestID(id)
 
 	if r.Header.Get("HX-Request") == "true" {
 		h.renderPartial(w, r, "request_detail", PageData{
-			Request: req, Updates: activity, Groups: groups, AssignedGroup: assignedGroup, Campaigns: campaigns, Relations: relations, GeneratorCards: cards,
+			Request: req, Updates: activity, Groups: groups, AssignedGroup: assignedGroup, Campaigns: campaigns, Relations: relations, GeneratorCards: cards, ProductionIDs: prodIDs,
 		})
 		return
 	}
 	h.renderPage(w, r, "request_detail_page", PageData{
-		Title: req.Title, Request: req, Updates: activity, Groups: groups, AssignedGroup: assignedGroup, Campaigns: campaigns, Relations: relations, GeneratorCards: cards,
+		Title: req.Title, Request: req, Updates: activity, Groups: groups, AssignedGroup: assignedGroup, Campaigns: campaigns, Relations: relations, GeneratorCards: cards, ProductionIDs: prodIDs,
 	})
 }
 
@@ -857,6 +861,7 @@ func (h *Handler) UpdateStatus(w http.ResponseWriter, r *http.Request) {
 	campaigns, _ := h.campaigns.GetAssignable(req.CampaignID)
 	relations, _ := h.relations.GetByRequestID(id)
 	cards, _ := h.generatorCards.GetByRequestID(id)
+	prodIDs, _ := h.productionIDs.GetByRequestID(id)
 	h.renderPartial(w, r, "request_detail", PageData{
 		Request:        req,
 		Updates:        updates,
@@ -865,6 +870,7 @@ func (h *Handler) UpdateStatus(w http.ResponseWriter, r *http.Request) {
 		Campaigns:      campaigns,
 		Relations:      relations,
 		GeneratorCards: cards,
+		ProductionIDs:  prodIDs,
 	})
 }
 

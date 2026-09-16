@@ -15,6 +15,7 @@ const (
 	UpdatePriorityChanged  UpdateType = "priority_changed"
 	UpdateAssigned         UpdateType = "assigned"
 	UpdateCampaignAssigned UpdateType = "campaign_assigned"
+	UpdateProductionID     UpdateType = "production_id"
 	UpdateCreated          UpdateType = "created"
 )
 

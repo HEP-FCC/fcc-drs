@@ -326,6 +326,7 @@ func (h *Handler) AssignCampaign(w http.ResponseWriter, r *http.Request) {
 	campaigns, _ := h.campaigns.GetAssignable(req.CampaignID)
 	relations, _ := h.relations.GetByRequestID(id)
 	cards, _ := h.generatorCards.GetByRequestID(id)
+	prodIDs, _ := h.productionIDs.GetByRequestID(id)
 	h.renderPartial(w, r, "request_detail", PageData{
 		Request:        req,
 		Updates:        updates,
@@ -334,6 +335,7 @@ func (h *Handler) AssignCampaign(w http.ResponseWriter, r *http.Request) {
 		Campaigns:      campaigns,
 		Relations:      relations,
 		GeneratorCards: cards,
+		ProductionIDs:  prodIDs,
 	})
 }
 
@@ -387,6 +389,7 @@ func (h *Handler) UpdatePriority(w http.ResponseWriter, r *http.Request) {
 	campaigns, _ := h.campaigns.GetAssignable(req.CampaignID)
 	relations, _ := h.relations.GetByRequestID(id)
 	cards, _ := h.generatorCards.GetByRequestID(id)
+	prodIDs, _ := h.productionIDs.GetByRequestID(id)
 	h.renderPartial(w, r, "request_detail", PageData{
 		Request:        req,
 		Updates:        updates,
@@ -395,6 +398,7 @@ func (h *Handler) UpdatePriority(w http.ResponseWriter, r *http.Request) {
 		Campaigns:      campaigns,
 		Relations:      relations,
 		GeneratorCards: cards,
+		ProductionIDs:  prodIDs,
 	})
 }
 
