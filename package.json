@@ -7,7 +7,7 @@
   },
   "dependencies": {
     "htmx.org": "2.0.10",
-    "marked": "18.0.13",
+    "marked": "18.0.14",
     "katex": "0.18.7",
     "bulma": "1.0.4",
     "dompurify": "3.4.16"
