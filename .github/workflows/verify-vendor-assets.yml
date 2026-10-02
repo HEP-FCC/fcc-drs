@@ -4,11 +4,15 @@ on:
   pull_request:
     paths:
       - Makefile
+      - package.json
+      - package-lock.json
       - static/vendor/**
   push:
     branches: [main]
     paths:
       - Makefile
+      - package.json
+      - package-lock.json
       - static/vendor/**
 
 jobs:
@@ -16,9 +20,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: package.json
       - run: make assets
       - run: |
           git diff --exit-code -- static/vendor/ || {
-            echo "::error::static/vendor/ is out of sync with the version pins in Makefile — run 'make assets' locally and commit the result."
+            echo "::error::static/vendor/ is out of sync with package.json/package-lock.json — run 'make assets' locally and commit the result."
             exit 1
           }

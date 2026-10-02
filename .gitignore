@@ -13,6 +13,9 @@ data/
 # Go
 /vendor/
 
+# Node (frontend asset vendoring — see package.json / Makefile's assets target)
+/node_modules/
+
 # OS
 .DS_Store
 Thumbs.db
