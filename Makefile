@@ -35,25 +35,9 @@ deploy-prod:
 	oc apply -k openshift/overlays/prod
 
 assets:
-	mkdir -p $(VENDOR)/katex/fonts $(VENDOR)/fonts
 	@echo "→ Installing frontend libraries via npm..."
 	npm ci
-	cp node_modules/htmx.org/dist/htmx.min.js             $(VENDOR)/
-	cp node_modules/marked/lib/marked.umd.js              $(VENDOR)/marked.min.js
-	cp node_modules/dompurify/dist/purify.min.js          $(VENDOR)/
-	cp node_modules/bulma/css/bulma.min.css               $(VENDOR)/
-	cp node_modules/katex/dist/katex.min.css              $(VENDOR)/katex/
-	cp node_modules/katex/dist/katex.min.js               $(VENDOR)/katex/
-	cp node_modules/katex/dist/contrib/auto-render.min.js $(VENDOR)/katex/
-	cp node_modules/katex/dist/fonts/*.woff2              $(VENDOR)/katex/fonts/
-	@echo "→ Downloading Inter font..."
-	curl -sL -o $(VENDOR)/fonts/inter-cyrillic-ext.woff2  https://fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa2JL7SUc.woff2
-	curl -sL -o $(VENDOR)/fonts/inter-cyrillic.woff2      https://fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa0ZL7SUc.woff2
-	curl -sL -o $(VENDOR)/fonts/inter-greek-ext.woff2     https://fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa2ZL7SUc.woff2
-	curl -sL -o $(VENDOR)/fonts/inter-greek.woff2         https://fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa1pL7SUc.woff2
-	curl -sL -o $(VENDOR)/fonts/inter-vietnamese.woff2    https://fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa2pL7SUc.woff2
-	curl -sL -o $(VENDOR)/fonts/inter-latin-ext.woff2     https://fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa25L7SUc.woff2
-	curl -sL -o $(VENDOR)/fonts/inter-latin.woff2         https://fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa1ZL7.woff2
+	./scripts/vendor-assets.sh $(VENDOR)
 	@echo "✓ All assets ready."
 
 clean:

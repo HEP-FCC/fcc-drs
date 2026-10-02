@@ -1,3 +1,8 @@
+FROM node:22-alpine AS assets
+WORKDIR /app
+COPY package.json package-lock.json scripts/vendor-assets.sh ./
+RUN npm ci && ./vendor-assets.sh static/vendor
+
 FROM golang:1.27-alpine AS builder
 WORKDIR /app
 COPY go.mod go.sum ./
@@ -11,6 +16,7 @@ RUN apk add --no-cache ca-certificates tzdata
 WORKDIR /app
 COPY --from=builder /app/fcc-drs ./
 COPY --from=builder /app/static ./static
+COPY --from=assets  /app/static/vendor ./static/vendor
 COPY --from=builder /app/templates ./templates
 EXPOSE 5050
 CMD ["./fcc-drs"]

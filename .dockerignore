@@ -1,0 +1,10 @@
+node_modules/
+static/vendor/htmx.min.js
+static/vendor/marked.min.js
+static/vendor/purify.min.js
+static/vendor/bulma.min.css
+static/vendor/katex/
+static/vendor/fonts/
+.git/
+data/
+*.db

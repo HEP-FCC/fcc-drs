@@ -1,0 +1,14 @@
+name: Docker build
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: docker build
+        run: docker build --build-arg VERSION=ci -t fcc-drs:ci .
