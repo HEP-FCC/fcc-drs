@@ -9,6 +9,8 @@ sure nothing falls through the cracks.
 
 **Production**: [fcc-drs.web.cern.ch](https://fcc-drs.web.cern.ch) | **Staging**: [fcc-drs-test.web.cern.ch](https://fcc-drs-test.web.cern.ch)
 
+**Repository**: [github.com/HEP-FCC/fcc-drs](https://github.com/HEP-FCC/fcc-drs) (primary) · [gitlab.cern.ch/hep-fcc/fcc-drs](https://gitlab.cern.ch/hep-fcc/fcc-drs) (CERN GitLab mirror — CI/CD and deployment)
+
 <p align="center"><img src="static/logo.png" alt="FCC Dataset Request System logo" width="160"/></p>
 
 ---
