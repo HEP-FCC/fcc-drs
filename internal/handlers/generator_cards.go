@@ -10,8 +10,8 @@ import (
 	"path/filepath"
 	"strconv"
 
-	"dataset-tracker/internal/middleware"
-	"dataset-tracker/internal/models"
+	"fcc-drs/internal/middleware"
+	"fcc-drs/internal/models"
 )
 
 const maxGeneratorCardSize = 1 << 20 // 1 MB

@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strings"
 
-	"dataset-tracker/internal/middleware"
+	"fcc-drs/internal/middleware"
 )
 
 // avatarPalette holds [light-bg, light-fg, dark-bg, dark-fg] for 8 hues.

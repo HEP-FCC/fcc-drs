@@ -1,8 +1,8 @@
 package notifications
 
 import (
-	"dataset-tracker/internal/email"
-	"dataset-tracker/internal/models"
+	"fcc-drs/internal/email"
+	"fcc-drs/internal/models"
 	"fmt"
 	"html"
 	"log/slog"
