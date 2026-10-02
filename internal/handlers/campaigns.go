@@ -4,7 +4,7 @@ import (
 	"log/slog"
 	"net/http"
 
-	"dataset-tracker/internal/models"
+	"fcc-drs/internal/models"
 )
 
 // CampaignGroup pairs a campaign with the requests currently assigned to it.

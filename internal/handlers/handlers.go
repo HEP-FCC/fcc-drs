@@ -12,11 +12,11 @@ import (
 
 	"os"
 
-	"dataset-tracker/internal/auth"
-	"dataset-tracker/internal/email"
-	"dataset-tracker/internal/middleware"
-	"dataset-tracker/internal/models"
-	"dataset-tracker/internal/notifications"
+	"fcc-drs/internal/auth"
+	"fcc-drs/internal/email"
+	"fcc-drs/internal/middleware"
+	"fcc-drs/internal/models"
+	"fcc-drs/internal/notifications"
 )
 
 type Handler struct {

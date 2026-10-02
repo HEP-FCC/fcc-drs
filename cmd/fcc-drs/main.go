@@ -7,11 +7,11 @@ import (
 	"net/http"
 	"os"
 
-	"dataset-tracker/internal/auth"
-	"dataset-tracker/internal/db"
-	"dataset-tracker/internal/handlers"
-	"dataset-tracker/internal/middleware"
-	"dataset-tracker/internal/models"
+	"fcc-drs/internal/auth"
+	"fcc-drs/internal/db"
+	"fcc-drs/internal/handlers"
+	"fcc-drs/internal/middleware"
+	"fcc-drs/internal/models"
 )
 
 // version is set at build time via -ldflags "-X main.version=vX.Y.Z".

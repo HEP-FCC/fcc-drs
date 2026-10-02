@@ -9,8 +9,8 @@ import (
 	"strings"
 	"time"
 
-	"dataset-tracker/internal/middleware"
-	"dataset-tracker/internal/models"
+	"fcc-drs/internal/middleware"
+	"fcc-drs/internal/models"
 )
 
 const sessionCookie = "session"

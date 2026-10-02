@@ -6,8 +6,8 @@ import (
 	"strconv"
 	"strings"
 
-	"dataset-tracker/internal/middleware"
-	"dataset-tracker/internal/models"
+	"fcc-drs/internal/middleware"
+	"fcc-drs/internal/models"
 )
 
 func productionIDBody(verb string, label string, prodID int) string {

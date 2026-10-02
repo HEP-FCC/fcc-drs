@@ -1,4 +1,4 @@
-module dataset-tracker
+module fcc-drs
 
 go 1.26.0
 
