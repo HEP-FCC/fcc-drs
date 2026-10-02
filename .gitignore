@@ -16,6 +16,15 @@ data/
 # Node (frontend asset vendoring — see package.json / Makefile's assets target)
 /node_modules/
 
+# npm-managed frontend libraries — built by `make assets` or the Dockerfile's
+# assets stage, not committed (see scripts/vendor-assets.sh)
+/static/vendor/htmx.min.js
+/static/vendor/marked.min.js
+/static/vendor/purify.min.js
+/static/vendor/bulma.min.css
+/static/vendor/katex/
+/static/vendor/fonts/
+
 # OS
 .DS_Store
 Thumbs.db

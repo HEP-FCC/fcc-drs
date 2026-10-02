@@ -43,11 +43,12 @@ Single binary, no CGO required. No external CDN dependencies at runtime.
 
 ## Local Development
 
-Go 1.22 or later required. CERN SSO is bypassed in dev mode — a simple form lets you pick any username and role.
+Go 1.22+ and Node.js 22+ required (Node is only used to fetch the frontend JS/CSS libraries — the app itself has no Node dependency). CERN SSO is bypassed in dev mode — a simple form lets you pick any username and role.
 
 ```bash
 git clone https://github.com/HEP-FCC/fcc-drs
 cd fcc-drs
+make assets   # fetch htmx/bulma/katex/marked/dompurify/Inter into static/vendor/
 DEV_MODE=TRUE go run ./cmd/fcc-drs
 ```
 
@@ -66,11 +67,7 @@ The production build injects the current git tag as the version string shown in 
 
 ### Front-end assets
 
-All JS/CSS dependencies (HTMX, Bulma CSS, KaTeX, marked, Inter font) are self-hosted under `static/vendor/`. Run once after cloning:
-
-```bash
-make assets
-```
+All JS/CSS dependencies (HTMX, Bulma CSS, KaTeX, marked, DOMPurify, Inter font) are self-hosted under `static/vendor/`, pinned via `package.json`/`package-lock.json` and fetched by `make assets` (also what the Dockerfile's `assets` build stage runs). These files aren't committed — `static/vendor/` is empty until you run it, and the app will look unstyled until you do. Re-run it whenever `package.json` changes.
 
 
 ---
