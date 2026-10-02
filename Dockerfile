@@ -1,4 +1,4 @@
-FROM node:22-alpine AS assets
+FROM node:24-alpine AS assets
 WORKDIR /app
 COPY package.json package-lock.json scripts/vendor-assets.sh ./
 RUN npm ci && ./vendor-assets.sh static/vendor
