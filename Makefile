@@ -2,12 +2,6 @@ VERSION := $(shell git describe --tags --always --dirty 2>/dev/null || echo "dev
 BINARY  := fcc-drs
 CMD     := ./cmd/fcc-drs
 
-KATEX_VERSION := 0.18.7
-HTMX_VERSION  := 2.0.10
-MARKED_VERSION := 18.0.13
-BULMA_VERSION := 1.0.4
-DOMPURIFY_VERSION := 3.4.15
-
 VENDOR := static/vendor
 DB     := data/requests.db
 
@@ -42,27 +36,16 @@ deploy-prod:
 
 assets:
 	mkdir -p $(VENDOR)/katex/fonts $(VENDOR)/fonts
-	@echo "→ Downloading HTMX $(HTMX_VERSION)..."
-	curl -sL -o $(VENDOR)/htmx.min.js \
-	  https://unpkg.com/htmx.org@$(HTMX_VERSION)/dist/htmx.min.js
-	@echo "→ Downloading marked $(MARKED_VERSION)..."
-	curl -sL -o $(VENDOR)/marked.min.js \
-	  https://cdn.jsdelivr.net/npm/marked@$(MARKED_VERSION)/lib/marked.umd.js
-	@echo "→ Downloading DOMPurify $(DOMPURIFY_VERSION)..."
-	curl -sL -o $(VENDOR)/purify.min.js \
-	  https://cdn.jsdelivr.net/npm/dompurify@$(DOMPURIFY_VERSION)/dist/purify.min.js
-	@echo "→ Downloading Bulma $(BULMA_VERSION)..."
-	curl -sL -o $(VENDOR)/bulma.min.css \
-	  https://cdn.jsdelivr.net/npm/bulma@$(BULMA_VERSION)/css/bulma.min.css
-	@echo "→ Downloading KaTeX $(KATEX_VERSION)..."
-	$(eval TMP := $(shell mktemp -d))
-	curl -sL https://registry.npmjs.org/katex/-/katex-$(KATEX_VERSION).tgz \
-	  | tar -xz -C $(TMP)
-	cp $(TMP)/package/dist/katex.min.css              $(VENDOR)/katex/
-	cp $(TMP)/package/dist/katex.min.js               $(VENDOR)/katex/
-	cp $(TMP)/package/dist/contrib/auto-render.min.js $(VENDOR)/katex/
-	cp $(TMP)/package/dist/fonts/*.woff2              $(VENDOR)/katex/fonts/
-	rm -rf $(TMP)
+	@echo "→ Installing frontend libraries via npm..."
+	npm ci
+	cp node_modules/htmx.org/dist/htmx.min.js             $(VENDOR)/
+	cp node_modules/marked/lib/marked.umd.js              $(VENDOR)/marked.min.js
+	cp node_modules/dompurify/dist/purify.min.js          $(VENDOR)/
+	cp node_modules/bulma/css/bulma.min.css               $(VENDOR)/
+	cp node_modules/katex/dist/katex.min.css              $(VENDOR)/katex/
+	cp node_modules/katex/dist/katex.min.js               $(VENDOR)/katex/
+	cp node_modules/katex/dist/contrib/auto-render.min.js $(VENDOR)/katex/
+	cp node_modules/katex/dist/fonts/*.woff2              $(VENDOR)/katex/fonts/
 	@echo "→ Downloading Inter font..."
 	curl -sL -o $(VENDOR)/fonts/inter-cyrillic-ext.woff2  https://fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa2JL7SUc.woff2
 	curl -sL -o $(VENDOR)/fonts/inter-cyrillic.woff2      https://fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa0ZL7SUc.woff2
