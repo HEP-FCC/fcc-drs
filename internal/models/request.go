@@ -67,6 +67,7 @@ type DatasetRequest struct {
 	Statistics        string
 	TargetCampaign    string
 	Key4hepStack      string
+	Detector          string
 	Format            string
 	DueDate           string
 	Notes             string
@@ -171,6 +172,20 @@ func (r *DatasetRequest) TagList() []string {
 	return result
 }
 
+func (r *DatasetRequest) DetectorList() []string {
+	if r.Detector == "" {
+		return nil
+	}
+	parts := strings.Split(r.Detector, ",")
+	result := make([]string, 0, len(parts))
+	for _, p := range parts {
+		if d := strings.TrimSpace(p); d != "" {
+			result = append(result, d)
+		}
+	}
+	return result
+}
+
 type Stats struct {
 	Total      int
 	Pending    int
@@ -192,7 +207,7 @@ func NewRequestStore(db *sql.DB, driver string) *RequestStore {
 const selectCols = `
 	dr.id, dr.title, dr.description, dr.requester_name, dr.requester_username, dr.requester_email,
 	dr.dataset_type, dr.use_case, dr.status, dr.priority, dr.estimated_size,
-	COALESCE(dr.statistics,''), COALESCE(dr.target_campaign,''), COALESCE(dr.key4hep_stack,''), dr.format, dr.due_date, dr.notes, dr.tags, COALESCE(dr.created_by,0),
+	COALESCE(dr.statistics,''), COALESCE(dr.target_campaign,''), COALESCE(dr.key4hep_stack,''), COALESCE(dr.detector,''), dr.format, dr.due_date, dr.notes, dr.tags, COALESCE(dr.created_by,0),
 	COALESCE(dr.assigned_to,0), COALESCE(au.display_name,''),
 	COALESCE(dr.assigned_group_id,0), COALESCE(cg.name,''),
 	COALESCE(dr.campaign_id,0), COALESCE(camp.name,''), COALESCE(camp.tag,''), COALESCE(camp.status,''),
@@ -324,12 +339,12 @@ func (r *RequestStore) Create(req *DatasetRequest) (int64, error) {
 		INSERT INTO dataset_requests
 			(title, description, requester_name, requester_username, requester_email,
 			 dataset_type, use_case, status, priority, estimated_size, statistics,
-			 target_campaign, key4hep_stack, format, due_date, notes, tags, created_by)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+			 target_campaign, key4hep_stack, detector, format, due_date, notes, tags, created_by)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 		RETURNING id`),
 		req.Title, req.Description, req.RequesterName, req.RequesterUsername, req.RequesterEmail,
 		req.DatasetType, req.UseCase, req.Status, req.Priority,
-		req.EstimatedSize, req.Statistics, req.TargetCampaign, req.Key4hepStack, req.Format, req.DueDate, req.Notes, req.Tags, createdBy,
+		req.EstimatedSize, req.Statistics, req.TargetCampaign, req.Key4hepStack, req.Detector, req.Format, req.DueDate, req.Notes, req.Tags, createdBy,
 	).Scan(&id)
 	return id, err
 }
@@ -339,11 +354,11 @@ func (r *RequestStore) Update(req *DatasetRequest) error {
 		UPDATE dataset_requests SET
 			title=?, description=?, requester_name=?, requester_username=?, requester_email=?,
 			dataset_type=?, use_case=?, status=?, priority=?,
-			estimated_size=?, statistics=?, target_campaign=?, key4hep_stack=?, format=?, due_date=?, notes=?, tags=?
+			estimated_size=?, statistics=?, target_campaign=?, key4hep_stack=?, detector=?, format=?, due_date=?, notes=?, tags=?
 		WHERE id=?`),
 		req.Title, req.Description, req.RequesterName, req.RequesterUsername, req.RequesterEmail,
 		req.DatasetType, req.UseCase, req.Status, req.Priority,
-		req.EstimatedSize, req.Statistics, req.TargetCampaign, req.Key4hepStack, req.Format, req.DueDate, req.Notes, req.Tags, req.ID,
+		req.EstimatedSize, req.Statistics, req.TargetCampaign, req.Key4hepStack, req.Detector, req.Format, req.DueDate, req.Notes, req.Tags, req.ID,
 	)
 	return err
 }
@@ -500,7 +515,7 @@ func scanRequest(row scannable) (*DatasetRequest, error) {
 	err := row.Scan(
 		&req.ID, &req.Title, &req.Description, &req.RequesterName, &req.RequesterUsername, &req.RequesterEmail,
 		&req.DatasetType, &req.UseCase, &req.Status, &req.Priority,
-		&req.EstimatedSize, &req.Statistics, &req.TargetCampaign, &req.Key4hepStack, &req.Format, &req.DueDate, &req.Notes, &req.Tags,
+		&req.EstimatedSize, &req.Statistics, &req.TargetCampaign, &req.Key4hepStack, &req.Detector, &req.Format, &req.DueDate, &req.Notes, &req.Tags,
 		&req.CreatedBy, &req.AssignedTo, &req.AssignedToName,
 		&req.AssignedGroupID, &req.AssignedGroupName,
 		&req.CampaignID, &req.CampaignName, &req.CampaignTag, &req.CampaignStatus,

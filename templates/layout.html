@@ -447,6 +447,19 @@
       if (e.key === 'Escape') { closeAlert(); closeConfirm(); closeModal(); }
     });
 
+    // Detector only applies past the generation stage; toggled on the
+    // Final Processing Stage select in both the create form and the
+    // detail page's inline edit (ids are shared since only one is ever
+    // on screen at a time).
+    function updateDetectorVisibility(sel) {
+      var wrap = document.getElementById('detector-field');
+      var input = document.getElementById('detector-input');
+      if (!wrap || !input) return;
+      var show = sel.value !== '' && sel.value !== 'generation';
+      wrap.style.display = show ? '' : 'none';
+      input.required = show;
+    }
+
     // htmx doesn't swap 4xx/5xx responses into the target by default, so a
     // failed action (e.g. a 403 from a stale permission check) would
     // otherwise do nothing visible at all.

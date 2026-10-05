@@ -374,6 +374,18 @@ a.navbar-item.is-active {
 }
 [data-theme=dark] .tag-drs { background: #292524; color: #a8a29e; }
 
+.tag-detector {
+  display: inline-block;
+  padding: 0.15rem 0.6rem;
+  border-radius: 0.4rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  background: #e0e7ff;
+  color: #4338ca;
+  letter-spacing: 0.01em;
+}
+[data-theme=dark] .tag-detector { background: rgba(99, 102, 241, 0.2); color: #a5b4fc; }
+
 .group-badge {
   display: inline-block;
   padding: 0.1rem 0.5rem;

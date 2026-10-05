@@ -171,6 +171,18 @@
         {{if .Request.DatasetType}}<span class="detail-value">{{.Request.DatasetTypeLabel}}</span>{{end}}
       </div>
     </div>
+    {{if and .Request.DatasetType (ne .Request.DatasetType "generation") (or .Request.Detector $isDraft)}}
+    <div class="column is-half">
+      <div class="detail-item{{if not .Request.Detector}} detail-item--required{{end}}">
+        <span class="detail-label">Detector(s)</span>
+        {{if .Request.Detector}}
+        <div class="detail-value is-flex is-flex-wrap-wrap gap-1">
+          {{range .Request.DetectorList}}<span class="tag-detector">{{.}}</span>{{end}}
+        </div>
+        {{end}}
+      </div>
+    </div>
+    {{end}}
     {{if or .Request.Format $isDraft}}
     <div class="column is-half">
       <div class="detail-item{{if not .Request.Format}} detail-item--required{{end}}">
@@ -252,13 +264,19 @@
       <div class="column is-half">
         <label class="form-label">Final Processing Stage</label>
         {{$dt := $req.DatasetType}}
-        <select name="dataset_type" class="form-input">
+        <select name="dataset_type" class="form-input" onchange="updateDetectorVisibility(this)">
           <option value="" {{if eq $dt ""}}selected{{end}} disabled>— Select —</option>
           {{range datasetTypeLabels}}
           <option value="{{.Value}}" {{if eq $dt .Value}}selected{{end}}>{{.Label}}</option>
           {{end}}
         </select>
       </div>
+      <div class="column is-half" id="detector-field" style="display:none">
+        <label class="form-label">Detector(s)</label>
+        <input type="text" name="detector" id="detector-input" value="{{$req.Detector}}"
+               placeholder="e.g. IDEA, ALLEGRO, ALFA — comma-separated if more than one" class="form-input">
+      </div>
+      <script>updateDetectorVisibility(document.querySelector('select[name="dataset_type"]'));</script>
       <div class="column is-half">
         <label class="form-label">Format</label>
         {{$fmt := $req.Format}}

@@ -193,5 +193,6 @@ func migrate(db *DB) error {
 		created_by    INTEGER REFERENCES users(id),
 		created_at    DATETIME DEFAULT CURRENT_TIMESTAMP
 	)`)
+	db.Exec(`ALTER TABLE dataset_requests ADD COLUMN detector TEXT NOT NULL DEFAULT ''`)
 	return nil
 }
