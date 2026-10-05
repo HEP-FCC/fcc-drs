@@ -34,7 +34,7 @@
       <label class="form-label">Description <span class="has-text-danger">*</span></label>
       <textarea name="description" rows="6" required
                 placeholder="Physics process, energy range, detector concept, selection criteria…"
-                class="form-input" style="resize:vertical">{{if $src}}{{$src.Description}}{{end}}</textarea>
+                class="form-input">{{if $src}}{{$src.Description}}{{end}}</textarea>
     </div>
 
     <!-- Requester identity -->
@@ -231,9 +231,9 @@
     <!-- Notes -->
     <div class="mb-4">
       <label class="form-label">Additional Notes</label>
-      <textarea name="notes" rows="2"
+      <textarea name="notes" rows="3"
                 placeholder="Generator settings, beam energy, pile-up conditions, special requirements…"
-                class="form-input" style="resize:none">{{if $src}}{{$src.Notes}}{{end}}</textarea>
+                class="form-input">{{if $src}}{{$src.Notes}}{{end}}</textarea>
     </div>
 
     <!-- Tags -->

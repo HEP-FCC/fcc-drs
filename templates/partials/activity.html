@@ -64,9 +64,9 @@
   <form hx-post="/requests/{{.Request.ID}}/comments"
         hx-target="#activity-area"
         hx-swap="outerHTML">
-    <textarea name="body" rows="2" required autocomplete="off"
+    <textarea name="body" rows="3" required autocomplete="off"
               placeholder="Add a comment…"
-              class="form-input mb-2" style="resize:none"></textarea>
+              class="form-input mb-2"></textarea>
     <div class="is-flex is-align-items-center is-justify-content-space-between gap-3">
       {{if $cu.IsCoordinator}}
       <label class="is-flex is-align-items-center gap-2 is-size-7 has-text-grey" style="cursor:pointer">
@@ -130,8 +130,8 @@
 <div id="comment-{{$c.ID}}" class="{{if $c.IsInternal}}event-internal{{else}}event-comment{{end}} mb-2 p-3" style="border-radius:.75rem">
   <form hx-patch="/requests/{{$c.RequestID}}/comments/{{$c.ID}}"
         hx-target="#comment-{{$c.ID}}" hx-swap="outerHTML">
-    <textarea name="body" rows="3" required autocomplete="off"
-              class="form-input mb-2" style="resize:none">{{$c.Body}}</textarea>
+    <textarea name="body" rows="4" required autocomplete="off"
+              class="form-input mb-2">{{$c.Body}}</textarea>
     <div class="is-flex is-align-items-center is-justify-content-space-between gap-3">
       {{if $cu.IsCoordinator}}
       <label class="is-flex is-align-items-center gap-2 is-size-7 has-text-grey" style="cursor:pointer">
