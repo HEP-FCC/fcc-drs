@@ -138,7 +138,7 @@
     </button>
     {{end}}
   </div>
-  <div class="columns is-multiline is-variable is-3">
+  <div class="columns is-multiline is-variable is-1">
     {{if or .Request.UseCase $isDraft}}
     <div class="column is-half">
       <div class="detail-item{{if not .Request.UseCase}} detail-item--required{{end}}">
@@ -232,7 +232,7 @@
         <button type="submit" class="button is-link is-small" style="border-radius:.5rem">Save</button>
       </div>
     </div>
-    <div class="columns is-multiline is-variable is-3">
+    <div class="columns is-multiline is-variable is-1">
       <div class="column is-half">
         <label class="form-label">Use Case</label>
         {{$uc := $req.UseCase}}
