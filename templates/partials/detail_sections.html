@@ -78,24 +78,6 @@
 {{end}}
 {{end}}
 
-{{define "detail_edit_description"}}
-<div class="mb-5">
-  <form hx-patch="/requests/{{.Request.ID}}" hx-target="#ds-description" hx-swap="innerHTML">
-    <input type="hidden" name="_section" value="description">
-    <textarea name="description" rows="4" autocomplete="off"
-              placeholder="Physics process, energy range, detector concept, selection criteria…"
-              class="form-input mb-2" style="resize:none">{{.Request.Description}}</textarea>
-    <div class="is-flex gap-2 is-justify-content-flex-end">
-      <button type="button"
-              hx-get="/requests/{{.Request.ID}}/section/description"
-              hx-target="#ds-description" hx-swap="innerHTML"
-              class="button is-small" style="border-radius:.5rem">Cancel</button>
-      <button type="submit" class="button is-link is-small" style="border-radius:.5rem">Save</button>
-    </div>
-  </form>
-</div>
-{{end}}
-
 {{/* ────── Tags ──────────────────────────────────────────────────────────── */}}
 {{define "detail_section_tags"}}
 {{$canEdit := or .CurrentUser.IsCoordinator (and (eq .Request.CreatedBy .CurrentUser.ID) (or (eq .Request.Status "draft") (eq .Request.Status "pending")))}}
@@ -350,28 +332,10 @@
   </div>
   {{if .Request.Notes}}
   <div class="prose-block-notes">
-    <p class="is-size-7 has-text-grey-dark" style="line-height:1.6">{{.Request.Notes}}</p>
+    <div class="prose-md is-size-7 has-text-grey-dark" data-md style="line-height:1.6">{{.Request.Notes}}</div>
   </div>
   {{end}}
 </div>
 {{end}}
 {{end}}
 
-{{define "detail_edit_notes"}}
-<div class="mb-5">
-  <form hx-patch="/requests/{{.Request.ID}}" hx-target="#ds-notes" hx-swap="innerHTML">
-    <input type="hidden" name="_section" value="notes">
-    <label class="form-label">Additional Notes</label>
-    <textarea name="notes" rows="3" autocomplete="off"
-              placeholder="Generator settings, beam energy, pile-up conditions, special requirements…"
-              class="form-input mb-2" style="resize:none">{{.Request.Notes}}</textarea>
-    <div class="is-flex gap-2 is-justify-content-flex-end">
-      <button type="button"
-              hx-get="/requests/{{.Request.ID}}/section/notes"
-              hx-target="#ds-notes" hx-swap="innerHTML"
-              class="button is-small" style="border-radius:.5rem">Cancel</button>
-      <button type="submit" class="button is-link is-small" style="border-radius:.5rem">Save</button>
-    </div>
-  </form>
-</div>
-{{end}}
