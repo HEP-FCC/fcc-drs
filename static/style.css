@@ -468,7 +468,16 @@ a.navbar-item.is-active {
   box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
 }
 .form-input::placeholder { color: #a8a29e; }
-textarea.form-input { line-height: 1.5; height: auto; padding-top: 0.55rem; padding-bottom: 0.55rem; }
+textarea.form-input { line-height: 1.5; height: auto; padding-top: 0.55rem; padding-bottom: 0.55rem; border-radius: 0.4rem; resize: vertical; }
+@supports (field-sizing: content) {
+  textarea.form-input {
+    field-sizing: content;
+    min-height: 4.5rem;
+    max-height: 24rem;
+    resize: none;
+  }
+  #modal-edit-textarea { min-height: 20rem; max-height: 40rem; }
+}
 select.form-input { cursor: pointer; }
 .form-input-readonly { background-color: #f5f5f4; color: #78716c; cursor: not-allowed; }
 .form-input-narrow { width: auto; max-width: 10rem; flex-shrink: 0; }
