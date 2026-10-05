@@ -2,11 +2,11 @@
 {{if .Recent}}
 <div class="bento-grid">
   {{range .Recent}}
-  <a href="/requests/{{.ID}}" class="bento-card group">
+  <a href="/requests/{{.ID}}" class="bento-card group priority-border-{{.Priority}}">
+    <span class="priority-hit-area" title="{{.PriorityLabel}} priority" aria-hidden="true"></span>
 
-    <div class="is-flex is-align-items-center is-justify-content-space-between mb-3">
+    <div class="is-flex is-justify-content-flex-end mb-3">
       <span class="status-badge {{statusClass .Status}}">{{.StatusLabel}}</span>
-      <span class="priority-pip {{priorityClass .Priority}}" title="{{.PriorityLabel}} priority"></span>
     </div>
 
     <h3 class="is-size-6 has-text-weight-semibold mb-1" data-md-inline style="line-height:1.4">{{truncate .Title 60}}</h3>

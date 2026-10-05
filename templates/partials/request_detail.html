@@ -1,11 +1,22 @@
 {{define "request_detail"}}
 {{$d := .}}
 {{with .Request}}
-<div class="p-5">
+<div class="p-5 detail-priority-border priority-border-{{.Priority}}">
   <!-- Header -->
-  <div class="is-flex is-align-items-flex-start is-justify-content-space-between mb-5">
-    <div class="is-grow-1 min-w-0 mr-4">
-      <div class="is-flex is-align-items-center gap-2 mb-3">
+  <div class="mb-5">
+    <div class="is-flex is-align-items-center mb-3">
+      <div class="detail-header-side">
+        <a href="#" onclick="history.back(); return false;"
+           class="button is-ghost is-small is-shrink-0 btn-back" title="Back">
+          <span class="icon">
+            <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/>
+            </svg>
+          </span>
+          <span>Back</span>
+        </a>
+      </div>
+      <div class="is-flex-shrink-0">
         {{if $d.CurrentUser.IsCoordinator}}
         <select name="status"
                 hx-post="/requests/{{.ID}}/status"
@@ -29,6 +40,8 @@
         {{else}}
         <span class="status-badge {{statusClass .Status}}">{{.StatusLabel}}</span>
         {{end}}
+      </div>
+      <div class="is-flex is-justify-content-flex-end detail-header-side">
         {{if $d.CurrentUser.IsCoordinator}}
         <select name="priority"
                 hx-post="/requests/{{.ID}}/priority"
@@ -42,23 +55,11 @@
           <option value="critical" style="background:#fee2e2;color:#dc2626" {{if eq .Priority "critical"}}selected{{end}}>Critical</option>
         </select>
         {{else}}
-        <span class="is-flex is-align-items-center gap-2">
-          <span class="priority-pip {{priorityClass .Priority}}"></span>
-          <span class="is-size-7 has-text-grey">{{.PriorityLabel}}</span>
-        </span>
+        <span class="is-size-7 {{priorityClass .Priority}}">{{.PriorityLabel}} priority</span>
         {{end}}
       </div>
-      <div id="ds-title">{{template "detail_section_title" $d}}</div>
     </div>
-    <a href="#" onclick="history.back(); return false;"
-       class="button is-ghost is-small is-shrink-0" title="Back">
-      <span class="icon">
-        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/>
-        </svg>
-      </span>
-      <span>Back</span>
-    </a>
+    <div id="ds-title">{{template "detail_section_title" $d}}</div>
   </div>
 
   <div id="ds-description">{{template "detail_section_description" $d}}</div>

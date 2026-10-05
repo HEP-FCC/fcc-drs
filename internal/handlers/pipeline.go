@@ -379,8 +379,12 @@ func (h *Handler) UpdatePriority(w http.ResponseWriter, r *http.Request) {
 	h.notifier.OnActivity(req, &models.Update{RequestID: id, UserID: userID, Type: models.UpdatePriorityChanged, Body: body})
 
 	htmxTarget := r.Header.Get("HX-Target")
-	if strings.HasPrefix(htmxTarget, "priority-cell-") {
-		h.renderPartial(w, r, "priority_cell", PageData{Request: req})
+	if strings.HasPrefix(htmxTarget, "row-") && strings.HasSuffix(htmxTarget, "-desktop") {
+		h.renderPartial(w, r, "request_row", PageData{Request: req})
+		return
+	}
+	if strings.HasPrefix(htmxTarget, "row-") {
+		h.renderPartial(w, r, "request_card", PageData{Request: req})
 		return
 	}
 	updates, _ := h.updates.GetByRequestID(id)
