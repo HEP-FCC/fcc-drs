@@ -6,9 +6,47 @@ on:
     branches: [main]
 
 jobs:
-  build:
+  docker:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: fcc_drs
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - uses: actions/checkout@v7
       - name: docker build
         run: docker build --build-arg VERSION=ci -t fcc-drs:ci .
+      - name: run and smoke test
+        run: |
+          docker run -d --name fcc-drs-ci --network host \
+            -e DATABASE_URL="postgresql://postgres:postgres@localhost:5432/fcc_drs?sslmode=disable" \
+            fcc-drs:ci
+          ok=
+          for i in $(seq 1 15); do
+            code=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:5050/login || true)
+            if [ "$code" = "200" ]; then
+              ok=1
+              break
+            fi
+            sleep 1
+          done
+          if [ -z "$ok" ]; then
+            echo "::error::GET /login did not return 200 within 15s (last status: $code)"
+            exit 1
+          fi
+          echo "✓ GET /login returned 200 (templates parsed and rendered)"
+      - name: container logs
+        if: always()
+        run: docker logs fcc-drs-ci || true
+      - name: cleanup
+        if: always()
+        run: docker rm -f fcc-drs-ci || true
