@@ -104,11 +104,11 @@
       </div>
     </div>
 
-    <!-- Processing Stage + Format -->
+    <!-- Final Processing Stage + Format -->
     <div class="columns is-variable is-3 mb-0">
       <div class="column">
         <label class="form-label">Final Processing Stage <span class="has-text-danger">*</span></label>
-        <select name="dataset_type" required class="form-input">
+        <select name="dataset_type" required class="form-input" onchange="updateDetectorVisibility(this)">
           {{$dt := ""}}{{if $src}}{{$dt = $src.DatasetType}}{{end}}
           <option value="" {{if eq $dt ""}}selected{{end}} disabled>— Select stage —</option>
           {{range datasetTypeLabels}}
@@ -132,6 +132,16 @@
         </select>
       </div>
     </div>
+
+    <!-- Detector (shown for any stage past generation) -->
+    <div class="mb-4" id="detector-field" style="display:none">
+      <label class="form-label">Detector(s) <span class="has-text-danger">*</span></label>
+      <input type="text" name="detector" id="detector-input"
+             value="{{if $src}}{{$src.Detector}}{{end}}"
+             placeholder="e.g. IDEA, ALLEGRO, ALFA — comma-separated if more than one"
+             class="form-input">
+    </div>
+    <script>updateDetectorVisibility(document.querySelector('select[name="dataset_type"]'));</script>
 
     <!-- Statistics + Est. size -->
     <div class="columns is-variable is-3 mb-0">

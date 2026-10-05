@@ -194,6 +194,7 @@ func migrate(db *DB) error {
 			created_by    INTEGER REFERENCES users(id),
 			created_at    TIMESTAMPTZ DEFAULT NOW()
 		)`,
+		`ALTER TABLE dataset_requests ADD COLUMN IF NOT EXISTS detector TEXT NOT NULL DEFAULT ''`,
 	}
 
 	for _, stmt := range stmts {

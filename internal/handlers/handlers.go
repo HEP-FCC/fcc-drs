@@ -497,6 +497,7 @@ func (h *Handler) CreateRequest(w http.ResponseWriter, r *http.Request) {
 		Statistics:     strings.TrimSpace(r.FormValue("statistics")),
 		TargetCampaign: strings.TrimSpace(r.FormValue("target_campaign")),
 		Key4hepStack:   strings.TrimSpace(r.FormValue("key4hep_stack")),
+		Detector:       strings.TrimSpace(r.FormValue("detector")),
 		Format:         strings.TrimSpace(r.FormValue("format")),
 		DueDate:        r.FormValue("due_date"),
 		Notes:          strings.TrimSpace(r.FormValue("notes")),
@@ -509,7 +510,11 @@ func (h *Handler) CreateRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if req.Status != models.StatusDraft && (req.Description == "" || req.UseCase == "" || req.DatasetType == "" || req.Format == "" || req.Statistics == "" || req.EstimatedSize == "") {
-		http.Error(w, "description, use case, processing stage, format, event count, and estimated size are required", 400)
+		http.Error(w, "description, use case, final processing stage, format, event count, and estimated size are required", 400)
+		return
+	}
+	if req.Status != models.StatusDraft && req.DatasetType != "generation" && req.Detector == "" {
+		http.Error(w, "detector(s) are required for this final processing stage", 400)
 		return
 	}
 
@@ -694,6 +699,7 @@ func (h *Handler) PatchRequest(w http.ResponseWriter, r *http.Request) {
 		existing.EstimatedSize = strings.TrimSpace(r.FormValue("estimated_size"))
 		existing.TargetCampaign = strings.TrimSpace(r.FormValue("target_campaign"))
 		existing.Key4hepStack = strings.TrimSpace(r.FormValue("key4hep_stack"))
+		existing.Detector = strings.TrimSpace(r.FormValue("detector"))
 		existing.DueDate = r.FormValue("due_date")
 		if p := models.Priority(r.FormValue("priority")); p != "" {
 			existing.Priority = p
@@ -760,6 +766,7 @@ func (h *Handler) UpdateRequest(w http.ResponseWriter, r *http.Request) {
 		Statistics:        strings.TrimSpace(r.FormValue("statistics")),
 		TargetCampaign:    strings.TrimSpace(r.FormValue("target_campaign")),
 		Key4hepStack:      strings.TrimSpace(r.FormValue("key4hep_stack")),
+		Detector:          strings.TrimSpace(r.FormValue("detector")),
 		Format:            strings.TrimSpace(r.FormValue("format")),
 		DueDate:           r.FormValue("due_date"),
 		Notes:             strings.TrimSpace(r.FormValue("notes")),
@@ -816,7 +823,11 @@ func (h *Handler) UpdateStatus(w http.ResponseWriter, r *http.Request) {
 		}
 		if status == models.StatusPending && existing.Status == models.StatusDraft {
 			if existing.Description == "" || existing.UseCase == "" || existing.DatasetType == "" || existing.Format == "" || existing.Statistics == "" || existing.EstimatedSize == "" {
-				http.Error(w, "description, use case, processing stage, format, event count, and estimated size are required before submitting", 400)
+				http.Error(w, "description, use case, final processing stage, format, event count, and estimated size are required before submitting", 400)
+				return
+			}
+			if existing.DatasetType != "generation" && existing.Detector == "" {
+				http.Error(w, "detector(s) are required before submitting for this final processing stage", 400)
 				return
 			}
 		}

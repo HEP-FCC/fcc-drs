@@ -54,6 +54,16 @@ func (n *Notifier) requestInfoHTML(req *models.DatasetRequest) string {
 	if len(desc) > 400 {
 		desc = desc[:400] + "…"
 	}
+	stageRow := ""
+	if req.DatasetType != "" {
+		stageRow = `<tr><td style="padding:4px 12px 4px 0;color:#6b7280;vertical-align:top;white-space:nowrap">Final processing stage</td>` +
+			`<td style="padding:4px 0">` + html.EscapeString(req.DatasetTypeLabel()) + `</td></tr>`
+	}
+	detectorRow := ""
+	if req.Detector != "" {
+		detectorRow = `<tr><td style="padding:4px 12px 4px 0;color:#6b7280;vertical-align:top;white-space:nowrap">Detector(s)</td>` +
+			`<td style="padding:4px 0">` + html.EscapeString(req.Detector) + `</td></tr>`
+	}
 	groupRow := ""
 	if req.AssignedGroupName != "" {
 		groupRow = `<tr><td style="padding:4px 12px 4px 0;color:#6b7280;vertical-align:top;white-space:nowrap">Assigned group</td>` +
@@ -77,6 +87,8 @@ func (n *Notifier) requestInfoHTML(req *models.DatasetRequest) string {
 		`<td style="padding:4px 0">#` + strconv.Itoa(req.ID) + `</td></tr>` +
 		`<tr><td style="padding:4px 12px 4px 0;color:#6b7280;vertical-align:top;white-space:nowrap">Requester</td>` +
 		`<td style="padding:4px 0">` + html.EscapeString(req.RequesterName) + `</td></tr>` +
+		stageRow +
+		detectorRow +
 		groupRow +
 		campaignRow +
 		linkRow +
