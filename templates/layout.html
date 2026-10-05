@@ -447,6 +447,15 @@
       if (e.key === 'Escape') { closeAlert(); closeConfirm(); closeModal(); }
     });
 
+    // htmx doesn't swap 4xx/5xx responses into the target by default, so a
+    // failed action (e.g. a 403 from a stale permission check) would
+    // otherwise do nothing visible at all.
+    document.body.addEventListener('htmx:responseError', function(e) {
+      var xhr = e.detail.xhr;
+      var msg = (xhr && xhr.responseText || '').trim();
+      showAlert(msg || ('Request failed (' + (xhr ? xhr.status : '?') + ').'));
+    });
+
     var STATUS_REQUIRES_APPROVAL = { approved: 1, in_progress: 1, completed: 1 };
 
     function confirmStatusApproval(sel) {

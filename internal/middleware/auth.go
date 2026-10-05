@@ -36,9 +36,17 @@ func Auth(userRepo *models.UserStore) func(http.Handler) http.Handler {
 }
 
 // RequireAuth wraps a HandlerFunc and redirects to /login when no session exists.
+// For htmx requests, a plain redirect would get silently followed by the
+// browser's XHR and have the full /login page swapped into whatever partial
+// target the original request specified — duplicating the header. HX-Redirect
+// instead tells htmx to perform a real full-page navigation.
 func RequireAuth(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if GetUser(r) == nil {
+			if r.Header.Get("HX-Request") == "true" {
+				w.Header().Set("HX-Redirect", "/login")
+				return
+			}
 			http.Redirect(w, r, "/login", http.StatusSeeOther)
 			return
 		}
