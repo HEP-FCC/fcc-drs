@@ -67,6 +67,9 @@ func New(db *sql.DB, driver string, oidcClient *auth.Client, devMode bool, versi
 		"campaignCardData": func(c *models.Campaign) PageData {
 			return PageData{Campaign: c}
 		},
+		"requestRowData": func(req *models.DatasetRequest, cu *models.User) PageData {
+			return PageData{Request: req, CurrentUser: cu}
+		},
 		"campaignAssignable": campaignAssignable,
 		"statusClass":        statusClass,
 		"priorityClass":      priorityClass,

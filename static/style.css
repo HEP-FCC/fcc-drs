@@ -180,7 +180,11 @@ a.navbar-item.is-active {
 @media (max-width: 1024px) { .bento-grid { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 640px)  { .bento-grid { grid-template-columns: 1fr; } }
 
+/* ── New Request button — full width once it wraps to its own line ──────── */
+@media (max-width: 768px) { .new-request-btn { width: 100%; } }
+
 .bento-card {
+  position: relative;
   background: white;
   border: 1px solid #e7e5e4;
   border-radius: 1.25rem;
@@ -189,14 +193,20 @@ a.navbar-item.is-active {
   flex-direction: column;
   gap: 0;
   box-shadow: 0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
-  transition: box-shadow 0.2s, transform 0.2s;
+  transition: box-shadow 0.2s;
   min-height: 160px;
   text-decoration: none;
   color: inherit;
 }
+.bento-card .priority-hit-area {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 10px;
+}
 .bento-card:hover {
   box-shadow: 0 4px 16px rgba(0,0,0,.1);
-  transform: translateY(-1px);
 }
 [data-theme=dark] .bento-card {
   background: #1c1917;
@@ -206,18 +216,20 @@ a.navbar-item.is-active {
 [data-theme=dark] .bento-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.6); }
 
 /* ── Stat card accents ───────────────────────────────────────────────────── */
+.stat-card.stat-accent-grey    { border-left: 4px solid #78716c; }
 .stat-card.stat-accent-amber   { border-left: 4px solid #fbbf24; }
 .stat-card.stat-accent-violet  { border-left: 4px solid #a78bfa; }
 .stat-card.stat-accent-emerald { border-left: 4px solid #6ee7b7; }
+[data-theme=dark] .stat-card.stat-accent-grey    { border-left-color: #57534e; }
 [data-theme=dark] .stat-card.stat-accent-amber   { border-left-color: #b45309; }
 [data-theme=dark] .stat-card.stat-accent-violet  { border-left-color: #6d28d9; }
 [data-theme=dark] .stat-card.stat-accent-emerald { border-left-color: #065f46; }
 
-.stat-icon-indigo  { width:2.5rem;height:2.5rem;border-radius:0.75rem;background:#e0e7ff;display:flex;align-items:center;justify-content:center; }
+.stat-icon-grey    { width:2.5rem;height:2.5rem;border-radius:0.75rem;background:#e7e5e4;display:flex;align-items:center;justify-content:center; }
 .stat-icon-amber   { width:2.5rem;height:2.5rem;border-radius:0.75rem;background:#fef3c7;display:flex;align-items:center;justify-content:center; }
 .stat-icon-violet  { width:2.5rem;height:2.5rem;border-radius:0.75rem;background:#ede9fe;display:flex;align-items:center;justify-content:center; }
 .stat-icon-emerald { width:2.5rem;height:2.5rem;border-radius:0.75rem;background:#d1fae5;display:flex;align-items:center;justify-content:center; }
-[data-theme=dark] .stat-icon-indigo  { background: #1e1b4b; }
+[data-theme=dark] .stat-icon-grey    { background: #44403c; }
 [data-theme=dark] .stat-icon-amber   { background: #451a03; }
 [data-theme=dark] .stat-icon-violet  { background: #2e1065; }
 [data-theme=dark] .stat-icon-emerald { background: #052e16; }
@@ -236,9 +248,7 @@ a.navbar-item.is-active {
   border-radius: 1.25rem;
   padding: 1.5rem;
   box-shadow: 0 1px 3px rgba(0,0,0,.06);
-  transition: box-shadow 0.2s;
 }
-.stat-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,.08); }
 [data-theme=dark] .stat-card { background: #1c1917; border-color: #3d3830; }
 
 /* ── Bulma tag is-light dark overrides ──────────────────────────────────── */
@@ -348,18 +358,51 @@ a.navbar-item.is-active {
 .status-select.status-failed     { background-color: #fef2f2; color: #991b1b; }
 .status-select.status-cancelled  { background-color: #f4f4f5; color: #71717a; }
 
-/* ── Priority pips ───────────────────────────────────────────────────────── */
-.priority-pip {
-  display: inline-block;
-  width: 8px;
-  height: 8px;
-  border-radius: 9999px;
-  flex-shrink: 0;
-}
-.priority-low      { background: #9ca3af; }
-.priority-medium   { background: #60a5fa; }
-.priority-high     { background: #f97316; }
-.priority-critical { background: #ef4444; box-shadow: 0 0 0 2px rgba(239,68,68,.25); }
+/* ── Priority border accent (Recent Requests cards, Request Detail, list rows, mobile cards) ─ */
+.detail-priority-border { border-radius: 1.5rem; }
+.priority-card-border    { padding-left: 0.5rem; }
+.bento-card.priority-border-low,
+.detail-priority-border.priority-border-low,
+.priority-row-border.priority-border-low,
+.priority-card-border.priority-border-low         { border-left: 4px solid #9ca3af; }
+.bento-card.priority-border-medium,
+.detail-priority-border.priority-border-medium,
+.priority-row-border.priority-border-medium,
+.priority-card-border.priority-border-medium      { border-left: 4px solid #60a5fa; }
+.bento-card.priority-border-high,
+.detail-priority-border.priority-border-high,
+.priority-row-border.priority-border-high,
+.priority-card-border.priority-border-high        { border-left: 4px solid #f97316; }
+.bento-card.priority-border-critical,
+.detail-priority-border.priority-border-critical,
+.priority-row-border.priority-border-critical,
+.priority-card-border.priority-border-critical    { border-left: 4px solid #ef4444; }
+[data-theme=dark] .bento-card.priority-border-low,
+[data-theme=dark] .detail-priority-border.priority-border-low,
+[data-theme=dark] .priority-row-border.priority-border-low,
+[data-theme=dark] .priority-card-border.priority-border-low         { border-left-color: #475569; }
+[data-theme=dark] .bento-card.priority-border-medium,
+[data-theme=dark] .detail-priority-border.priority-border-medium,
+[data-theme=dark] .priority-row-border.priority-border-medium,
+[data-theme=dark] .priority-card-border.priority-border-medium      { border-left-color: #2563eb; }
+[data-theme=dark] .bento-card.priority-border-high,
+[data-theme=dark] .detail-priority-border.priority-border-high,
+[data-theme=dark] .priority-row-border.priority-border-high,
+[data-theme=dark] .priority-card-border.priority-border-high        { border-left-color: #c2410c; }
+[data-theme=dark] .bento-card.priority-border-critical,
+[data-theme=dark] .detail-priority-border.priority-border-critical,
+[data-theme=dark] .priority-row-border.priority-border-critical,
+[data-theme=dark] .priority-card-border.priority-border-critical    { border-left-color: #dc2626; }
+
+/* ── Priority text color (bare, read-only label; select overrides via its own higher-specificity rule) ─ */
+.priority-low      { color: #475569; }
+.priority-medium   { color: #2563eb; }
+.priority-high     { color: #c2410c; }
+.priority-critical { color: #dc2626; }
+[data-theme=dark] .priority-low      { color: #a8a29e; }
+[data-theme=dark] .priority-medium   { color: #60a5fa; }
+[data-theme=dark] .priority-high     { color: #fb923c; }
+[data-theme=dark] .priority-critical { color: #f87171; }
 
 /* ── Tags ────────────────────────────────────────────────────────────────── */
 .tag-drs {
@@ -766,15 +809,23 @@ select.form-input { cursor: pointer; }
 }
 [data-theme=dark] .detail-card { background: #1c1917; border-color: #3d3830; }
 
+/* ── Detail page header (Back / Status / Priority bar, title row) ───────── */
+.detail-header-side { flex: 1; }
+.detail-title-inline { display: inline; line-height: 1.35; }
+.detail-title-edit-btn { display: inline-block; vertical-align: middle; margin-left: .5rem; }
+
 /* ── Request list card ───────────────────────────────────────────────────── */
 .request-list-box {
   background: white;
   border: 1px solid #e7e5e4;
   border-radius: 1rem;
   box-shadow: 0 1px 3px rgba(0,0,0,.06);
-  overflow: hidden;
+  overflow-x: auto;
+  overflow-y: hidden;
 }
 [data-theme=dark] .request-list-box { background: #1c1917; border-color: #3d3830; }
+.request-list-box .is-hidden-tablet > div:first-child { border-top-left-radius: 1rem; border-top-right-radius: 1rem; }
+.request-list-box .is-hidden-tablet > div:last-child  { border-bottom-left-radius: 1rem; border-bottom-right-radius: 1rem; }
 
 /* ── Icon buttons ────────────────────────────────────────────────────────── */
 .btn-icon {
@@ -795,6 +846,10 @@ select.form-input { cursor: pointer; }
 [data-theme=dark] .btn-icon { color: #57534e; }
 [data-theme=dark] .btn-icon:hover { color: #818cf8; background: rgba(129,140,248,.12); }
 [data-theme=dark] .btn-icon-danger:hover { color: #f87171; background: rgba(239,68,68,.12); }
+
+/* ── Back button (pill hover, no underline) ─────────────────────────────── */
+.button.is-ghost.btn-back:hover { text-decoration: none; background-color: #f5f5f4; border-radius: 9999px; }
+[data-theme=dark] .button.is-ghost.btn-back:hover { background-color: rgba(255,255,255,.08); }
 
 /* ── Panel row (file list items, approval rows, etc.) ───────────────────── */
 .panel-row {

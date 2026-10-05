@@ -5,87 +5,7 @@
   <!-- ── Mobile cards ─────────────────────────────────────────────────────── -->
   <div class="is-hidden-tablet">
     {{range .Requests}}
-    <div class="px-4 py-4 has-divider-bottom" id="row-{{.ID}}">
-
-      <div class="is-flex is-align-items-center gap-2 mb-2">
-        {{if $.CurrentUser.IsCoordinator}}
-        <input type="checkbox" name="ids" value="{{.ID}}" class="batch-cb mr-1">
-        {{end}}
-        <span class="status-badge {{statusClass .Status}}">{{.StatusLabel}}</span>
-        <span class="is-flex is-align-items-center gap-1 is-shrink-0">
-          <span class="priority-pip {{priorityClass .Priority}}"></span>
-          <span class="is-size-7 has-text-grey">{{.PriorityLabel}}</span>
-        </span>
-        <span class="ml-auto is-size-7 has-text-grey-light is-shrink-0">{{formatDateTime .UpdatedAt}}</span>
-      </div>
-
-      <a href="/requests/{{.ID}}"
-         class="is-size-6 has-text-weight-semibold is-block mb-1" style="line-height:1.4"
-         data-md-inline>{{truncate .Title 70}}</a>
-
-      {{if .Description}}
-      <div class="is-size-7 has-text-grey mb-2" data-md style="line-height:1.5">{{truncate .Description 140}}</div>
-      {{end}}
-
-      <div class="is-flex is-flex-wrap-wrap is-align-items-center gap-2 is-size-7 has-text-grey mb-3">
-        <div class="is-flex is-align-items-center gap-1">
-          <div class="drs-avatar" style="width:1rem;height:1rem">
-            <img src="/users/{{.RequesterUsername}}/avatar" alt="{{.RequesterName}}">
-          </div>
-          <span>{{.RequesterName}}</span>
-        </div>
-        {{if .DatasetType}}<span>·</span><span class="is-capitalized">{{.DatasetType}}</span>{{end}}
-        {{if .AssignedGroupName}}<span class="group-badge">{{.AssignedGroupName}}</span>{{end}}
-        {{if .CampaignName}}<span class="campaign-badge" title="{{.CampaignName}}">{{.CampaignName}}</span>{{end}}
-      </div>
-
-      {{if .TagList}}
-      <div class="is-flex is-flex-wrap-wrap gap-1 mb-2">
-        {{range .TagList}}<span class="tag-drs">{{.}}</span>{{end}}
-      </div>
-      {{end}}
-
-      <div class="is-flex is-align-items-center is-justify-content-space-between">
-        <div class="is-flex is-align-items-center gap-2">
-          {{if or (eq .Status "pending") (ne .PhysicsApproval "") (ne .ResourcesApproval "")}}
-          <div class="is-flex is-align-items-center gap-1" title="Physics: {{if eq .PhysicsApproval "approved"}}approved{{else if eq .PhysicsApproval "rejected"}}rejected{{else}}pending{{end}}">
-            {{if eq .PhysicsApproval "approved"}}
-            <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="#10b981" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
-            {{else if eq .PhysicsApproval "rejected"}}
-            <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="#f87171" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
-            {{else}}
-            <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="#d4d4d4" stroke-width="2"><circle cx="12" cy="12" r="9"/></svg>
-            {{end}}
-            <span class="has-text-grey-light" style="font-size:.65rem;line-height:1">Phys</span>
-          </div>
-          <div class="is-flex is-align-items-center gap-1" title="Resources: {{if eq .ResourcesApproval "approved"}}approved{{else if eq .ResourcesApproval "rejected"}}rejected{{else}}pending{{end}}">
-            {{if eq .ResourcesApproval "approved"}}
-            <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="#10b981" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
-            {{else if eq .ResourcesApproval "rejected"}}
-            <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="#f87171" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
-            {{else}}
-            <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="#d4d4d4" stroke-width="2"><circle cx="12" cy="12" r="9"/></svg>
-            {{end}}
-            <span class="has-text-grey-light" style="font-size:.65rem;line-height:1">Res</span>
-          </div>
-          {{end}}
-        </div>
-        {{if $.CurrentUser.IsCoordinator}}
-        <button
-          hx-delete="/requests/{{.ID}}"
-          hx-trigger="action-confirmed"
-          hx-swap="none"
-          onclick="confirmAction(this, 'Delete this request? This cannot be undone.')"
-          class="btn-icon btn-icon-danger"
-          title="Delete">
-          <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-          </svg>
-        </button>
-        {{end}}
-      </div>
-
-    </div>
+    {{template "request_card" (requestRowData . $.CurrentUser)}}
     {{end}}
   </div>
 
@@ -128,6 +48,7 @@
             Status {{sortIcon "status" .Filter.Sort .Filter.SortDir}}
           </button>
         </th>
+        {{if .CurrentUser.IsCoordinator}}
         <th style="padding:.875rem 1.25rem" class="is-hidden-touch">
           <button
             hx-get="/requests"
@@ -138,10 +59,11 @@
             Priority {{sortIcon "priority" .Filter.Sort .Filter.SortDir}}
           </button>
         </th>
-        {{if .CurrentUser.IsCoordinator}}
-        <th class="has-text-weight-medium has-text-grey is-uppercase is-hidden-desktop-only" style="font-size:.75rem;letter-spacing:.05em;padding:.875rem 1.25rem">Assigned</th>
         {{end}}
-        <th style="padding:.875rem 1.25rem" class="is-hidden-desktop-only">
+        {{if .CurrentUser.IsCoordinator}}
+        <th class="has-text-weight-medium has-text-grey is-uppercase is-hidden-touch" style="font-size:.75rem;letter-spacing:.05em;padding:.875rem 1.25rem">Assigned</th>
+        {{end}}
+        <th style="padding:.875rem 1.25rem" class="is-hidden-touch">
           <button
             hx-get="/requests"
             hx-target="#request-list-area"
@@ -151,133 +73,34 @@
             Updated {{sortIcon "updated" .Filter.Sort .Filter.SortDir}}
           </button>
         </th>
-        <th style="padding:.875rem 1.25rem"></th>
+        <th style="padding:.875rem 1.25rem;width:3rem"></th>
       </tr>
     </thead>
     <tbody>
       {{range .Requests}}
-      <tr id="row-{{.ID}}-desktop" style="border-bottom:1px solid #fafaf9">
-        {{if $.CurrentUser.IsCoordinator}}
-        <td style="padding:1rem">
-          <input type="checkbox" name="ids" value="{{.ID}}" class="batch-cb">
-        </td>
-        {{end}}
-        <td style="padding:1rem 1.25rem">
-          <a href="/requests/{{.ID}}"
-             class="has-text-weight-semibold is-block" style="transition:color .15s"
-             onmouseover="this.style.color='var(--bulma-link)'" onmouseout="this.style.color=''"
-             data-md-inline>{{truncate .Title 50}}</a>
-          {{if .Description}}
-          <div class="is-size-7 has-text-grey-light mt-1" data-md style="line-height:1.4">{{truncate .Description 70}}</div>
-          {{end}}
-          {{if .TagList}}
-          <div class="is-flex is-flex-wrap-wrap gap-1 mt-2">
-            {{range .TagList}}<span class="tag-drs">{{.}}</span>{{end}}
-          </div>
-          {{end}}
-        </td>
-        <td style="padding:1rem 1.25rem">
-          {{if .AssignedGroupName}}
-          <span class="group-badge is-block mb-1">{{.AssignedGroupName}}</span>
-          {{end}}
-          {{if .CampaignName}}
-          <span class="campaign-badge is-block" title="{{.CampaignName}}">{{.CampaignName}}</span>
-          {{end}}
-          {{if and (not .AssignedGroupName) (not .CampaignName)}}
-          <span class="is-size-7 has-text-grey-lighter">—</span>
-          {{end}}
-        </td>
-        <td style="padding:1rem 1.25rem" class="is-hidden-mobile">
-          <div class="is-flex is-align-items-center gap-2">
-            <div class="drs-avatar" style="width:1.75rem;height:1.75rem">
-              <img src="/users/{{.RequesterUsername}}/avatar" alt="{{.RequesterName}}">
-            </div>
-            <div>
-              <p class="is-size-7 has-text-grey-dark has-text-weight-medium">{{truncate .RequesterName 22}}</p>
-            </div>
-          </div>
-        </td>
-        <td style="padding:1rem 1.25rem" class="is-hidden-touch">
-          <span class="is-size-7 has-text-grey is-capitalized">{{.DatasetType}}</span>
-        </td>
-        <td style="padding:1rem 1.25rem" id="status-cell-{{.ID}}">
-          {{if $.CurrentUser.IsCoordinator}}
-          <select name="status"
-            hx-post="/requests/{{.ID}}/status"
-            hx-target="#status-cell-{{.ID}}"
-            hx-swap="innerHTML"
-            hx-trigger="status-confirmed"
-            data-prev="{{.Status}}"
-            data-physics-approval="{{.PhysicsApproval}}"
-            data-resources-approval="{{.ResourcesApproval}}"
-            onchange="confirmStatusApproval(this)"
-            class="status-select {{statusClass .Status}}"
-            title="Change status">
-            <option value="draft"       {{if eq .Status "draft"}}selected{{end}}>Draft</option>
-            <option value="pending"     {{if eq .Status "pending"}}selected{{end}}>Under Review</option>
-            <option value="approved"    {{if eq .Status "approved"}}selected{{end}}>Approved</option>
-            <option value="in_progress" {{if eq .Status "in_progress"}}selected{{end}}>In Progress</option>
-            <option value="completed"   {{if eq .Status "completed"}}selected{{end}}>Completed</option>
-            <option value="failed"      {{if eq .Status "failed"}}selected{{end}}>Failed</option>
-            <option value="rejected"    {{if eq .Status "rejected"}}selected{{end}}>Rejected</option>
-            <option value="cancelled"   {{if eq .Status "cancelled"}}selected{{end}}>Cancelled</option>
-          </select>
-          {{else}}
-          <span class="status-badge {{statusClass .Status}}">{{.StatusLabel}}</span>
-          {{end}}
-          {{template "approval_icons" .}}
-        </td>
-        <td style="padding:1rem 1.25rem" id="priority-cell-{{.ID}}" class="is-hidden-touch">
-          {{if $.CurrentUser.IsCoordinator}}
-          <select name="priority"
-            hx-post="/requests/{{.ID}}/priority"
-            hx-target="#priority-cell-{{.ID}}"
-            hx-swap="innerHTML"
-            hx-trigger="change"
-            class="priority-select {{priorityClass .Priority}}"
-            title="Change priority">
-            <option value="low"      {{if eq .Priority "low"}}selected{{end}}>Low</option>
-            <option value="medium"   {{if eq .Priority "medium"}}selected{{end}}>Medium</option>
-            <option value="high"     {{if eq .Priority "high"}}selected{{end}}>High</option>
-            <option value="critical" {{if eq .Priority "critical"}}selected{{end}}>Critical</option>
-          </select>
-          {{else}}
-          <span class="is-flex is-align-items-center gap-2">
-            <span class="priority-pip {{priorityClass .Priority}}"></span>
-            <span class="is-size-7 has-text-grey-dark">{{.PriorityLabel}}</span>
-          </span>
-          {{end}}
-        </td>
-        {{if $.CurrentUser.IsCoordinator}}
-        <td style="padding:1rem 1.25rem" class="is-hidden-desktop-only">
-          {{if .AssignedToName}}
-          <span class="is-size-7 has-text-grey-dark">{{.AssignedToName}}</span>
-          {{else}}
-          <span class="is-size-7 has-text-grey-lighter">—</span>
-          {{end}}
-        </td>
-        {{end}}
-        <td class="is-size-7 has-text-grey-light is-hidden-desktop-only is-shrink-0" style="padding:1rem 1.25rem;white-space:nowrap">
-          {{formatDateTime .UpdatedAt}}
-        </td>
-        <td style="padding:1rem 1.25rem">
-          {{if $.CurrentUser.IsCoordinator}}
-          <button
-            hx-delete="/requests/{{.ID}}"
-            hx-trigger="action-confirmed"
-            hx-swap="none"
-            onclick="confirmAction(this, 'Delete this request? This cannot be undone.')"
-            class="btn-icon btn-icon-danger"
-            title="Delete">
-            <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-            </svg>
-          </button>
-          {{end}}
-        </td>
-      </tr>
+      {{template "request_row" (requestRowData . $.CurrentUser)}}
       {{end}}
     </tbody>
+    <tfoot>
+      <tr style="border-top:1px solid #f5f5f4">
+        {{if .CurrentUser.IsCoordinator}}
+        <td style="width:2rem;padding:.875rem 1rem"></td>
+        {{end}}
+        <td class="has-text-weight-medium has-text-grey is-uppercase" style="font-size:.75rem;letter-spacing:.05em;padding:.875rem 1.25rem">Request</td>
+        <td class="has-text-weight-medium has-text-grey is-uppercase" style="font-size:.75rem;letter-spacing:.05em;padding:.875rem 1.25rem;width:10rem">Group / Campaign</td>
+        <td class="has-text-weight-medium has-text-grey is-uppercase is-hidden-mobile" style="font-size:.75rem;letter-spacing:.05em;padding:.875rem 1.25rem">Requester</td>
+        <td class="has-text-weight-medium has-text-grey is-uppercase is-hidden-touch" style="font-size:.75rem;letter-spacing:.05em;padding:.875rem 1.25rem">Stage</td>
+        <td class="has-text-weight-medium has-text-grey is-uppercase" style="font-size:.75rem;letter-spacing:.05em;padding:.875rem 1.25rem">Status</td>
+        {{if .CurrentUser.IsCoordinator}}
+        <td class="has-text-weight-medium has-text-grey is-uppercase is-hidden-touch" style="font-size:.75rem;letter-spacing:.05em;padding:.875rem 1.25rem">Priority</td>
+        {{end}}
+        {{if .CurrentUser.IsCoordinator}}
+        <td class="has-text-weight-medium has-text-grey is-uppercase is-hidden-touch" style="font-size:.75rem;letter-spacing:.05em;padding:.875rem 1.25rem">Assigned</td>
+        {{end}}
+        <td class="has-text-weight-medium has-text-grey is-uppercase is-hidden-touch" style="font-size:.75rem;letter-spacing:.05em;padding:.875rem 1.25rem">Updated</td>
+        <td style="padding:.875rem 1.25rem;width:3rem"></td>
+      </tr>
+    </tfoot>
   </table>
 
 </div>
