@@ -32,7 +32,7 @@ jobs:
             fcc-drs:ci
           ok=
           for i in $(seq 1 15); do
-            code=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:5050/login)
+            code=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:5050/login || true)
             if [ "$code" = "200" ]; then
               ok=1
               break
