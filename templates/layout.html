@@ -75,6 +75,7 @@
           <a href="/requests" class="navbar-item{{if eq .Title "All Requests"}} is-active{{end}}">Requests</a>
           {{if .CurrentUser.IsCoordinator}}<a href="/campaigns" class="navbar-item{{if eq .Title "Campaigns"}} is-active{{end}}">Campaigns</a>{{end}}
           {{if .CurrentUser.IsAdmin}}<a href="/admin/users" class="navbar-item{{if or (eq .Title "User Management") (eq .Title "Coordinator Groups") (eq .Title "Manage Campaigns")}} is-active{{end}}">Admin</a>{{end}}
+          <a href="/help" class="navbar-item{{if eq .Title "Help"}} is-active{{end}}">Help</a>
         </div>
 
         <!-- Mobile only: separates nav links from theme/profile/logout -->
@@ -86,6 +87,7 @@
           <a href="/requests" class="navbar-item{{if eq .Title "All Requests"}} is-active{{end}}">Requests</a>
           {{if .CurrentUser.IsCoordinator}}<a href="/campaigns" class="navbar-item{{if eq .Title "Campaigns"}} is-active{{end}}">Campaigns</a>{{end}}
           {{if .CurrentUser.IsAdmin}}<a href="/admin/users" class="navbar-item{{if or (eq .Title "User Management") (eq .Title "Coordinator Groups") (eq .Title "Manage Campaigns")}} is-active{{end}}">Admin</a>{{end}}
+          <a href="/help" class="navbar-item{{if eq .Title "Help"}} is-active{{end}}">Help</a>
         </div>
 
         <div class="navbar-end">
