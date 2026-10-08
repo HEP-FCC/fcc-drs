@@ -1,0 +1,25 @@
+{{define "content"}}
+
+  <div class="columns is-centered">
+    <div class="column is-four-fifths-tablet is-two-thirds-desktop">
+
+      <!-- Header -->
+      <div class="mb-5">
+        <h1 class="is-size-4 has-text-weight-semibold">Help</h1>
+        <div class="tabs is-small mb-0 mt-3">
+          <ul>
+            <li class="{{if eq .HelpTab "overview"}}is-active{{end}}"><a href="/help?tab=overview">Overview</a></li>
+            <li class="{{if eq .HelpTab "requester"}}is-active{{end}}"><a href="/help?tab=requester">Requester</a></li>
+            <li class="{{if eq .HelpTab "coordinator"}}is-active{{end}}"><a href="/help?tab=coordinator">Coordinator</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="box">
+        <div class="prose-md" data-md>{{.HelpContent}}</div>
+      </div>
+
+    </div>
+  </div>
+
+{{end}}

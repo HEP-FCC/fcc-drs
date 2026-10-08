@@ -289,6 +289,8 @@ type PageData struct {
 	ClosedCampaigns    []CampaignGroup
 	UnassignedRequests []*models.DatasetRequest
 	CampaignsTab       string
+	HelpTab            string
+	HelpContent        string
 	Relations          []*models.Relation
 	GeneratorCards     []*models.GeneratorCard
 	GeneratorCard      *models.GeneratorCard
