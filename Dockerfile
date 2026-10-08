@@ -18,5 +18,6 @@ COPY --from=builder /app/fcc-drs ./
 COPY --from=builder /app/static ./static
 COPY --from=assets  /app/static/vendor ./static/vendor
 COPY --from=builder /app/templates ./templates
+COPY --from=builder /app/docs ./docs
 EXPOSE 5050
 CMD ["./fcc-drs"]
