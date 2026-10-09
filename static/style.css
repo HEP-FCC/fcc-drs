@@ -546,6 +546,7 @@ select.form-input { cursor: pointer; }
 .prose-md pre        { background: #1c1917; color: #e7e5e4; border-radius: 10px; padding: 0.75em 1em; overflow-x: auto; margin: 0.5em 0; }
 .prose-md pre code   { background: none; padding: 0; }
 .prose-md strong     { font-weight: 600; }
+.prose-detail         { line-height: 1.6; }
 .prose-md em         { font-style: italic; }
 .prose-md a          { color: #4f46e5; text-decoration: underline; }
 .prose-md h1, .prose-md h2, .prose-md h3,
@@ -749,6 +750,7 @@ select.form-input { cursor: pointer; }
   padding: 0.75rem;
 }
 .detail-item--required { background: #fff5f5; border-color: #fecaca; }
+.detail-item--block { min-height: 3rem; }
 [data-theme=dark] .detail-item { background: #252220; border-color: #3d3830; }
 [data-theme=dark] .detail-item--required {
   background: rgba(69, 10, 10, 0.18);

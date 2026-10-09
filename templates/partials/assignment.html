@@ -1,6 +1,10 @@
 {{define "assignment"}}
 <div id="assignment-area" class="column is-half">
-  <span class="detail-label is-uppercase block mb-1" style="font-size:.65rem;letter-spacing:.05em">Coordinator Group</span>
+  {{$it := detailItem . "group" ""}}
+  <div class="is-flex is-align-items-center gap-2 mb-1">
+    <span class="detail-label is-uppercase" style="font-size:.65rem;letter-spacing:.05em">Coordinator Group <span class="has-text-danger">*</span></span>
+    {{if and (not .CurrentUser.IsCoordinator) (eq .Request.CreatedBy .CurrentUser.ID) (eq .Request.Status "draft")}}{{template "field_edit_btn" $it}}{{end}}
+  </div>
   {{if .CurrentUser.IsCoordinator}}
   <select name="assigned_group_id"
           hx-post="/requests/{{.Request.ID}}/assign"
@@ -95,7 +99,7 @@
       {{end}}
     </div>
   {{else}}
-  <span class="is-size-7 has-text-grey">—</span>
+  <div class="detail-item detail-item--required"></div>
   {{end}}
   {{end}}
 </div>

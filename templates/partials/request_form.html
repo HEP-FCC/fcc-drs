@@ -121,14 +121,9 @@
         {{$fmt := ""}}{{if $src}}{{$fmt = $src.Format}}{{end}}
         <select name="format" required class="form-input">
           <option value="" {{if eq $fmt ""}}selected{{end}} disabled>— Select format —</option>
-          <option value="EDM4hep"     {{if eq $fmt "EDM4hep"}}selected{{end}}>EDM4hep</option>
-          <option value="HepMC3"      {{if eq $fmt "HepMC3"}}selected{{end}}>HepMC3</option>
-          <option value="LHEF"        {{if eq $fmt "LHEF"}}selected{{end}}>LHEF</option>
-          <option value="ROOT"        {{if eq $fmt "ROOT"}}selected{{end}}>ROOT</option>
-          <option value="ROOT NTuple" {{if eq $fmt "ROOT NTuple"}}selected{{end}}>ROOT NTuple</option>
-          <option value="ROOT RNTuple" {{if eq $fmt "ROOT RNTuple"}}selected{{end}}>ROOT RNTuple</option>
-          <option value="STDHEP"      {{if eq $fmt "STDHEP"}}selected{{end}}>STDHEP</option>
-          <option value="Other"       {{if eq $fmt "Other"}}selected{{end}}>Other</option>
+          {{range formatLabels}}
+          <option value="{{.Value}}" {{if eq $fmt .Value}}selected{{end}}>{{.Label}}</option>
+          {{end}}
         </select>
       </div>
     </div>
