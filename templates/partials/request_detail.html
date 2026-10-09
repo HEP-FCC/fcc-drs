@@ -59,11 +59,11 @@
         {{end}}
       </div>
     </div>
-    <div id="ds-title">{{template "detail_section_title" $d}}</div>
+    {{template "detail_section_title" $d}}
   </div>
 
-  <div id="ds-description">{{template "detail_section_description" $d}}</div>
-  <div id="ds-tags">{{template "detail_section_tags" $d}}</div>
+  {{template "detail_section_description" $d}}
+  {{template "detail_section_tags" $d}}
 
   <!-- Approval tracks -->
   {{if and (ne .Status "draft") (or $d.CurrentUser.IsCoordinator (ne .PhysicsApproval "") (ne .ResourcesApproval ""))}}
@@ -136,7 +136,7 @@
   </div>
   {{end}}
 
-  <div id="ds-details">{{template "detail_section_details" $d}}</div>
+  {{template "detail_section_details" $d}}
 
   <!-- Generator cards -->
   <div class="mb-5">
@@ -144,7 +144,7 @@
     <div id="generator-cards-area">{{template "generator_cards" $d}}</div>
   </div>
 
-  <div id="ds-notes">{{template "detail_section_notes" $d}}</div>
+  {{template "detail_section_notes" $d}}
 
   <!-- Relations -->
   <div class="mb-5">
@@ -255,7 +255,8 @@
       </button>
       {{end}}
       {{if and (eq .CreatedBy $d.CurrentUser.ID) (eq .Status "draft")}}
-      {{if and .Description .UseCase .DatasetType .Format .Statistics}}
+      {{$missing := .MissingRequired}}
+      {{if not $missing}}
       <button
         hx-post="/requests/{{.ID}}/status"
         hx-vals='{"status":"pending"}'
@@ -266,7 +267,7 @@
       </button>
       {{else}}
       <button disabled
-              title="Fill in Description, Group/Team, Use Case, Final Processing Stage, Format, and Event Count before submitting"
+              title="Fill in before submitting: {{join $missing ", "}}"
               class="button" style="border-radius:.5rem" disabled>
         Submit Request
       </button>

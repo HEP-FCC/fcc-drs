@@ -1,100 +1,63 @@
-{{/* ────── Title ────────────────────────────────────────────────────────── */}}
-{{define "detail_section_title"}}
-{{$canEdit := or .CurrentUser.IsCoordinator (and (eq .Request.CreatedBy .CurrentUser.ID) (or (eq .Request.Status "draft") (eq .Request.Status "pending")))}}
-<div>
-  <h2 class="is-size-5 has-text-weight-semibold detail-title-inline" data-md-inline>{{.Request.Title}}</h2>
-  {{if $canEdit}}
-  <button hx-get="/requests/{{.Request.ID}}/section/title/edit"
-          hx-target="#ds-title" hx-swap="innerHTML"
-          class="btn-icon detail-title-edit-btn">
-    <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-      <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-    </svg>
-  </button>
-  {{end}}
+{{/* ────── Field edit button (opens the edit modal) ──────────────────────── */}}
+{{define "field_edit_btn"}}
+<button hx-get="/requests/{{.RequestID}}/field/{{.Key}}/edit"
+        hx-target="#modal-view-content" hx-swap="innerHTML"
+        onclick="prepareViewModal('Edit {{.Label}}')"
+        class="btn-icon" title="Edit {{.Label}}">
+  <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+  </svg>
+</button>
+{{end}}
+
+{{/* ────── Field label with required star and edit button ─────────────────── */}}
+{{define "field_label"}}
+<div class="is-flex is-align-items-center gap-2 mb-1">
+  <span class="detail-label">{{.Label}}{{if .Required}} <span class="has-text-danger">*</span>{{end}}</span>
+  {{if .CanEdit}}{{template "field_edit_btn" .}}{{end}}
 </div>
 {{end}}
 
-{{define "detail_edit_title"}}
-<form hx-patch="/requests/{{.Request.ID}}" hx-target="#ds-title" hx-swap="innerHTML"
-      class="is-flex is-align-items-center gap-2">
-  <input type="hidden" name="_section" value="title">
-  <input type="text" name="title" value="{{.Request.Title}}" required autocomplete="off"
-         class="form-input is-grow-1" autofocus>
-  <button type="submit" class="button is-link is-small is-shrink-0" style="border-radius:.5rem">Save</button>
-  <button type="button"
-          hx-get="/requests/{{.Request.ID}}/section/title"
-          hx-target="#ds-title" hx-swap="innerHTML"
-          class="button is-small is-shrink-0" style="border-radius:.5rem">Cancel</button>
-</form>
+{{/* ────── One item of the details grid ─────────────────────────────────── */}}
+{{define "detail_item"}}
+<div class="column is-half">
+  <div class="detail-item{{if .Missing}} detail-item--required{{end}}">
+    {{template "field_label" .}}
+    {{if .Value}}<span class="detail-value">{{.Value}}</span>{{end}}
+  </div>
+</div>
+{{end}}
+
+{{/* ────── Title ────────────────────────────────────────────────────────── */}}
+{{define "detail_section_title"}}
+{{$it := detailItem . "title" .Request.Title}}
+<div>
+  <h2 class="is-size-5 has-text-weight-semibold detail-title-inline" data-md-inline>{{.Request.Title}}</h2>
+  {{if $it.CanEdit}}<span class="detail-title-edit-btn">{{template "field_edit_btn" $it}}</span>{{end}}
+</div>
 {{end}}
 
 {{/* ────── Description ──────────────────────────────────────────────────── */}}
 {{define "detail_section_description"}}
-{{$canEdit := or .CurrentUser.IsCoordinator (and (eq .Request.CreatedBy .CurrentUser.ID) (or (eq .Request.Status "draft") (eq .Request.Status "pending")))}}
-{{$isDraft := eq .Request.Status "draft"}}
-{{if .Request.Description}}
+{{$it := detailItem . "description" .Request.Description}}
 <div class="mb-5">
-  <div class="is-flex is-align-items-center gap-2 mb-1">
-    <span class="detail-label">Description</span>
-    {{if $canEdit}}
-    <button onclick="openEditModal(this,'Description','description','Physics process, energy range, detector concept, selection criteria…','/requests/{{.Request.ID}}','description','ds-description')"
-            data-edit-value="{{.Request.Description}}"
-            class="btn-icon">
-      <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-      </svg>
-    </button>
-    {{end}}
-  </div>
+  {{template "field_label" $it}}
+  {{if .Request.Description}}
   <div class="prose-block">
-    <div class="prose-md is-size-7 has-text-grey-dark" data-md style="line-height:1.6">{{.Request.Description}}</div>
+    <div class="prose-md is-size-7 has-text-grey-dark prose-detail" data-md>{{.Request.Description}}</div>
   </div>
+  {{else}}
+  <div class="detail-item detail-item--required detail-item--block"></div>
+  {{end}}
 </div>
-{{else if $isDraft}}
-<div class="mb-5">
-  <div class="is-flex is-align-items-center gap-2 mb-1">
-    <span class="detail-label">Description</span>
-    {{if $canEdit}}
-    <button onclick="openEditModal(this,'Description','description','Physics process, energy range, detector concept, selection criteria…','/requests/{{.Request.ID}}','description','ds-description')"
-            data-edit-value=""
-            class="btn-icon">
-      <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-      </svg>
-    </button>
-    {{end}}
-  </div>
-  <div class="detail-item detail-item--required" style="min-height:3rem"></div>
-</div>
-{{else if $canEdit}}
-<div class="mb-5">
-  <button onclick="openEditModal(this,'Description','description','Physics process, energy range, detector concept, selection criteria…','/requests/{{.Request.ID}}','description','ds-description')"
-          data-edit-value=""
-          class="is-size-7 has-text-grey" style="background:none;border:none;cursor:pointer;transition:color .15s" onmouseover="this.style.color='var(--bulma-link)'" onmouseout="this.style.color=''">
-    + Add description
-  </button>
-</div>
-{{end}}
 {{end}}
 
 {{/* ────── Tags ──────────────────────────────────────────────────────────── */}}
 {{define "detail_section_tags"}}
-{{$canEdit := or .CurrentUser.IsCoordinator (and (eq .Request.CreatedBy .CurrentUser.ID) (or (eq .Request.Status "draft") (eq .Request.Status "pending")))}}
-{{if or .Request.TagList $canEdit}}
+{{$it := detailItem . "tags" .Request.Tags}}
+{{if or .Request.TagList $it.CanEdit}}
 <div class="mb-5">
-  <div class="is-flex is-align-items-center gap-2 mb-1">
-    <span class="detail-label">Tags</span>
-    {{if $canEdit}}
-    <button hx-get="/requests/{{.Request.ID}}/section/tags/edit"
-            hx-target="#ds-tags" hx-swap="innerHTML"
-            class="btn-icon">
-      <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-      </svg>
-    </button>
-    {{end}}
-  </div>
+  {{template "field_label" $it}}
   {{if .Request.TagList}}
   <div class="is-flex is-flex-wrap-wrap gap-2">
     {{range .Request.TagList}}<span class="tag-drs">{{.}}</span>{{end}}
@@ -104,238 +67,77 @@
 {{end}}
 {{end}}
 
-{{define "detail_edit_tags"}}
-<div class="mb-5">
-  <form hx-patch="/requests/{{.Request.ID}}" hx-target="#ds-tags" hx-swap="innerHTML"
-        class="is-flex is-align-items-center gap-2">
-    <input type="hidden" name="_section" value="tags">
-    <input type="text" name="tags" value="{{.Request.Tags}}" autocomplete="off"
-           placeholder="e.g. fcc-hh, fcc-ee, higgs, top, ewk, bsm"
-           class="form-input is-grow-1">
-    <button type="button"
-            hx-get="/requests/{{.Request.ID}}/section/tags"
-            hx-target="#ds-tags" hx-swap="innerHTML"
-            class="button is-small is-shrink-0" style="border-radius:.5rem">Cancel</button>
-    <button type="submit" class="button is-link is-small is-shrink-0" style="border-radius:.5rem">Save</button>
-  </form>
-</div>
-{{end}}
-
 {{/* ────── Details grid ────────────────────────────────────────────────── */}}
 {{define "detail_section_details"}}
-{{$canEdit := or .CurrentUser.IsCoordinator (and (eq .Request.CreatedBy .CurrentUser.ID) (or (eq .Request.Status "draft") (eq .Request.Status "pending")))}}
-{{$isDraft := eq .Request.Status "draft"}}
+{{$d := .}}
+{{$req := .Request}}
 <div class="mb-5">
-  <div class="is-flex is-align-items-center gap-2 mb-2">
-    <span class="detail-label">Request Details</span>
-    {{if $canEdit}}
-    <button hx-get="/requests/{{.Request.ID}}/section/details/edit"
-            hx-target="#ds-details" hx-swap="innerHTML"
-            class="btn-icon">
-      <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-      </svg>
-    </button>
-    {{end}}
-  </div>
+  <span class="detail-label block mb-2">Request Details</span>
   <div class="columns is-multiline is-variable is-1">
-    {{if or .Request.UseCase $isDraft}}
+    {{template "detail_item" (detailItem $d "use_case" $req.UseCaseLabel)}}
+    {{template "detail_item" (detailItem $d "dataset_type" $req.DatasetTypeLabel)}}
+    {{if ne $req.DatasetType "generation"}}
+    {{$it := detailItem $d "detector" $req.Detector}}
     <div class="column is-half">
-      <div class="detail-item{{if not .Request.UseCase}} detail-item--required{{end}}">
-        <span class="detail-label">Use Case</span>
-        {{if .Request.UseCase}}<span class="detail-value">{{.Request.UseCaseLabel}}</span>{{end}}
-      </div>
-    </div>
-    {{end}}
-    <div class="column is-half">
-      <div class="detail-item{{if and $isDraft (not .Request.DatasetType)}} detail-item--required{{end}}">
-        <span class="detail-label">Final Processing Stage</span>
-        {{if .Request.DatasetType}}<span class="detail-value">{{.Request.DatasetTypeLabel}}</span>{{end}}
-      </div>
-    </div>
-    {{if and .Request.DatasetType (ne .Request.DatasetType "generation") (or .Request.Detector $isDraft)}}
-    <div class="column is-half">
-      <div class="detail-item{{if not .Request.Detector}} detail-item--required{{end}}">
-        <span class="detail-label">Detector(s)</span>
-        {{if .Request.Detector}}
+      <div class="detail-item{{if $it.Missing}} detail-item--required{{end}}">
+        {{template "field_label" $it}}
+        {{if $req.Detector}}
         <div class="detail-value is-flex is-flex-wrap-wrap gap-1">
-          {{range .Request.DetectorList}}<span class="tag-detector">{{.}}</span>{{end}}
+          {{range $req.DetectorList}}<span class="tag-detector">{{.}}</span>{{end}}
         </div>
         {{end}}
       </div>
     </div>
     {{end}}
-    {{if or .Request.Format $isDraft}}
-    <div class="column is-half">
-      <div class="detail-item{{if not .Request.Format}} detail-item--required{{end}}">
-        <span class="detail-label">Format</span>
-        {{if .Request.Format}}<span class="detail-value">{{.Request.Format}}</span>{{end}}
-      </div>
-    </div>
-    {{end}}
-    {{if or .Request.Statistics $isDraft}}
-    <div class="column is-half">
-      <div class="detail-item{{if not .Request.Statistics}} detail-item--required{{end}}">
-        <span class="detail-label">Statistics</span>
-        {{if .Request.Statistics}}<span class="detail-value">{{.Request.Statistics}}</span>{{end}}
-      </div>
-    </div>
-    {{end}}
-    {{if .Request.EstimatedSize}}
-    <div class="column is-half">
-      <div class="detail-item">
-        <span class="detail-label">Estimated Size</span>
-        <span class="detail-value">{{.Request.EstimatedSize}}</span>
-      </div>
-    </div>
-    {{end}}
-    {{if .Request.TargetCampaign}}
-    <div class="column is-half">
-      <div class="detail-item">
-        <span class="detail-label">Target Campaign</span>
-        <span class="detail-value">{{.Request.TargetCampaign}}</span>
-      </div>
-    </div>
-    {{end}}
-    {{if .Request.Key4hepStack}}
-    <div class="column is-half">
-      <div class="detail-item">
-        <span class="detail-label">Key4hep Stack</span>
-        <span class="detail-value">{{.Request.Key4hepStack}}</span>
-      </div>
-    </div>
-    {{end}}
-    {{if .Request.DueDate}}
-    <div class="column is-half">
-      <div class="detail-item">
-        <span class="detail-label">Due Date</span>
-        <span class="detail-value">{{.Request.DueDate}}</span>
-      </div>
-    </div>
-    {{end}}
+    {{template "detail_item" (detailItem $d "format" $req.Format)}}
+    {{template "detail_item" (detailItem $d "statistics" $req.Statistics)}}
+    {{template "detail_item" (detailItem $d "estimated_size" $req.EstimatedSize)}}
+    {{if or $req.TargetCampaign $d.CanEdit}}{{template "detail_item" (detailItem $d "target_campaign" $req.TargetCampaign)}}{{end}}
+    {{if or $req.Key4hepStack $d.CanEdit}}{{template "detail_item" (detailItem $d "key4hep_stack" $req.Key4hepStack)}}{{end}}
+    {{if or $req.DueDate $d.CanEdit}}{{template "detail_item" (detailItem $d "due_date" $req.DueDate)}}{{end}}
   </div>
-</div>
-{{end}}
-
-{{define "detail_edit_details"}}
-{{$req := .Request}}
-<div class="mb-5">
-  <form hx-patch="/requests/{{$req.ID}}" hx-target="#ds-details" hx-swap="innerHTML">
-    <input type="hidden" name="_section" value="details">
-    <div class="is-flex is-align-items-center is-justify-content-space-between mb-3">
-      <span class="detail-label">Request Details</span>
-      <div class="is-flex gap-2">
-        <button type="button"
-                hx-get="/requests/{{$req.ID}}/section/details"
-                hx-target="#ds-details" hx-swap="innerHTML"
-                class="button is-small" style="border-radius:.5rem">Cancel</button>
-        <button type="submit" class="button is-link is-small" style="border-radius:.5rem">Save</button>
-      </div>
-    </div>
-    <div class="columns is-multiline is-variable is-1">
-      <div class="column is-half">
-        <label class="form-label">Use Case</label>
-        {{$uc := $req.UseCase}}
-        <select name="use_case" class="form-input">
-          <option value="" {{if eq $uc ""}}selected{{end}} disabled>— Select —</option>
-          {{range useCaseLabels}}
-          <option value="{{.Value}}" {{if eq $uc .Value}}selected{{end}}>{{.Label}}</option>
-          {{end}}
-        </select>
-      </div>
-      <div class="column is-half">
-        <label class="form-label">Final Processing Stage</label>
-        {{$dt := $req.DatasetType}}
-        <select name="dataset_type" class="form-input" onchange="updateDetectorVisibility(this)">
-          <option value="" {{if eq $dt ""}}selected{{end}} disabled>— Select —</option>
-          {{range datasetTypeLabels}}
-          <option value="{{.Value}}" {{if eq $dt .Value}}selected{{end}}>{{.Label}}</option>
-          {{end}}
-        </select>
-      </div>
-      <div class="column is-half" id="detector-field" style="display:none">
-        <label class="form-label">Detector(s)</label>
-        <input type="text" name="detector" id="detector-input" value="{{$req.Detector}}"
-               placeholder="e.g. IDEA, ALLEGRO, ALFA — comma-separated if more than one" class="form-input">
-      </div>
-      <script>updateDetectorVisibility(document.querySelector('select[name="dataset_type"]'));</script>
-      <div class="column is-half">
-        <label class="form-label">Format</label>
-        {{$fmt := $req.Format}}
-        <select name="format" class="form-input">
-          <option value="" {{if eq $fmt ""}}selected{{end}} disabled>— Select —</option>
-          <option value="EDM4hep"      {{if eq $fmt "EDM4hep"}}selected{{end}}>EDM4hep</option>
-          <option value="HepMC3"       {{if eq $fmt "HepMC3"}}selected{{end}}>HepMC3</option>
-          <option value="LHEF"         {{if eq $fmt "LHEF"}}selected{{end}}>LHEF</option>
-          <option value="ROOT"         {{if eq $fmt "ROOT"}}selected{{end}}>ROOT</option>
-          <option value="ROOT NTuple"  {{if eq $fmt "ROOT NTuple"}}selected{{end}}>ROOT NTuple</option>
-          <option value="ROOT RNTuple" {{if eq $fmt "ROOT RNTuple"}}selected{{end}}>ROOT RNTuple</option>
-          <option value="STDHEP"       {{if eq $fmt "STDHEP"}}selected{{end}}>STDHEP</option>
-          <option value="Other"        {{if eq $fmt "Other"}}selected{{end}}>Other</option>
-        </select>
-      </div>
-      <div class="column is-half">
-        <label class="form-label">Statistics</label>
-        <input type="text" name="statistics" value="{{$req.Statistics}}"
-               placeholder="e.g. 10M events" class="form-input">
-      </div>
-      <div class="column is-half">
-        <label class="form-label">Estimated Size</label>
-        <input type="text" name="estimated_size" value="{{$req.EstimatedSize}}"
-               placeholder="e.g. 500 GB" class="form-input">
-      </div>
-      <div class="column is-half">
-        <label class="form-label">Target Campaign</label>
-        <input type="text" name="target_campaign" value="{{$req.TargetCampaign}}"
-               placeholder="e.g. Spring2026" class="form-input">
-      </div>
-      <div class="column is-half">
-        <label class="form-label">Key4hep Stack</label>
-        <input type="text" name="key4hep_stack" value="{{$req.Key4hepStack}}"
-               placeholder="e.g. key4hep-2024-03-10" class="form-input">
-      </div>
-      <div class="column is-half">
-        <label class="form-label">Due Date</label>
-        <input type="date" name="due_date" value="{{$req.DueDate}}" class="form-input">
-      </div>
-      <div class="column is-half">
-        <label class="form-label">Priority</label>
-        {{$pri := $req.Priority}}
-        <select name="priority" class="form-input">
-          <option value="low"      {{if eq $pri "low"}}selected{{end}}>Low</option>
-          <option value="medium"   {{if eq $pri "medium"}}selected{{end}}>Medium</option>
-          <option value="high"     {{if eq $pri "high"}}selected{{end}}>High</option>
-          <option value="critical" {{if eq $pri "critical"}}selected{{end}}>Critical</option>
-        </select>
-      </div>
-    </div>
-  </form>
 </div>
 {{end}}
 
 {{/* ────── Notes ────────────────────────────────────────────────────────── */}}
 {{define "detail_section_notes"}}
-{{$canEdit := or .CurrentUser.IsCoordinator (and (eq .Request.CreatedBy .CurrentUser.ID) (or (eq .Request.Status "draft") (eq .Request.Status "pending")))}}
-{{if or .Request.Notes $canEdit}}
+{{$it := detailItem . "notes" .Request.Notes}}
+{{if or .Request.Notes $it.CanEdit}}
 <div class="mb-5">
-  <div class="is-flex is-align-items-center gap-2 mb-1">
-    <span class="detail-label">Additional Notes</span>
-    {{if $canEdit}}
-    <button onclick="openEditModal(this,'Additional Notes','notes','Generator settings, beam energy, pile-up conditions, special requirements…','/requests/{{.Request.ID}}','notes','ds-notes')"
-            data-edit-value="{{.Request.Notes}}"
-            class="btn-icon">
-      <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-      </svg>
-    </button>
-    {{end}}
-  </div>
+  {{template "field_label" $it}}
   {{if .Request.Notes}}
   <div class="prose-block-notes">
-    <div class="prose-md is-size-7 has-text-grey-dark" data-md style="line-height:1.6">{{.Request.Notes}}</div>
+    <div class="prose-md is-size-7 has-text-grey-dark prose-detail" data-md>{{.Request.Notes}}</div>
   </div>
   {{end}}
 </div>
 {{end}}
 {{end}}
 
+{{/* ────── Edit modal form for a single field ─────────────────────────────── */}}
+{{define "field_edit"}}
+{{$f := .Field}}
+<form hx-patch="/requests/{{.Request.ID}}" hx-target="[data-request-detail-root]" hx-swap="innerHTML">
+  <input type="hidden" name="_field" value="{{$f.Key}}">
+  <label class="form-label">{{$f.Label}}{{if $f.Required}} <span class="has-text-danger">*</span>{{end}}</label>
+  {{if eq $f.Input "textarea"}}
+  <textarea name="value" rows="14" autocomplete="off" placeholder="{{$f.Placeholder}}"
+            class="form-input" autofocus>{{$f.Value}}</textarea>
+  {{else if eq $f.Input "select"}}
+  <select name="value" class="form-input" autofocus>
+    <option value="" {{if eq $f.Value ""}}selected{{end}} disabled>— Select —</option>
+    {{range $f.Options}}
+    <option value="{{.Value}}" {{if eq $f.Value .Value}}selected{{end}}>{{.Label}}</option>
+    {{end}}
+  </select>
+  {{else}}
+  <input type="{{if eq $f.Input "date"}}date{{else}}text{{end}}" name="value" value="{{$f.Value}}"
+         autocomplete="off" placeholder="{{$f.Placeholder}}" class="form-input"
+         {{if eq $f.Key "title"}}required{{end}} autofocus>
+  {{end}}
+  <div class="buttons is-right mt-4">
+    <button type="button" class="button" onclick="closeModal()">Cancel</button>
+    <button type="submit" class="button is-link">Save</button>
+  </div>
+</form>
+{{end}}

@@ -61,6 +61,9 @@ func New(db *sql.DB, driver string, oidcClient *auth.Client, devMode bool, versi
 		"useCaseLabels":      func() []models.Option { return models.UseCaseLabels },
 		"datasetTypeLabels":  func() []models.Option { return models.DatasetTypeLabels },
 		"relationTypeLabels": func() []models.Option { return models.RelationTypeLabels },
+		"formatLabels":       func() []models.Option { return models.FormatLabels },
+		"detailItem":         detailItem,
+		"join":               strings.Join,
 		"groupCardData": func(g *models.CoordinatorGroup, coordinators []*models.User) PageData {
 			return PageData{Group: g, Coordinators: coordinators}
 		},
@@ -295,6 +298,7 @@ type PageData struct {
 	ProductionIDs      []*models.ProductionID
 	Clone              *models.DatasetRequest
 	Comment            *models.Update
+	Field              *FieldEdit
 }
 
 type FilterState struct {
@@ -508,17 +512,23 @@ func (h *Handler) CreateRequest(w http.ResponseWriter, r *http.Request) {
 		CreatedBy:      createdBy,
 	}
 
+	// Initial group assignment from the form's group dropdown.
+	if groupName := strings.TrimSpace(r.FormValue("group_name")); groupName != "" {
+		if g, err := h.groups.GetByName(groupName); err == nil && g != nil {
+			req.AssignedGroupID = g.ID
+			req.AssignedGroupName = g.Name
+		}
+	}
+
 	if req.Title == "" {
 		http.Error(w, "title is required", 400)
 		return
 	}
-	if req.Status != models.StatusDraft && (req.Description == "" || req.UseCase == "" || req.DatasetType == "" || req.Format == "" || req.Statistics == "" || req.EstimatedSize == "") {
-		http.Error(w, "description, use case, final processing stage, format, event count, and estimated size are required", 400)
-		return
-	}
-	if req.Status != models.StatusDraft && req.DatasetType != "generation" && req.Detector == "" {
-		http.Error(w, "detector(s) are required for this final processing stage", 400)
-		return
+	if req.Status != models.StatusDraft {
+		if missing := req.MissingRequired(); len(missing) > 0 {
+			http.Error(w, "required before submitting: "+strings.Join(missing, ", "), 400)
+			return
+		}
 	}
 
 	id, err := h.requests.Create(req)
@@ -529,14 +539,8 @@ func (h *Handler) CreateRequest(w http.ResponseWriter, r *http.Request) {
 	}
 	req.ID = int(id)
 	slog.Info("created request", "id", id)
-
-	// Set initial group assignment from the form's group dropdown.
-	if groupName := strings.TrimSpace(r.FormValue("group_name")); groupName != "" {
-		if g, err := h.groups.GetByName(groupName); err == nil && g != nil {
-			h.requests.AssignGroup(int(id), g.ID) //nolint:errcheck
-			req.AssignedGroupID = g.ID
-			req.AssignedGroupName = g.Name
-		}
+	if req.AssignedGroupID != 0 {
+		h.requests.AssignGroup(int(id), req.AssignedGroupID) //nolint:errcheck
 	}
 
 	// Log creation event and notify.
@@ -623,107 +627,6 @@ func (h *Handler) GetCloneForm(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	h.renderPage(w, r, "request_form_page", PageData{Title: "Clone Request", Clone: req})
-}
-
-func (h *Handler) ViewSection(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.Atoi(r.PathValue("id"))
-	if err != nil {
-		http.Error(w, "Not Found", 404)
-		return
-	}
-	req, err := h.requests.GetByID(id)
-	if err != nil {
-		http.Error(w, "Not Found", 404)
-		return
-	}
-	h.renderPartial(w, r, "detail_section_"+r.PathValue("section"), PageData{Request: req})
-}
-
-func (h *Handler) EditSection(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.Atoi(r.PathValue("id"))
-	if err != nil {
-		http.Error(w, "Not Found", 404)
-		return
-	}
-	req, err := h.requests.GetByID(id)
-	if err != nil {
-		http.Error(w, "Not Found", 404)
-		return
-	}
-	user := middleware.GetUser(r)
-	if !canEdit(user, req) {
-		http.Error(w, "Forbidden", http.StatusForbidden)
-		return
-	}
-	h.renderPartial(w, r, "detail_edit_"+r.PathValue("section"), PageData{Request: req})
-}
-
-func (h *Handler) PatchRequest(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.Atoi(r.PathValue("id"))
-	if err != nil {
-		http.Error(w, "Not Found", 404)
-		return
-	}
-	existing, err := h.requests.GetByID(id)
-	if err == sql.ErrNoRows {
-		http.Error(w, "Not Found", 404)
-		return
-	}
-	if err != nil {
-		http.Error(w, "Internal Server Error", 500)
-		return
-	}
-	user := middleware.GetUser(r)
-	if !canEdit(user, existing) {
-		http.Error(w, "Forbidden", http.StatusForbidden)
-		return
-	}
-	if err := r.ParseForm(); err != nil {
-		http.Error(w, "Bad Request", 400)
-		return
-	}
-	section := r.FormValue("_section")
-	switch section {
-	case "title":
-		if t := strings.TrimSpace(r.FormValue("title")); t != "" {
-			existing.Title = t
-		}
-	case "description":
-		existing.Description = strings.TrimSpace(r.FormValue("description"))
-	case "tags":
-		existing.Tags = strings.TrimSpace(r.FormValue("tags"))
-	case "notes":
-		existing.Notes = strings.TrimSpace(r.FormValue("notes"))
-	case "details":
-		existing.UseCase = r.FormValue("use_case")
-		existing.DatasetType = r.FormValue("dataset_type")
-		existing.Format = strings.TrimSpace(r.FormValue("format"))
-		existing.Statistics = strings.TrimSpace(r.FormValue("statistics"))
-		existing.EstimatedSize = strings.TrimSpace(r.FormValue("estimated_size"))
-		existing.TargetCampaign = strings.TrimSpace(r.FormValue("target_campaign"))
-		existing.Key4hepStack = strings.TrimSpace(r.FormValue("key4hep_stack"))
-		existing.Detector = strings.TrimSpace(r.FormValue("detector"))
-		existing.DueDate = r.FormValue("due_date")
-		if p := models.Priority(r.FormValue("priority")); p != "" {
-			existing.Priority = p
-		}
-	default:
-		http.Error(w, "unknown section", 400)
-		return
-	}
-	if err := h.requests.Update(existing); err != nil {
-		slog.Error("patch request", "error", err)
-		http.Error(w, "Internal Server Error", 500)
-		return
-	}
-	userID := 0
-	if user != nil {
-		userID = user.ID
-	}
-	if section == "description" || section == "notes" {
-		h.relations.CreateMentions(id, userID, existing.Description, existing.Notes)
-	}
-	h.renderPartial(w, r, "detail_section_"+section, PageData{Request: existing})
 }
 
 func (h *Handler) UpdateRequest(w http.ResponseWriter, r *http.Request) {
@@ -825,12 +728,8 @@ func (h *Handler) UpdateStatus(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		if status == models.StatusPending && existing.Status == models.StatusDraft {
-			if existing.Description == "" || existing.UseCase == "" || existing.DatasetType == "" || existing.Format == "" || existing.Statistics == "" || existing.EstimatedSize == "" {
-				http.Error(w, "description, use case, final processing stage, format, event count, and estimated size are required before submitting", 400)
-				return
-			}
-			if existing.DatasetType != "generation" && existing.Detector == "" {
-				http.Error(w, "detector(s) are required before submitting for this final processing stage", 400)
+			if missing := existing.MissingRequired(); len(missing) > 0 {
+				http.Error(w, "required before submitting: "+strings.Join(missing, ", "), 400)
 				return
 			}
 		}

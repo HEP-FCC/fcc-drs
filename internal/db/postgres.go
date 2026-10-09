@@ -158,7 +158,8 @@ func migrate(db *DB) error {
 			('MC Productions, GRID Tools'),
 			('Analysis Tools'),
 			('High-level reconstruction'),
-			('Monte Carlo tools')
+			('Monte Carlo tools'),
+			('Other')
 		ON CONFLICT (name) DO NOTHING`,
 		`DO $$ BEGIN
 			IF EXISTS (

@@ -34,6 +34,17 @@ var DatasetTypeLabels = []Option{
 	{"other", "Other"},
 }
 
+var FormatLabels = []Option{
+	{"EDM4hep", "EDM4hep"},
+	{"HepMC3", "HepMC3"},
+	{"LHEF", "LHEF"},
+	{"ROOT", "ROOT"},
+	{"ROOT NTuple", "ROOT NTuple"},
+	{"ROOT RNTuple", "ROOT RNTuple"},
+	{"STDHEP", "STDHEP"},
+	{"Other", "Other"},
+}
+
 const (
 	StatusDraft      Status = "draft"
 	StatusPending    Status = "pending"
@@ -85,6 +96,57 @@ type DatasetRequest struct {
 	ResourcesApproval string // "" | "approved" | "rejected"
 	CreatedAt         time.Time
 	UpdatedAt         time.Time
+}
+
+// requiredFields lists the fields that must be filled in before a request can
+// be submitted for review, in display order.
+var requiredFields = []struct {
+	Key   string
+	Label string
+}{
+	{"description", "Description"},
+	{"group", "Group / Team"},
+	{"use_case", "Use Case"},
+	{"dataset_type", "Final Processing Stage"},
+	{"format", "Format"},
+	{"detector", "Detector(s)"},
+	{"statistics", "Statistics"},
+	{"estimated_size", "Estimated Size"},
+}
+
+// IsMissing reports whether a required field is still empty. Detector(s) are
+// not needed when the final processing stage is Generation.
+func (r *DatasetRequest) IsMissing(field string) bool {
+	switch field {
+	case "description":
+		return r.Description == ""
+	case "group":
+		return r.AssignedGroupID == 0
+	case "use_case":
+		return r.UseCase == ""
+	case "dataset_type":
+		return r.DatasetType == ""
+	case "format":
+		return r.Format == ""
+	case "detector":
+		return r.DatasetType != "generation" && r.Detector == ""
+	case "statistics":
+		return r.Statistics == ""
+	case "estimated_size":
+		return r.EstimatedSize == ""
+	}
+	return false
+}
+
+// MissingRequired returns the labels of the required fields that are still empty.
+func (r *DatasetRequest) MissingRequired() []string {
+	var missing []string
+	for _, f := range requiredFields {
+		if r.IsMissing(f.Key) {
+			missing = append(missing, f.Label)
+		}
+	}
+	return missing
 }
 
 func (r *DatasetRequest) ApprovalLabel(v string) string {

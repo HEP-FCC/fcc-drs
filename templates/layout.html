@@ -204,7 +204,7 @@
     </div>
   </footer>
 
-  <!-- Unified content modal (file viewer + text field editor) -->
+  <!-- Unified content modal (file viewer + field editor) -->
   <div class="modal" id="modal-overlay">
     <div class="modal-background" onclick="closeModal()"></div>
     <div class="modal-card" style="width:100%;max-width:52rem">
@@ -214,16 +214,7 @@
       </header>
       <section class="modal-card-body" style="padding:0">
         <div id="modal-view-content" style="display:none;padding:1.25rem;overflow:auto"></div>
-        <form id="modal-edit-form" style="display:none;padding:1.25rem 1.25rem 0">
-          <input type="hidden" name="_section" id="modal-edit-section">
-          <textarea id="modal-edit-textarea" rows="14" autocomplete="off"
-                    class="form-input" style="width:100%"></textarea>
-        </form>
       </section>
-      <footer class="modal-card-foot is-justify-content-flex-end" id="modal-footer" style="display:none">
-        <button class="button" onclick="closeModal()">Cancel</button>
-        <button type="submit" form="modal-edit-form" class="button is-link">Save</button>
-      </footer>
     </div>
   </div>
 
@@ -285,34 +276,14 @@
     function prepareViewModal(title) {
       document.getElementById('modal-title').textContent = title;
       document.getElementById('modal-view-content').style.display = '';
-      document.getElementById('modal-edit-form').style.display = 'none';
-      document.getElementById('modal-footer').style.display = 'none';
-    }
-
-    function openEditModal(btn, title, fieldName, placeholder, patchUrl, section, targetId) {
-      document.getElementById('modal-title').textContent = title;
-      document.getElementById('modal-view-content').style.display = 'none';
-      var form = document.getElementById('modal-edit-form');
-      form.style.display = '';
-      document.getElementById('modal-footer').style.display = '';
-      document.getElementById('modal-edit-section').value = section;
-      var ta = document.getElementById('modal-edit-textarea');
-      ta.name = fieldName;
-      ta.value = btn.getAttribute('data-edit-value') || '';
-      ta.placeholder = placeholder;
-      form.setAttribute('hx-patch', patchUrl);
-      form.setAttribute('hx-target', '#' + targetId);
-      form.setAttribute('hx-swap', 'innerHTML');
-      htmx.process(form);
-      document.getElementById('modal-overlay').classList.add('is-active');
-      document.documentElement.classList.add('is-clipped');
-      ta.focus();
     }
 
     document.body.addEventListener('htmx:afterSwap', function(e) {
       if (e.detail.target.id === 'modal-view-content') {
         document.getElementById('modal-overlay').classList.add('is-active');
         document.documentElement.classList.add('is-clipped');
+        var field = e.detail.target.querySelector('[autofocus]');
+        if (field) field.focus();
       }
       var root = document.contains(e.detail.target) ? e.detail.target : document;
       renderMd(root);
@@ -323,7 +294,7 @@
     });
 
     document.body.addEventListener('htmx:afterRequest', function(e) {
-      if (e.detail.successful && e.detail.elt.closest('#modal-edit-form')) {
+      if (e.detail.successful && e.detail.elt.closest('#modal-view-content form')) {
         closeModal();
       }
     });

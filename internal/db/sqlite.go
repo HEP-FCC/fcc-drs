@@ -167,7 +167,8 @@ func migrate(db *DB) error {
 		('MC Productions, GRID Tools'),
 		('Analysis Tools'),
 		('High-level reconstruction'),
-		('Monte Carlo tools')`)
+		('Monte Carlo tools'),
+		('Other')`)
 	db.Exec(`ALTER TABLE dataset_requests ADD COLUMN assigned_group_id INTEGER REFERENCES coordinator_groups(id)`)
 	db.Exec(`UPDATE dataset_requests SET assigned_group_id = (
 		SELECT id FROM coordinator_groups WHERE name = working_group
