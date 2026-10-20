@@ -31,7 +31,7 @@ VALUES
 ('Higgs → bb̄ signal at FCC-ee √s=240 GeV',
  'Full simulation of $e^+e^- \to ZH, H \to b\bar{b}$ at 240 GeV centre-of-mass energy. Need at least 10M events for signal efficiency studies.
 
-See also #13 for the complementary single-top sample used as a cross-check background.',
+See also DRS-13 for the complementary single-top sample used as a cross-check background.',
  'Anna Kowalski', 'akowalski', 'akowalski@cern.ch',
  (SELECT id FROM coordinator_groups WHERE name = 'Higgs physics'),
  (SELECT id FROM campaigns WHERE name = 'Spring2026'),
@@ -86,7 +86,7 @@ See also #13 for the complementary single-top sample used as a cross-check backg
 ('Tracker alignment sample: $e^+e^- \to \mu\mu$',
  'Clean dimuon events for inner tracker alignment studies. Flat pT spectrum from 10 to 100 GeV needed. Run through both detector concepts so the alignment procedure can be cross-validated.
 
-See #13 for the fast-sim comparison that reuses this generator-level sample.',
+See DRS-13 for the fast-sim comparison that reuses this generator-level sample.',
  'Hans Mueller', 'hmueller', 'hmueller@cern.ch',
  (SELECT id FROM coordinator_groups WHERE name = 'Geometry, Simulation'), NULL,
  'simulation', 'calibration', 'approved', 'medium',
@@ -192,7 +192,7 @@ See #13 for the fast-sim comparison that reuses this generator-level sample.',
 
 -- 13: draft, relation back to #1 and #5
 ('Single-top associated production at FCC-ee 365 GeV',
- 'Simulation of $e^+e^- \to tW^-\bar{b} + \text{c.c.}$ near the top threshold for anomalous $Wtb$ coupling studies. Complementary to #1 and reuses the generator setup from #5.',
+ 'Simulation of $e^+e^- \to tW^-\bar{b} + \text{c.c.}$ near the top threshold for anomalous $Wtb$ coupling studies. Complementary to DRS-1 and reuses the generator setup from DRS-5.',
  'Anna Kowalski', 'akowalski', 'akowalski@cern.ch',
  (SELECT id FROM coordinator_groups WHERE name = 'Top-quark physics'), NULL,
  'simulation', 'physics_analysis', 'draft', 'low',
@@ -246,7 +246,7 @@ See #13 for the fast-sim comparison that reuses this generator-level sample.',
 
 -- 17: pending, delphes stage with three detectors — the headline multi-detector example
 ('CLD vs. IDEA vs. ALLEGRO fast-sim benchmarking sample',
- 'Common hard-scatter sample ($t\bar{t}$, VH, dijets) run through fast simulation for all three detector concepts, for the detector comparison paper. Identical generator-level input required for all three — see #5 for the shared generator setup.',
+ 'Common hard-scatter sample ($t\bar{t}$, VH, dijets) run through fast simulation for all three detector concepts, for the detector comparison paper. Identical generator-level input required for all three — see DRS-5 for the shared generator setup.',
  'Sofia Fernandez', 'sfernandez', 'sfernandez@cern.ch',
  (SELECT id FROM coordinator_groups WHERE name = 'Geometry, Simulation'), NULL,
  'delphes', 'benchmarking', 'pending', 'medium',
@@ -272,7 +272,7 @@ See #13 for the fast-sim comparison that reuses this generator-level sample.',
 
 -- 19: pending, generation, relation partner for #8
 ('Graviton KK → ZZ at FCC-hh: signal',
- 'Kaluza-Klein graviton signal samples for spin-2 resonance search in ZZ → llll final state. Shares the same production pipeline as the gluino grid scan (#8).',
+ 'Kaluza-Klein graviton signal samples for spin-2 resonance search in ZZ → llll final state. Shares the same production pipeline as the gluino grid scan (DRS-8).',
  'Li Chen', 'lchen', 'lchen@cern.ch',
  (SELECT id FROM coordinator_groups WHERE name = 'BSM physics'), NULL,
  'generation', 'physics_analysis', 'pending', 'medium',
@@ -327,7 +327,7 @@ See the [Delphes card used for the cross-check](https://github.com/HEP-FCC/FCC-c
    '2026-03-02 09:15:00'),
   ((SELECT id FROM dataset_requests WHERE title LIKE 'Higgs → bb̄%'),
    (SELECT id FROM users WHERE username = 'akowalski'), 'comment',
-   'Thanks for the update! Linking the single-top cross-check request here for visibility: #13',
+   'Thanks for the update! Linking the single-top cross-check request here for visibility: DRS-13',
    '2026-03-10 14:22:00'),
   ((SELECT id FROM dataset_requests WHERE title LIKE 'ML training sample%'),
    (SELECT id FROM users WHERE username = 'mrossi'), 'comment',
