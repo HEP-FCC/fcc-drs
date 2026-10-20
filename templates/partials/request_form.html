@@ -6,7 +6,7 @@
       {{if .Request}}Edit Request{{else}}New Dataset Request{{end}}
     </h2>
     <p class="is-size-7 has-text-grey mt-1">
-      {{if .Request}}Update request details{{else if .Clone}}Based on #{{.Clone.ID}} — a relation will be created automatically{{else}}Request FCC simulation, reconstruction, or detector data{{end}}
+      {{if .Request}}Update request details{{else if .Clone}}Based on {{refKey .Clone.ID}} — a relation will be created automatically{{else}}Request FCC simulation, reconstruction, or detector data{{end}}
     </p>
   </div>
 
@@ -256,13 +256,13 @@
           <option value="{{.Value}}" {{if and $.Clone (eq .Value "variant")}}selected{{end}}>{{.Label}}</option>
           {{end}}
         </select>
-        <input type="text" id="add-rel-id" placeholder="#request ID" {{if .Clone}}value="#{{.Clone.ID}}"{{end}} class="form-input min-w-0">
+        <input type="text" id="add-rel-id" placeholder="DRS-N" {{if .Clone}}value="{{refKey .Clone.ID}}"{{end}} class="form-input min-w-0">
         <button type="button" id="add-relation-btn"
                 class="button is-link is-outlined is-small is-shrink-0" style="border-radius:.5rem">
           Link
         </button>
       </div>
-      <p class="is-size-7 has-text-grey-light mt-2">#N references in description and notes are captured as mentions automatically.</p>
+      <p class="is-size-7 has-text-grey-light mt-2">DRS-N references in description and notes are captured as mentions automatically.</p>
     </div>
     <script>
     (function() {
@@ -280,7 +280,7 @@
         typeSpan.textContent = typeLabels[typeVal] || typeVal;
         var idSpan = document.createElement('span');
         idSpan.className = 'is-size-7 has-text-weight-medium';
-        idSpan.textContent = '#' + idVal;
+        idSpan.textContent = 'DRS-' + idVal;
         var typeInput = document.createElement('input');
         typeInput.type = 'hidden'; typeInput.name = 'rel_type'; typeInput.value = typeVal;
         var idInput = document.createElement('input');
@@ -301,8 +301,9 @@
         addBtn.addEventListener('click', function() {
           var typeEl = document.getElementById('add-rel-type');
           var idEl = document.getElementById('add-rel-id');
-          var idVal = idEl.value.trim().replace(/^#/, '');
-          if (!idVal) return;
+          var m = idEl.value.trim().match(/^(?:DRS[-# ]?)?(\d+)$/i);
+          if (!m) return;
+          var idVal = m[1];
           document.getElementById('relation-rows').appendChild(makeRow(typeEl.value, idVal));
           idEl.value = ''; idEl.focus();
         });

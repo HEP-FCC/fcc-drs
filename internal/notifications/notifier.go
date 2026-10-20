@@ -84,7 +84,7 @@ func (n *Notifier) requestInfoHTML(req *models.DatasetRequest) string {
 		`<tr><td style="padding:4px 12px 4px 0;color:#6b7280;vertical-align:top;white-space:nowrap">Title</td>` +
 		`<td style="padding:4px 0;font-weight:600">` + html.EscapeString(req.Title) + `</td></tr>` +
 		`<tr><td style="padding:4px 12px 4px 0;color:#6b7280;vertical-align:top;white-space:nowrap">ID</td>` +
-		`<td style="padding:4px 0">#` + strconv.Itoa(req.ID) + `</td></tr>` +
+		`<td style="padding:4px 0">` + models.RefKey(req.ID) + `</td></tr>` +
 		`<tr><td style="padding:4px 12px 4px 0;color:#6b7280;vertical-align:top;white-space:nowrap">Requester</td>` +
 		`<td style="padding:4px 0">` + html.EscapeString(req.RequesterName) + `</td></tr>` +
 		stageRow +
@@ -131,14 +131,14 @@ func (n *Notifier) notifyNewRequest(req *models.DatasetRequest, _ *models.Update
 		slog.Error("notif: get users for new request", "request_id", req.ID, "error", err)
 		return
 	}
-	subject := fmt.Sprintf("[FCC-DRS] New request #%d: %s", req.ID, req.Title)
+	subject := fmt.Sprintf("[FCC-DRS] New request %s: %s", models.RefKey(req.ID), req.Title)
 	inner := `<p style="margin:0 0 4px 0">A new dataset request has been submitted.</p>` +
 		n.requestInfoHTML(req)
 	n.sendToUsers(users, req.ID, subject, inner)
 }
 
 func (n *Notifier) notifyStatusChange(req *models.DatasetRequest, update *models.Update) {
-	subject := fmt.Sprintf("[FCC-DRS] Request #%d status updated: %s", req.ID, req.Title)
+	subject := fmt.Sprintf("[FCC-DRS] Request %s status updated: %s", models.RefKey(req.ID), req.Title)
 	inner := `<p style="margin:0 0 4px 0">Status changed: <strong>` + html.EscapeString(update.Body) + `</strong></p>` +
 		n.assignedGroupActorHTML(req, update.UserID) +
 		n.requestInfoHTML(req)
@@ -148,7 +148,7 @@ func (n *Notifier) notifyStatusChange(req *models.DatasetRequest, update *models
 }
 
 func (n *Notifier) notifyComment(req *models.DatasetRequest, update *models.Update) {
-	subject := fmt.Sprintf("[FCC-DRS] New comment on request #%d: %s", req.ID, req.Title)
+	subject := fmt.Sprintf("[FCC-DRS] New comment on request %s: %s", models.RefKey(req.ID), req.Title)
 	preview := update.Body
 	if len(preview) > 400 {
 		preview = preview[:400] + "…"
@@ -182,7 +182,7 @@ func (n *Notifier) notifyAssigned(req *models.DatasetRequest, update *models.Upd
 		actionHTML = "Coordinator group changed from <strong>" + html.EscapeString(oldGroup) +
 			"</strong> to <strong>" + html.EscapeString(req.AssignedGroupName) + "</strong>."
 	}
-	subject := fmt.Sprintf("[FCC-DRS] Request #%d group assigned: %s", req.ID, req.Title)
+	subject := fmt.Sprintf("[FCC-DRS] Request %s group assigned: %s", models.RefKey(req.ID), req.Title)
 	inner := `<p style="margin:0 0 4px 0">` + actionHTML + `</p>` +
 		n.assignedGroupActorHTML(req, update.UserID) +
 		n.requestInfoHTML(req)
@@ -208,7 +208,7 @@ func (n *Notifier) notifyCampaignAssigned(req *models.DatasetRequest, update *mo
 		actionHTML = "Campaign changed from <strong>" + html.EscapeString(oldCampaign) +
 			"</strong> to <strong>" + html.EscapeString(req.CampaignName) + "</strong>."
 	}
-	subject := fmt.Sprintf("[FCC-DRS] Request #%d campaign updated: %s", req.ID, req.Title)
+	subject := fmt.Sprintf("[FCC-DRS] Request %s campaign updated: %s", models.RefKey(req.ID), req.Title)
 	inner := `<p style="margin:0 0 4px 0">` + actionHTML + `</p>` +
 		n.assignedGroupActorHTML(req, update.UserID) +
 		n.requestInfoHTML(req)
@@ -218,7 +218,7 @@ func (n *Notifier) notifyCampaignAssigned(req *models.DatasetRequest, update *mo
 }
 
 func (n *Notifier) notifyPriorityChange(req *models.DatasetRequest, update *models.Update) {
-	subject := fmt.Sprintf("[FCC-DRS] Request #%d priority changed: %s", req.ID, req.Title)
+	subject := fmt.Sprintf("[FCC-DRS] Request %s priority changed: %s", models.RefKey(req.ID), req.Title)
 	inner := `<p style="margin:0 0 4px 0">Priority changed: <strong>` + html.EscapeString(update.Body) + `</strong></p>` +
 		n.assignedGroupActorHTML(req, update.UserID) +
 		n.requestInfoHTML(req)
