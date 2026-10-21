@@ -1,5 +1,5 @@
 -- Seed data: users, campaigns, dataset requests, and examples of every
--- feature that attaches to a request (production IDs, activity/comments,
+-- feature that attaches to a request (transformation IDs, activity/comments,
 -- relations, a generator card).
 -- Run with: sqlite3 data/requests.db < scripts/seed.sql
 
@@ -27,7 +27,7 @@ INSERT INTO dataset_requests
    created_at, updated_at)
 VALUES
 
--- 1: in_progress, campaign-assigned, single detector, production IDs, rich comment thread
+-- 1: in_progress, campaign-assigned, single detector, transformation IDs, rich comment thread
 ('Higgs → bb̄ signal at FCC-ee √s=240 GeV',
  'Full simulation of $e^+e^- \to ZH, H \to b\bar{b}$ at 240 GeV centre-of-mass energy. Need at least 10M events for signal efficiency studies.
 
@@ -136,7 +136,7 @@ See DRS-13 for the fast-sim comparison that reuses this generator-level sample.'
  '', '',
  '2026-04-01 14:00:00', '2026-04-01 14:00:00'),
 
--- 9: in_progress, campaign-assigned, production ID, markdown-rich comment (table)
+-- 9: in_progress, campaign-assigned, transformation ID, markdown-rich comment (table)
 ('ML training sample: jet flavour tagging',
  'Large mixed-flavour jet sample (b, c, light, gluon) for training a graph-neural-network flavour tagger.',
  'Marco Rossi', 'mrossi', 'mrossi@cern.ch',
@@ -203,7 +203,7 @@ See DRS-13 for the fast-sim comparison that reuses this generator-level sample.'
  '', '',
  '2026-04-02 09:00:00', '2026-04-02 09:00:00'),
 
--- 14: in_progress, multi-detector, campaign + production ID
+-- 14: in_progress, multi-detector, campaign + transformation ID
 ('Track reconstruction benchmarking: $t\bar{t}$ at 365 GeV',
  'Input sample for tracking algorithm benchmarking (Acts). Dense environment with high track multiplicity. Run through both detector concepts under consideration.',
  'Marco Rossi', 'mrossi', 'mrossi@cern.ch',
@@ -296,9 +296,9 @@ See DRS-13 for the fast-sim comparison that reuses this generator-level sample.'
  '', '',
  '2026-04-12 09:00:00', '2026-04-12 09:00:00');
 
--- ── Production IDs ──────────────────────────────────────────────────────────
+-- ── Transformation IDs ──────────────────────────────────────────────────────────
 
-INSERT INTO production_ids (request_id, label, production_id, created_by, created_at) VALUES
+INSERT INTO transformation_ids (request_id, label, transformation_id, created_by, created_at) VALUES
   ((SELECT id FROM dataset_requests WHERE title LIKE 'Higgs → bb̄%'), 'Generation', 128501, (SELECT id FROM users WHERE username = 'epatel'), '2026-02-01 09:00:00'),
   ((SELECT id FROM dataset_requests WHERE title LIKE 'Higgs → bb̄%'), 'Full Sim',   128502, (SELECT id FROM users WHERE username = 'epatel'), '2026-02-20 11:30:00'),
   ((SELECT id FROM dataset_requests WHERE title LIKE 'ML training sample%'), 'Reconstruction', 129044, (SELECT id FROM users WHERE username = 'rkim'), '2026-02-05 10:00:00'),
@@ -342,7 +342,7 @@ Looks good — proceeding with the full 200M.',
    '2026-02-10 09:00:00'),
   ((SELECT id FROM dataset_requests WHERE title LIKE 'PID benchmark%'),
    (SELECT id FROM users WHERE username = 'rkim'), 'internal_note',
-   'DIRAC production 127900 failed at the kaon 50 GeV point — `pid-rich-sim` app segfaulted on the Manchester site. Marked as **failed** rather than resubmitting since the campaign has already closed.',
+   'DIRAC transformation 127900 failed at the kaon 50 GeV point — `pid-rich-sim` app segfaulted on the Manchester site. Marked as **failed** rather than resubmitting since the campaign has already closed.',
    '2026-10-18 08:00:00');
 
 -- ── Relations between requests ──────────────────────────────────────────────

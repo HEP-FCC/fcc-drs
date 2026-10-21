@@ -20,21 +20,21 @@ import (
 )
 
 type Handler struct {
-	db             *sql.DB
-	requests       *models.RequestStore
-	users          *models.UserStore
-	updates        *models.UpdateStore
-	relations      *models.RelationStore
-	generatorCards *models.GeneratorCardStore
-	productionIDs  *models.ProductionIDStore
-	groups         *models.CoordinatorGroupStore
-	campaigns      *models.CampaignStore
-	oidc           *auth.Client
-	notifier       *notifications.Notifier
-	funcMap        template.FuncMap
-	devMode        bool
-	version        string
-	appURL         string
+	db                *sql.DB
+	requests          *models.RequestStore
+	users             *models.UserStore
+	updates           *models.UpdateStore
+	relations         *models.RelationStore
+	generatorCards    *models.GeneratorCardStore
+	transformationIDs *models.TransformationIDStore
+	groups            *models.CoordinatorGroupStore
+	campaigns         *models.CampaignStore
+	oidc              *auth.Client
+	notifier          *notifications.Notifier
+	funcMap           template.FuncMap
+	devMode           bool
+	version           string
+	appURL            string
 }
 
 func New(db *sql.DB, driver string, oidcClient *auth.Client, devMode bool, version string) *Handler {
@@ -42,20 +42,20 @@ func New(db *sql.DB, driver string, oidcClient *auth.Client, devMode bool, versi
 	groups := models.NewCoordinatorGroupStore(db, driver)
 	appURL := strings.TrimSuffix(os.Getenv("APP_URL"), "/")
 	h := &Handler{
-		db:             db,
-		requests:       models.NewRequestStore(db, driver),
-		users:          users,
-		updates:        models.NewUpdateStore(db, driver),
-		relations:      models.NewRelationStore(db, driver),
-		generatorCards: models.NewGeneratorCardStore(db, driver),
-		productionIDs:  models.NewProductionIDStore(db, driver),
-		groups:         groups,
-		campaigns:      models.NewCampaignStore(db, driver),
-		oidc:           oidcClient,
-		notifier:       notifications.New(users, groups, email.ConfigFromEnv(), appURL),
-		devMode:        devMode,
-		version:        version,
-		appURL:         appURL,
+		db:                db,
+		requests:          models.NewRequestStore(db, driver),
+		users:             users,
+		updates:           models.NewUpdateStore(db, driver),
+		relations:         models.NewRelationStore(db, driver),
+		generatorCards:    models.NewGeneratorCardStore(db, driver),
+		transformationIDs: models.NewTransformationIDStore(db, driver),
+		groups:            groups,
+		campaigns:         models.NewCampaignStore(db, driver),
+		oidc:              oidcClient,
+		notifier:          notifications.New(users, groups, email.ConfigFromEnv(), appURL),
+		devMode:           devMode,
+		version:           version,
+		appURL:            appURL,
 	}
 	h.funcMap = template.FuncMap{
 		"useCaseLabels":      func() []models.Option { return models.UseCaseLabels },
@@ -293,7 +293,7 @@ type PageData struct {
 	Relations          []*models.Relation
 	GeneratorCards     []*models.GeneratorCard
 	GeneratorCard      *models.GeneratorCard
-	ProductionIDs      []*models.ProductionID
+	TransformationIDs  []*models.TransformationID
 	Clone              *models.DatasetRequest
 	Comment            *models.Update
 }
@@ -594,16 +594,16 @@ func (h *Handler) GetRequest(w http.ResponseWriter, r *http.Request) {
 	campaigns, _ := h.campaigns.GetAssignable(req.CampaignID)
 	relations, _ := h.relations.GetByRequestID(id)
 	cards, _ := h.generatorCards.GetByRequestID(id)
-	prodIDs, _ := h.productionIDs.GetByRequestID(id)
+	transIDs, _ := h.transformationIDs.GetByRequestID(id)
 
 	if r.Header.Get("HX-Request") == "true" {
 		h.renderPartial(w, r, "request_detail", PageData{
-			Request: req, Updates: activity, Groups: groups, AssignedGroup: assignedGroup, Campaigns: campaigns, Relations: relations, GeneratorCards: cards, ProductionIDs: prodIDs,
+			Request: req, Updates: activity, Groups: groups, AssignedGroup: assignedGroup, Campaigns: campaigns, Relations: relations, GeneratorCards: cards, TransformationIDs: transIDs,
 		})
 		return
 	}
 	h.renderPage(w, r, "request_detail_page", PageData{
-		Title: models.RefKey(req.ID) + ": " + req.Title, Request: req, Updates: activity, Groups: groups, AssignedGroup: assignedGroup, Campaigns: campaigns, Relations: relations, GeneratorCards: cards, ProductionIDs: prodIDs,
+		Title: models.RefKey(req.ID) + ": " + req.Title, Request: req, Updates: activity, Groups: groups, AssignedGroup: assignedGroup, Campaigns: campaigns, Relations: relations, GeneratorCards: cards, TransformationIDs: transIDs,
 	})
 }
 
@@ -875,16 +875,16 @@ func (h *Handler) UpdateStatus(w http.ResponseWriter, r *http.Request) {
 	campaigns, _ := h.campaigns.GetAssignable(req.CampaignID)
 	relations, _ := h.relations.GetByRequestID(id)
 	cards, _ := h.generatorCards.GetByRequestID(id)
-	prodIDs, _ := h.productionIDs.GetByRequestID(id)
+	transIDs, _ := h.transformationIDs.GetByRequestID(id)
 	h.renderPartial(w, r, "request_detail", PageData{
-		Request:        req,
-		Updates:        updates,
-		Groups:         groups,
-		AssignedGroup:  assignedGroup,
-		Campaigns:      campaigns,
-		Relations:      relations,
-		GeneratorCards: cards,
-		ProductionIDs:  prodIDs,
+		Request:           req,
+		Updates:           updates,
+		Groups:            groups,
+		AssignedGroup:     assignedGroup,
+		Campaigns:         campaigns,
+		Relations:         relations,
+		GeneratorCards:    cards,
+		TransformationIDs: transIDs,
 	})
 }
 

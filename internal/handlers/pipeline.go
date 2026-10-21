@@ -326,16 +326,16 @@ func (h *Handler) AssignCampaign(w http.ResponseWriter, r *http.Request) {
 	campaigns, _ := h.campaigns.GetAssignable(req.CampaignID)
 	relations, _ := h.relations.GetByRequestID(id)
 	cards, _ := h.generatorCards.GetByRequestID(id)
-	prodIDs, _ := h.productionIDs.GetByRequestID(id)
+	transIDs, _ := h.transformationIDs.GetByRequestID(id)
 	h.renderPartial(w, r, "request_detail", PageData{
-		Request:        req,
-		Updates:        updates,
-		Groups:         groups,
-		AssignedGroup:  assignedGroup,
-		Campaigns:      campaigns,
-		Relations:      relations,
-		GeneratorCards: cards,
-		ProductionIDs:  prodIDs,
+		Request:           req,
+		Updates:           updates,
+		Groups:            groups,
+		AssignedGroup:     assignedGroup,
+		Campaigns:         campaigns,
+		Relations:         relations,
+		GeneratorCards:    cards,
+		TransformationIDs: transIDs,
 	})
 }
 
@@ -393,16 +393,16 @@ func (h *Handler) UpdatePriority(w http.ResponseWriter, r *http.Request) {
 	campaigns, _ := h.campaigns.GetAssignable(req.CampaignID)
 	relations, _ := h.relations.GetByRequestID(id)
 	cards, _ := h.generatorCards.GetByRequestID(id)
-	prodIDs, _ := h.productionIDs.GetByRequestID(id)
+	transIDs, _ := h.transformationIDs.GetByRequestID(id)
 	h.renderPartial(w, r, "request_detail", PageData{
-		Request:        req,
-		Updates:        updates,
-		Groups:         groups,
-		AssignedGroup:  assignedGroup,
-		Campaigns:      campaigns,
-		Relations:      relations,
-		GeneratorCards: cards,
-		ProductionIDs:  prodIDs,
+		Request:           req,
+		Updates:           updates,
+		Groups:            groups,
+		AssignedGroup:     assignedGroup,
+		Campaigns:         campaigns,
+		Relations:         relations,
+		GeneratorCards:    cards,
+		TransformationIDs: transIDs,
 	})
 }
 
