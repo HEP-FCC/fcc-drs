@@ -11,7 +11,7 @@
       <span class="is-size-7 has-text-grey is-shrink-0" style="font-size:.7rem;font-weight:500">{{.Label}}</span>
       <a href="/requests/{{.RelatedID}}"
          class="is-size-7 has-text-weight-medium is-truncated"
-         data-md-inline>#{{.RelatedID}} {{.RelatedTitle}}</a>
+         data-md-inline>{{refKey .RelatedID}} {{.RelatedTitle}}</a>
       <span class="status-badge {{statusClass .RelatedStatus}} is-shrink-0">{{.RelatedStatusLabel}}</span>
     </div>
     {{if or $d.CurrentUser.IsCoordinator (and (eq $d.Request.CreatedBy $d.CurrentUser.ID) (or (eq $d.Request.Status "draft") (eq $d.Request.Status "pending")))}}

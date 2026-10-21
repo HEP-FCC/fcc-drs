@@ -70,6 +70,7 @@ func New(db *sql.DB, driver string, oidcClient *auth.Client, devMode bool, versi
 		"requestRowData": func(req *models.DatasetRequest, cu *models.User) PageData {
 			return PageData{Request: req, CurrentUser: cu}
 		},
+		"refKey":             models.RefKey,
 		"campaignAssignable": campaignAssignable,
 		"statusClass":        statusClass,
 		"priorityClass":      priorityClass,
@@ -552,9 +553,8 @@ func (h *Handler) CreateRequest(w http.ResponseWriter, r *http.Request) {
 
 	relTypes := r.Form["rel_type"]
 	for i, toRaw := range r.Form["rel_to"] {
-		toIDStr := strings.TrimPrefix(strings.TrimSpace(toRaw), "#")
-		toID, err := strconv.Atoi(toIDStr)
-		if err != nil || toID <= 0 || toID == int(id) {
+		toID, ok := models.ParseRefID(toRaw)
+		if !ok || toID == int(id) {
 			continue
 		}
 		relType := models.RelationVariant
@@ -603,7 +603,7 @@ func (h *Handler) GetRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	h.renderPage(w, r, "request_detail_page", PageData{
-		Title: req.Title, Request: req, Updates: activity, Groups: groups, AssignedGroup: assignedGroup, Campaigns: campaigns, Relations: relations, GeneratorCards: cards, ProductionIDs: prodIDs,
+		Title: models.RefKey(req.ID) + ": " + req.Title, Request: req, Updates: activity, Groups: groups, AssignedGroup: assignedGroup, Campaigns: campaigns, Relations: relations, GeneratorCards: cards, ProductionIDs: prodIDs,
 	})
 }
 

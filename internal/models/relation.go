@@ -5,10 +5,32 @@ import (
 	"fmt"
 	"regexp"
 	"strconv"
+	"strings"
 	"time"
 )
 
-var refPattern = regexp.MustCompile(`#(\d+)`)
+// refPattern matches request keys in free text: DRS-42, DRS42, DRS 42 or DRS#42 (case-insensitive).
+// RE2 has no lookbehind, so group 1 consumes the preceding boundary; keys glued to a letter, digit,
+// '-', '/', '.' or '_' (e.g. "fcc-drs-42") are not matched. Group 2 is the request ID.
+var refPattern = regexp.MustCompile(`(?i)(^|[^\p{L}\p{N}\-/._])drs[-# ]?(\d+)\b`)
+
+// refIDPattern matches a single request reference typed by a user: "DRS-42", "drs42" or "42".
+var refIDPattern = regexp.MustCompile(`(?i)^(?:drs[-# ]?)?(\d+)$`)
+
+// RefKey returns the canonical reference key for a request ID, e.g. "DRS-42".
+func RefKey(id int) string {
+	return "DRS-" + strconv.Itoa(id)
+}
+
+// ParseRefID parses a user-typed request reference into a request ID.
+func ParseRefID(s string) (int, bool) {
+	m := refIDPattern.FindStringSubmatch(strings.TrimSpace(s))
+	if m == nil {
+		return 0, false
+	}
+	id, err := strconv.Atoi(m[1])
+	return id, err == nil && id > 0
+}
 
 type RelationType string
 
@@ -99,13 +121,13 @@ func NewRelationStore(db *sql.DB, driver string) *RelationStore {
 	return &RelationStore{db: db, dbHelper: newHelper(driver)}
 }
 
-// CreateMentions parses #N references from texts and inserts mention relations.
+// CreateMentions parses DRS-N references from texts and inserts mention relations.
 // Duplicates, self-references, and references to non-existent requests are silently ignored.
 func (rs *RelationStore) CreateMentions(fromID, createdBy int, texts ...string) {
 	seen := map[int]bool{}
 	for _, text := range texts {
 		for _, match := range refPattern.FindAllStringSubmatch(text, -1) {
-			toID, err := strconv.Atoi(match[1])
+			toID, err := strconv.Atoi(match[2])
 			if err != nil || toID == fromID || seen[toID] {
 				continue
 			}

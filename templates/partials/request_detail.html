@@ -59,6 +59,7 @@
         {{end}}
       </div>
     </div>
+    <span class="is-size-7 has-text-grey has-text-weight-medium">{{refKey .ID}}</span>
     <div id="ds-title">{{template "detail_section_title" $d}}</div>
   </div>
 
@@ -160,7 +161,7 @@
         <option value="{{.Value}}">{{.Label}}</option>
         {{end}}
       </select>
-      <input type="text" name="to_id" required placeholder="#request ID" class="form-input min-w-0">
+      <input type="text" name="to_id" required placeholder="DRS-N" class="form-input min-w-0">
       <button type="submit" class="button has-text-link is-shrink-0" style="border-radius:.5rem">Link</button>
     </form>
     {{end}}

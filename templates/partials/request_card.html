@@ -24,7 +24,7 @@
     {{else}}
     <span class="is-size-7 has-text-grey">{{$req.PriorityLabel}}</span>
     {{end}}
-    <span class="ml-auto is-size-7 has-text-grey-light is-shrink-0">{{formatDateTime $req.UpdatedAt}}</span>
+    <span class="ml-auto is-size-7 has-text-grey-light is-shrink-0">{{refKey $req.ID}} · {{formatDateTime $req.UpdatedAt}}</span>
   </div>
 
   <a href="/requests/{{$req.ID}}"

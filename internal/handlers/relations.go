@@ -3,7 +3,6 @@ package handlers
 import (
 	"net/http"
 	"strconv"
-	"strings"
 
 	"fcc-drs/internal/middleware"
 	"fcc-drs/internal/models"
@@ -32,16 +31,15 @@ func (h *Handler) AddRelation(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	toIDStr := strings.TrimPrefix(strings.TrimSpace(r.FormValue("to_id")), "#")
-	toID, err := strconv.Atoi(toIDStr)
-	if err != nil || toID <= 0 || toID == id {
+	toID, ok := models.ParseRefID(r.FormValue("to_id"))
+	if !ok || toID == id {
 		h.renderRelations(w, r, req, cu, "Invalid request ID.")
 		return
 	}
 
 	_, err = h.requests.GetByID(toID)
 	if err != nil {
-		h.renderRelations(w, r, req, cu, "Request #"+strconv.Itoa(toID)+" not found.")
+		h.renderRelations(w, r, req, cu, "Request "+models.RefKey(toID)+" not found.")
 		return
 	}
 

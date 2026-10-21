@@ -336,8 +336,37 @@
       throwOnError: false
     };
 
-    function linkRequestRefs(text) {
-      return text.replace(/#(\d+)\b/g, '[#$1](/requests/$1)');
+    // Request keys: DRS-42, DRS42, DRS 42, DRS#42 (case-insensitive), always rendered as DRS-42.
+    // Group 1 is the preceding boundary, so keys glued to a letter, digit, '-', '/', '.' or '_' are skipped.
+    // Keep in sync with refPattern in internal/models/relation.go.
+    var requestRefRe = /(^|[^\p{L}\p{N}\-\/._])DRS[-# ]?(\d+)\b/giu;
+
+    // Links request keys in the rendered DOM, skipping text inside links, code and math.
+    function linkRequestRefs(el) {
+      var walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, {
+        acceptNode: function(node) {
+          return node.parentElement.closest('a, code, pre, .katex') ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT;
+        }
+      });
+      var nodes = [];
+      while (walker.nextNode()) nodes.push(walker.currentNode);
+      nodes.forEach(function(node) {
+        var text = node.nodeValue, last = 0, m;
+        var frag = document.createDocumentFragment();
+        requestRefRe.lastIndex = 0;
+        while ((m = requestRefRe.exec(text))) {
+          var start = m.index + m[1].length;
+          frag.appendChild(document.createTextNode(text.slice(last, start)));
+          var a = document.createElement('a');
+          a.href = '/requests/' + m[2];
+          a.textContent = 'DRS-' + m[2];
+          frag.appendChild(a);
+          last = requestRefRe.lastIndex;
+        }
+        if (last === 0) return;
+        frag.appendChild(document.createTextNode(text.slice(last)));
+        node.parentNode.replaceChild(frag, node);
+      });
     }
 
     function renderMd(root) {
@@ -345,13 +374,15 @@
       root = root || document;
       root.querySelectorAll('[data-md]:not([data-rendered])').forEach(function(el) {
         el.setAttribute('data-rendered', '');
-        el.innerHTML = DOMPurify.sanitize(marked.parse(linkRequestRefs(el.textContent)));
+        el.innerHTML = DOMPurify.sanitize(marked.parse(el.textContent));
         renderMathInElement(el, mathOpts);
+        linkRequestRefs(el);
       });
       root.querySelectorAll('[data-md-inline]:not([data-rendered])').forEach(function(el) {
         el.setAttribute('data-rendered', '');
-        el.innerHTML = DOMPurify.sanitize(marked.parseInline(linkRequestRefs(el.textContent)));
+        el.innerHTML = DOMPurify.sanitize(marked.parseInline(el.textContent));
         renderMathInElement(el, mathOpts);
+        linkRequestRefs(el);
       });
     }
 
