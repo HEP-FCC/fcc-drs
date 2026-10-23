@@ -6,8 +6,8 @@
 2. Fill in the form. Fields marked with a red asterisk are required to submit:
    - **Title** and **Description**: the physics process, generator, energy, detector concept,
      selection, etc.
-   - **Group / Team**: the physics or software group the request belongs to. It decides which
-     coordinator group reviews your request.
+   - **Group / Team**: the physics or software group the request belongs to. It decides who
+     reviews your request.
    - **Use Case**, **Final Processing Stage** (Generation, Simulation, Delphes, Reconstruction,
      Other) and **Format**.
    - **Detector(s)**: required for every stage except Generation.
@@ -18,15 +18,15 @@
    you use other datasets from a specific campaign.
 4. Either save the request as a **Draft** or submit it straight away.
 
-A submitted request gets the status **Under Review** and the coordinators of the
-selected group are notified.
+A submitted request gets the status **Under Review** and the MC Production contacts
+of the selected group are notified.
 
 ## Who reviews your request
 
-The coordinators of a physics group are its MC Production contacts. They review the
-request, may comment on it or cancel it, and help with its technical preparation.
-A cancelled request is nothing unusual. The physics approval is given by the MC
-Production contacts of the group, the resources approval by the DRS admins.
+The MC Production contacts of the group review the request, may comment on it or
+cancel it, and help with its technical preparation. A cancelled request is nothing
+unusual. The physics approval is given by the MC Production contacts of the group,
+the resources approval by the DRS admins.
 
 ## Drafts
 
@@ -37,7 +37,7 @@ When it is complete, open it and click **Submit Request**.
 
 You can edit your request while it is a **Draft** or **Under Review**. Click the
 pencil icon next to a section to edit it in place. Once the request is approved,
-only coordinators can change it. Ask them in a comment if something needs updating.
+only the MC Production contacts can change it. Ask them in a comment if something needs updating.
 
 ## Withdrawing or cancelling
 
@@ -70,7 +70,7 @@ creates a *mention* link automatically.
 - The **Dashboard** shows overall statistics and the most recent requests.
 - **Requests** lists all requests, with filters by status and priority and a free-text search.
 - The **Activity** section of a request shows comments and every status change.
-  Use it to answer questions from coordinators or to ask about the progress.
+  Use it to answer questions from the MC Production contacts or to ask about the progress.
 - **Approvals** show the state of the physics and resources review.
 - Once the request is in a campaign, the **Transformation IDs** of the production are listed.
 
