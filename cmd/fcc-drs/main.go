@@ -71,6 +71,7 @@ func main() {
 
 	// Protected routes — require authenticated session
 	mux.HandleFunc("GET /", middleware.RequireAuth(h.Dashboard))
+	mux.HandleFunc("GET /help", middleware.RequireAuth(h.Help))
 	mux.HandleFunc("GET /profile", middleware.RequireAuth(h.ShowProfile))
 	mux.HandleFunc("POST /profile", middleware.RequireAuth(h.UpdateProfile))
 	mux.HandleFunc("POST /profile/avatar/delete", middleware.RequireAuth(h.DeleteAvatar))
