@@ -14,6 +14,8 @@ Log in with your CERN SSO account. New users start as **requesters**.
 | **Coordinator** | Review requests, give physics and resources approvals, assign groups, priorities and campaigns, and track production. |
 | **Admin** | Everything a coordinator can do, plus managing users, coordinator groups and campaigns. |
 
+The coordinator role in the DRS is held by the MC Production contacts of the physics groups.
+
 If you need coordinator access or have questions about FCC-DRS, contact
 [FCC-PED-SoftwareAndComputing-MCProduction@cern.ch](mailto:FCC-PED-SoftwareAndComputing-MCProduction@cern.ch).
 
