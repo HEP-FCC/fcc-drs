@@ -42,5 +42,5 @@ Draft → Under Review → Approved → In Progress → Completed
 ## Formatting
 
 Descriptions, notes and comments support **Markdown** and LaTeX math
-(`$...$` inline, `$$...$$` for display equations). Writing `#` followed by a
-request number links to that request.
+(`$...$` inline, `$$...$$` for display equations). Writing a request key, e.g.
+`DRS-42`, links to that request.

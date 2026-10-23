@@ -48,7 +48,7 @@ closed by admins.
   **Needs Campaign Assignment** list of approved requests waiting to be scheduled.
 - Requests in a **closed** campaign are locked: they cannot be removed or moved to another campaign.
 
-When the production jobs are created, record their **Production IDs** (with an
+When the production jobs are created, record their **Transformation IDs** (with an
 optional label) on the request page. When the dataset is ready, set the status
 to **Completed**, or to **Failed** if the production could not be finished.
 

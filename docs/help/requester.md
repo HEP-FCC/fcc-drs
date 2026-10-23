@@ -4,19 +4,29 @@
 
 1. Click **New Request**.
 2. Fill in the form. Fields marked with a red asterisk are required to submit:
-   - **Title** and **Description**: the physics process, energy, detector concept, selection, etc.
+   - **Title** and **Description**: the physics process, generator, energy, detector concept,
+     selection, etc.
    - **Group / Team**: the physics or software group the request belongs to. It decides which
      coordinator group reviews your request.
-   - **Use Case**, **Final Processing Stage** (Generation, Simulation, Delphes, Reconstruction)
-     and **Format**.
+   - **Use Case**, **Final Processing Stage** (Generation, Simulation, Delphes, Reconstruction,
+     Other) and **Format**.
    - **Detector(s)**: required for every stage except Generation.
    - **Statistics** (number of events) and **Estimated Size**.
 3. Optional fields: **Target Campaign**, **Key4hep Stack**, **Due Date**, **Priority**,
    **Additional Notes**, **Tags**, **Generator Cards** and **Related Requests**.
+   Specify the **Key4hep Stack** only if you already know which one to target, e.g. when
+   you use other datasets from a specific campaign.
 4. Either save the request as a **Draft** or submit it straight away.
 
 A submitted request gets the status **Under Review** and the coordinators of the
 selected group are notified.
+
+## Who reviews your request
+
+The coordinators of a physics group are its MC Production contacts. They review the
+request, may comment on it or cancel it, and help with its technical preparation.
+A cancelled request is nothing unusual. The physics approval is given by the MC
+Production contacts of the group, the resources approval by the DRS admins.
 
 ## Drafts
 
@@ -46,12 +56,13 @@ way to ask for a similar sample with different settings.
 
 Attach generator configuration files (e.g. `.py`, `.cmnd`, `.dat`) to the request.
 Only plain-text files are accepted, up to 1 MB each. They can be viewed or downloaded
-from the request page.
+from the request page. To use existing cards from
+[FCC-config](https://github.com/HEP-FCC/FCC-config), point to them in the description.
 
 ## Related requests
 
 Link your request to other requests as *Extends*, *Depends on*, *Variant of* or
-*Related to*. Writing `#` followed by a request number in the description or notes
+*Related to*. Writing a request key, e.g. `DRS-42`, in the description or notes
 creates a *mention* link automatically.
 
 ## Following your request
@@ -61,13 +72,20 @@ creates a *mention* link automatically.
 - The **Activity** section of a request shows comments and every status change.
   Use it to answer questions from coordinators or to ask about the progress.
 - **Approvals** show the state of the physics and resources review.
-- Once the request is in a campaign, the **Production IDs** of the production jobs are listed.
+- Once the request is in a campaign, the **Transformation IDs** of the production are listed.
+
+## Finding the produced datasets
+
+Produced datasets are listed in [DaMI](https://fcc-dami.web.cern.ch/). For now they
+are stored on EOS under `/eos/experiment/fcc/prod`. The location will be fully
+specified once the datasets are distributed across all storage elements of the FCC VO.
 
 ## Email notifications
 
-On your **Profile** page you can choose to receive emails about:
+By default you receive emails about:
 
 - status and approval changes on your requests,
 - new comments on your requests.
 
-You can also set a preferred display name and upload an avatar there.
+You can turn them off on your **Profile** page. You can also set a preferred display
+name and upload an avatar there.
