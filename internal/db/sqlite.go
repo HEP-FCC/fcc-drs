@@ -185,13 +185,17 @@ func migrate(db *DB) error {
 	db.Exec(`ALTER TABLE dataset_requests ADD COLUMN campaign_id INTEGER REFERENCES campaigns(id)`)
 	db.Exec(`ALTER TABLE campaigns ADD COLUMN tag TEXT NOT NULL DEFAULT ''`)
 	db.Exec(`ALTER TABLE campaigns ADD COLUMN closed_at DATETIME`)
-	db.Exec(`CREATE TABLE IF NOT EXISTS production_ids (
-		id            INTEGER PRIMARY KEY AUTOINCREMENT,
-		request_id    INTEGER NOT NULL REFERENCES dataset_requests(id) ON DELETE CASCADE,
-		label         TEXT NOT NULL DEFAULT '',
-		production_id INTEGER NOT NULL,
-		created_by    INTEGER REFERENCES users(id),
-		created_at    DATETIME DEFAULT CURRENT_TIMESTAMP
+	// DIRAC IDs were mislabelled as production IDs; they are transformation IDs.
+	db.Exec(`ALTER TABLE production_ids RENAME TO transformation_ids`)
+	db.Exec(`ALTER TABLE transformation_ids RENAME COLUMN production_id TO transformation_id`)
+	db.Exec(`UPDATE request_activity SET type = 'transformation_id' WHERE type = 'production_id'`)
+	db.Exec(`CREATE TABLE IF NOT EXISTS transformation_ids (
+		id                INTEGER PRIMARY KEY AUTOINCREMENT,
+		request_id        INTEGER NOT NULL REFERENCES dataset_requests(id) ON DELETE CASCADE,
+		label             TEXT NOT NULL DEFAULT '',
+		transformation_id INTEGER NOT NULL,
+		created_by        INTEGER REFERENCES users(id),
+		created_at        DATETIME DEFAULT CURRENT_TIMESTAMP
 	)`)
 	db.Exec(`ALTER TABLE dataset_requests ADD COLUMN detector TEXT NOT NULL DEFAULT ''`)
 	return nil

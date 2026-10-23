@@ -1,21 +1,21 @@
-{{define "production_ids"}}
+{{define "transformation_ids"}}
 {{$d := .}}
-{{if .ProductionIDs}}
+{{if .TransformationIDs}}
 <div class="mb-2">
-  {{range .ProductionIDs}}
+  {{range .TransformationIDs}}
   <div class="panel-row mb-2">
     <div class="is-flex is-align-items-center gap-2 min-w-0">
-      <span class="is-size-7 has-text-weight-medium is-truncated">{{.ProductionID}}</span>
+      <span class="is-size-7 has-text-weight-medium is-truncated">{{.TransformationID}}</span>
       {{if .Label}}<span class="is-size-7 has-text-grey is-truncated">{{.Label}}</span>{{end}}
       <span class="is-size-7 has-text-grey-light is-shrink-0">{{if .CreatorName}}{{.CreatorName}} · {{end}}{{timeAgo .CreatedAt}}</span>
     </div>
     {{if $d.CurrentUser.IsCoordinator}}
     <button
-      hx-delete="/requests/{{$d.Request.ID}}/production-ids/{{.ID}}"
-      hx-target="#production-ids-area"
+      hx-delete="/requests/{{$d.Request.ID}}/transformation-ids/{{.ID}}"
+      hx-target="#transformation-ids-area"
       hx-swap="innerHTML"
       hx-trigger="action-confirmed"
-      onclick="confirmAction(this, 'Remove this production ID?')"
+      onclick="confirmAction(this, 'Remove this transformation ID?')"
       class="btn-icon btn-icon-danger is-shrink-0"
       title="Remove">
       <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
@@ -29,11 +29,11 @@
 {{end}}
 
 {{if $d.CurrentUser.IsCoordinator}}
-<form hx-post="/requests/{{.Request.ID}}/production-ids"
-      hx-target="#production-ids-area"
+<form hx-post="/requests/{{.Request.ID}}/transformation-ids"
+      hx-target="#transformation-ids-area"
       hx-swap="innerHTML"
       class="is-flex is-align-items-center gap-2">
-  <input type="number" name="production_id" min="1" step="1" required placeholder="Production ID"
+  <input type="number" name="transformation_id" min="1" step="1" required placeholder="Transformation ID"
          class="form-input form-input-narrow">
   <input type="text" name="label" placeholder="Label (optional)"
          class="form-input is-grow-1 min-w-0">

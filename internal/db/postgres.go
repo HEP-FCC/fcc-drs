@@ -186,13 +186,23 @@ func migrate(db *DB) error {
 		`ALTER TABLE dataset_requests ADD COLUMN IF NOT EXISTS campaign_id INTEGER REFERENCES campaigns(id)`,
 		`ALTER TABLE campaigns ADD COLUMN IF NOT EXISTS tag TEXT NOT NULL DEFAULT ''`,
 		`ALTER TABLE campaigns ADD COLUMN IF NOT EXISTS closed_at TIMESTAMPTZ`,
-		`CREATE TABLE IF NOT EXISTS production_ids (
-			id            SERIAL PRIMARY KEY,
-			request_id    INTEGER NOT NULL REFERENCES dataset_requests(id) ON DELETE CASCADE,
-			label         TEXT NOT NULL DEFAULT '',
-			production_id INTEGER NOT NULL,
-			created_by    INTEGER REFERENCES users(id),
-			created_at    TIMESTAMPTZ DEFAULT NOW()
+		// DIRAC IDs were mislabelled as production IDs; they are transformation IDs.
+		`ALTER TABLE IF EXISTS production_ids RENAME TO transformation_ids`,
+		`DO $$ BEGIN
+			IF EXISTS (SELECT 1 FROM information_schema.columns
+			           WHERE table_schema = current_schema() AND table_name = 'transformation_ids'
+			           AND column_name = 'production_id') THEN
+				ALTER TABLE transformation_ids RENAME COLUMN production_id TO transformation_id;
+			END IF;
+		END $$`,
+		`UPDATE request_activity SET type = 'transformation_id' WHERE type = 'production_id'`,
+		`CREATE TABLE IF NOT EXISTS transformation_ids (
+			id                SERIAL PRIMARY KEY,
+			request_id        INTEGER NOT NULL REFERENCES dataset_requests(id) ON DELETE CASCADE,
+			label             TEXT NOT NULL DEFAULT '',
+			transformation_id INTEGER NOT NULL,
+			created_by        INTEGER REFERENCES users(id),
+			created_at        TIMESTAMPTZ DEFAULT NOW()
 		)`,
 		`ALTER TABLE dataset_requests ADD COLUMN IF NOT EXISTS detector TEXT NOT NULL DEFAULT ''`,
 	}
