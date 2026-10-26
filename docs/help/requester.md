@@ -4,8 +4,8 @@
 
 1. Click **New Request**.
 2. Fill in the form. Fields marked with a red asterisk are required to submit:
-   - **Title** and **Description**: the physics process, generator, energy, detector concept,
-     selection, etc.
+   - **Title** and **Description**: the physics process, generator settings (see
+     below), energy, detector concept, selection, etc.
    - **Group / Team**: the physics or software group the request belongs to. It decides who
      reviews your request.
    - **Use Case**, **Final Processing Stage** (Generation, Simulation, Delphes, Reconstruction,
@@ -52,12 +52,29 @@ While your request is **Under Review** you can:
 request is automatically linked to the original as a *variant*. This is the easiest
 way to ask for a similar sample with different settings.
 
+## Generator settings
+
+Make the generator setup explicit in the description:
+
+- matrix-element generator (e.g. Whizard, MadGraph5_aMC@NLO, Pythia 8),
+- ISR treatment,
+- parton shower,
+- hadronization, including the tune (e.g. Pythia 8 `Tune:ee`).
+
+Missing settings are clarified with the MC Production contacts before the
+production starts.
+
 ## Generator cards
 
-Attach generator configuration files (e.g. `.py`, `.cmnd`, `.dat`) to the request.
+Every request should ideally come with its generator cards attached (e.g. `.py`,
+`.cmnd`, `.dat`), with a note in the description on where you got them from.
+
+The recommended source is the main branch of
+[FCC-config](https://github.com/HEP-FCC/FCC-config), which keeps the reference
+cards. Start from one of them and list any modifications in the description.
+
 Only plain-text files are accepted, up to 1 MB each. They can be viewed or downloaded
-from the request page. To use existing cards from
-[FCC-config](https://github.com/HEP-FCC/FCC-config), point to them in the description.
+from the request page.
 
 ## Related requests
 
