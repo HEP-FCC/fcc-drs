@@ -76,6 +76,20 @@ cards. Start from one of them and list any modifications in the description.
 Only plain-text files are accepted, up to 1 MB each. They can be viewed or downloaded
 from the request page.
 
+## Detector configurations
+
+The MC Production contacts take the detector configuration from its reference
+repository:
+
+- CLD: [CLDConfig](https://github.com/key4hep/CLDConfig)
+- ILD: [ILDConfig](https://github.com/iLCSoft/ILDConfig)
+- Delphes detector cards: [Delphes](https://github.com/delphes/delphes/tree/master/cards)
+- Other detector concepts and the EDM4hep output cards for Delphes:
+  [FCC-config](https://github.com/HEP-FCC/FCC-config)
+
+If you need a specific version, give it in the description (tag or commit).
+Otherwise the default version for the campaign is used.
+
 ## Related requests
 
 Link your request to other requests as *Extends*, *Depends on*, *Variant of* or
